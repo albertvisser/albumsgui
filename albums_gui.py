@@ -7,30 +7,34 @@ import PyQt5.QtGui as gui
 import PyQt5.QtCore as core
 import albums_dml as dmla
 
-class AppData(types.SimpleNamespace):
-    end = False
+def get_artist_list():
+    return dmla.list_artists(dmla.db)
 
 def get_all_artists():
-    data = dmla.list_artists(dmla.db)
+    data = get_artist_list()
     artist_names = [' '.join((x["first_name"], x['last_name'])).lstrip()
         for x in data]
     artist_ids = [x["id"] for x in data]
     return artist_names, artist_ids
 
-def get_albums_by_artist(search_for, sort_on):
+def get_albums_by_artist(albumtype, search_for, sort_on):
     """get the selected artist's ID and build a list of albums"""
-    if search_type != 2 or search_for != 0:
-        return [], []
-    data = dmla.list_albums(dmla.db, search_for, sort_on)
+    data = dmla.list_albums_by_artist(dmla.db, albumtype, search_for, sort_on)
     album_names = [x["name"] for x in data]
     album_ids = [x["id"] for x in data]
     return album_names, album_ids
 
-def get_albums_by_text(search_type, search_for, sort_on):
+def get_albums_by_text(albumtype, search_type, search_for, sort_on):
     """get the selected artist's ID and build a list of albums"""
-    if search_type == 2 or search_for != 0:
-        return [], []
-    data = dmla.list_albums(dmla.db, column, search_for, sort_on)
+
+    if albumtype == 'studio':
+        search_type = {0: '*', 2: 'name', 3: 'produced_by', 4: 'credits',
+            5: 'bezetting'}[search_type]
+    elif albumtype == 'live':
+        search_type = {0: '*', 2: 'name', 3: 'name', 4: 'produced_by',
+            5: 'bezetting'}[search_type]
+    data = dmla.list_albums_by_search(dmla.db, albumtype, search_type, search_for,
+        sort_on)
     album_names = [x["name"] for x in data]
     album_ids = [x["id"] for x in data]
     return album_names, album_ids
@@ -43,33 +47,102 @@ def get_album(album_id):
     return tracknames, trackids
 
 
+
+def newline(parent):
+    hbox = qtw.QHBoxLayout()
+    frm = qtw.QFrame(parent)
+    frm.setFrameShape(qtw.QFrame.HLine)
+    hbox.addWidget(frm)
+    return hbox
+
+def button_strip(parent, *buttons):
+    hbox = qtw.QHBoxLayout()
+    hbox.addStretch()
+    if 'Cancel' in buttons:
+        btn = qtw.QPushButton("Afbreken", parent)
+        btn.clicked.connect(parent.parent().do_detail)
+        hbox.addWidget(btn)
+    if 'Go' in buttons:
+        btn = qtw.QPushButton("Uitvoeren", parent)
+        btn.clicked.connect(parent.submit)
+        hbox.addWidget(btn)
+    if 'GoBack' in buttons:
+        btn = qtw.QPushButton("Uitvoeren en terug", parent)
+        btn.clicked.connect(parent.submit_and_back)
+        hbox.addWidget(btn)
+    if 'Edit' in buttons:
+        btn = qtw.QPushButton("Wijzigingen doorvoeren", parent)
+        btn.clicked.connect(parent.submit)
+        hbox.addWidget(btn)
+    if 'New' in buttons:
+        btn = qtw.QPushButton("Nieuwe opvoeren", parent)
+        btn.clicked.connect(parent.new)
+        hbox.addWidget(btn)
+    if 'Select' in buttons:
+        btn = qtw.QPushButton("Terug naar Selectie", parent)
+        btn.clicked.connect(parent.parent().do_select)
+        hbox.addWidget(btn)
+    if 'Start' in buttons:
+        btn = qtw.QPushButton("Terug naar Startscherm", parent)
+        btn.clicked.connect(parent.parent().do_start)
+        hbox.addWidget(btn)
+    hbox.addStretch()
+    return hbox
+
+def exitbutton(parent, callback):
+    hbox = qtw.QHBoxLayout()
+    hbox.addStretch()
+    btn = qtw.QPushButton("E&xit", parent)
+    btn.clicked.connect(callback)
+    hbox.addWidget(btn)
+    hbox.addStretch()
+    return hbox
+
+
+class NewArtistDialog(qtw.QDialog):
+
+    def __init__(self, parent):
+        super().__init__(parent)
+        gbox = qtw.QGridLayout()
+        gbox.addWidget(qtw.QLabel('First name:', self), 0, 0)
+        self.first_name = qtw.QLineEdit(self)
+        gbox.addWidget(self.first_name, 0, 1)
+        gbox.addWidget(qtw.QLabel('Last name:', self), 1, 0)
+        self.last_name = qtw.QLineEdit(self)
+        gbox.addWidget(self.last_name, 1, 1)
+        gbox.addWidget(qtw.QLabel('Names wil be shown sorted on last name'), 2, 0,
+            1, 2)
+        hbox = qtw.QHBoxLayout()
+        hbox.addStretch()
+        btn = qtw.QPushButton('Cancel', self)
+        btn.clicked.connect(self.reject)
+        hbox.addWidget(btn)
+        btn = qtw.QPushButton('Update', self)
+        btn.clicked.connect(self.update)
+        hbox.addWidget(btn)
+        hbox.addStretch()
+        gbox.addLayout(hbox, 3, 0, 1, 2)
+        self.setLayout(gbox)
+
+    def update(self):
+        # wijzigingen doorvoeren in de database
+        self.accept()
+
 class Start(qtw.QWidget):
 
-    def __init__(self):
-        super().__init__()
-        ## self.db = dmla.db
-        self.appdata = AppData()
-        ## self.appdata.end = False
-        self.appdata.studio_searchtype = self.appdata.live_searchtype = 1
-        self.appdata.studio_artistid = self.appdata.live_artistid = 0
-        self.appdata.studio_search_arg = self.appdata.live_search_arg = ''
-        self.appdata.studio_sorttype = self.appdata.live_sorttype = 1
-        ## self.create_widgets()
-        ## self.show()
+    def __init__(self, parent):
+        super().__init__(parent)
 
     def create_widgets(self):
 
         gbox = qtw.QGridLayout()
 
         row = 0
+        gbox.addLayout(newline(self), row, 0, 1, 3)
+
+        row += 1
         hbox = qtw.QHBoxLayout()
-        frm = qtw.QFrame(self)
-        frm.setFrameShape(qtw.QFrame.HLine)
-        hbox.addWidget(frm)
         hbox.addWidget(qtw.QLabel('Studio Albums', self))
-        frm = qtw.QFrame(self)
-        frm.setFrameShape(qtw.QFrame.HLine)
-        hbox.addWidget(frm)
         gbox.addLayout(hbox, row, 0, 1, 3)
 
         row += 1
@@ -95,7 +168,6 @@ class Start(qtw.QWidget):
         hbox.addWidget(qtw.QLabel('Kies Uitvoerende:', self))
         self.ask_studio_artist = qtw.QComboBox(self)
         self.ask_studio_artist.addItem('--- Maak een selectie ---')
-        self.ask_studio_artist.addItems(get_all_artists()[0])
         self.ask_studio_artist.setMaximumWidth(200)
         self.ask_studio_artist.setMinimumWidth(200)
         hbox.addWidget(self.ask_studio_artist)
@@ -132,15 +204,17 @@ class Start(qtw.QWidget):
         gbox.addLayout(hbox, row, 0, 1, 3)
 
         row += 1
+        gbox.addLayout(newline(self), row, 0, 1, 3)
+        row += 1
         hbox = qtw.QHBoxLayout()
-        frm = qtw.QFrame(self)
-        frm.setFrameShape(qtw.QFrame.HLine)
-        hbox.addWidget(frm)
         hbox.addWidget(qtw.QLabel('Live Concerten', self))
-        frm = qtw.QFrame(self)
-        frm.setFrameShape(qtw.QFrame.HLine)
-        hbox.addWidget(frm)
         gbox.addLayout(hbox, row, 0, 1, 3)
+        ## row += 1
+        ## hbox = qtw.QHBoxLayout()
+        ## frm = qtw.QFrame(self)
+        ## frm.setFrameShape(qtw.QFrame.HLine)
+        ## hbox.addWidget(frm)
+        ## gbox.addLayout(hbox, row, 0, 1, 3)
 
         row += 1
         hbox = qtw.QHBoxLayout()
@@ -165,7 +239,6 @@ class Start(qtw.QWidget):
         hbox.addWidget(qtw.QLabel('Kies Uitvoerende:', self))
         self.ask_live_artist = qtw.QComboBox(self)
         self.ask_live_artist.addItem('--- Maak een selectie ---')
-        self.ask_live_artist.addItems(get_all_artists()[0])
         self.ask_live_artist.setMaximumWidth(200)
         self.ask_live_artist.setMinimumWidth(200)
         hbox.addWidget(self.ask_live_artist)
@@ -207,10 +280,13 @@ class Start(qtw.QWidget):
         frm = qtw.QFrame(self)
         frm.setFrameShape(qtw.QFrame.HLine)
         hbox.addWidget(frm)
+        gbox.addLayout(hbox, row, 0, 1, 3)
+        row+= 1
+        hbox = qtw.QHBoxLayout()
         hbox.addWidget(qtw.QLabel('Uitvoerende Artiesten', self))
-        frm = qtw.QFrame(self)
-        frm.setFrameShape(qtw.QFrame.HLine)
-        hbox.addWidget(frm)
+        ## frm = qtw.QFrame(self)
+        ## frm.setFrameShape(qtw.QFrame.HLine)
+        ## hbox.addWidget(frm)
         gbox.addLayout(hbox, row, 0, 1, 3)
 
         row+= 1
@@ -225,114 +301,80 @@ class Start(qtw.QWidget):
         gbox.addLayout(hbox, row, 0, 1, 3)
 
         row+= 1
-        hbox = qtw.QHBoxLayout()
-        frm = qtw.QFrame(self)
-        frm.setFrameShape(qtw.QFrame.HLine)
-        hbox.addWidget(frm)
-        gbox.addLayout(hbox, row, 0, 1, 3)
+        gbox.addLayout(newline(self), row, 0, 1, 3)
 
         row+= 1
-        hbox = qtw.QHBoxLayout()
-        hbox.addStretch()
-        quit_button = qtw.QPushButton("E&xit", self)
-        quit_button.clicked.connect(self.exit)
-        hbox.addWidget(quit_button)
-        hbox.addStretch()
-        gbox.addLayout(hbox, row, 0, 1, 3)
+        gbox.addLayout(exitbutton(self, self.exit), row, 0, 1, 3)
 
         self.setLayout(gbox)
 
     def refresh_screen(self):
-        self.ask_studio_search.setCurrentIndex(self.appdata.studio_searchtype)
-        self.ask_studio_artist.setCurrentIndex(self.appdata.studio_artistid)
-        self.ask_studio_sort.setCurrentIndex(self.appdata.studio_sorttype)
-        self.studio_zoektekst.setText(self.appdata.studio_search_arg)
-        self.ask_live_search.setCurrentIndex(self.appdata.live_searchtype)
-        self.ask_live_artist.setCurrentIndex(self.appdata.live_artistid)
-        self.ask_live_sort.setCurrentIndex(self.appdata.live_sorttype)
-        self.live_zoektekst.setText(self.appdata.live_search_arg)
+        self.names, self.ids = get_all_artists()
+        self.ask_studio_artist.addItems(self.names)
+        self.ask_live_artist.addItems(self.names)
+        if self.parent().albumtype == 'studio':
+            self.ask_studio_search.setcurrentIndex(self.parent().searchtype)
+            self.ask_studio_artist.setcurrentIndex(self.parent().artistid)
+            self.ask_studio_sort.setcurrentText(self.parent().sorttype)
+            self.studio_zoektekst.setText(self.parent().search_arg)
+        elif self.parent().albumtype == 'live':
+            self.ask_live_search.setcurrentIndex(self.parent().searchtype)
+            self.ask_live_artist.setcurrentIndex(self.parent().artistid)
+            self.ask_live_sort.setcurrentText(self.parent().sorttype)
+            self.live_zoektekst.setText(self.parent().search_arg)
 
     def select_album(self, *args):
         "get selection type and argument for studio album"
         # -> selectiescherm
-        self.appdata.searchtype = self.ask_studio_search.currentIndex()
-        self.appdata.sorttype = self.ask_studio_sort.currentIndex()
-        self.appdata.artistid = self.ask_studio_artist.currentIndex()
-        self.appdata.search_arg = self.studio_zoektekst.text()
-        if self.appdata.searchtype == 1:
-            self.appdata.search_arg = self.appdata.artistid
-        self.appdata.albumtype = 'studio'
-        self.do_select()
+        self.parent().searchtype = self.ask_studio_search.currentIndex()
+        self.parent().sorttype = self.ask_studio_sort.currentText()
+        chosen = self.ask_studio_artist.currentIndex()
+        self.parent().artistid = self.ids[chosen - 1]
+        self.parent().search_arg = self.studio_zoektekst.text()
+        if self.parent().searchtype == 1:
+            self.parent().search_arg = self.parent().artistid
+        self.parent().albumtype = 'studio'
+        self.parent().do_select()
 
     def new_album(self, *args):
         "add a studio album to the collection"
         # -> direct naar detailscherm in wijzig modus
-        self.appdata.albumtype = 'studio'
-        self.do_new()
+        self.parent().albumtype = 'studio'
+        self.parent().do_new()
 
     def select_concert(self, *args):
         "get selection type and argument for live concert"
         # -> selectiescherm
-        self.appdata.searchtype = self.ask_live_search.currentIndex()
-        self.appdata.sorttype = self.ask_live_sort.currentIndex()
-        self.appdata.artistid = self.ask_live_artist.currentIndex()
-        self.appdata.search_arg = self.live_zoektekst.text()
-        if self.appdata.searchtype == 1:
-            self.appdata.search_arg = self.appdata.artistid
-        self.appdata.albumtype = 'live'
-        self.do_select()
+        self.parent().searchtype = self.ask_live_search.currentIndex()
+        self.parent().sorttype = self.ask_live_sort.currentText()
+        chosen = self.ask_studio_artist.currentIndex()
+        self.parent().artistid = self.ids[chosen - 1]
+        self.parent().search_arg = self.live_zoektekst.text()
+        if self.parent().searchtype == 1:
+            self.parent().search_arg = self.parent().artistid
+        self.parent().albumtype = 'live'
+        self.parent().do_select()
 
     def new_concert(self, *args):
         "add a live concert to the collection"
         # -> direct naar detailscherm in wijzig modus
-        self.appdata.albumtype = 'live'
-        self.do_new()
+        self.parent().albumtype = 'live'
+        self.parent().do_new()
 
     def view_artists(self, *args):
         "go to artists screen"
         # -> "selectie"scherm in wijzig modus
-        self.appdata.albumtype = 'artist'
-        self.do_select()
+        self.parent().albumtype = 'artist'
+        self.parent().do_select()
 
     def new_artist(self, *args):
         "add an artist to the collection"
         # -> direct naar detailscherm in wijzig modus
-        self.appdata.albumtype = 'artist'
-        self.do_new()
-
-    def do_select(self):
-        if self.appdata.albumtype == 'artist':
-            go = Artists(self)
-        else:
-            go = Select(self)
-        go.appdata = self.appdata
-        go.create_widgets()
-        go.show()
-        print('now showing selection screen')
-        go.setWindowModality(core.Qt.ApplicationModal)
-        if self.appdata.end:
-            self.exit()
-        else:
-            self.refresh_screen()
-        print('whatever happened to the selection screen?')
-
-    def do_new(self):
-        if self.appdata.albumtype == 'artist':
-            go = Artists(self)
-        else:
-            go = Detail(self)
-        go.appdata = self.appdata
-        go.new_data()
-        go.create_widgets()
-        go.setWindowModality(core.Qt.ApplicationModal)
-        go.show()
-        if self.appdata.end:
-            self.exit()
-        else:
-            self.refresh_screen()
+        self.parent().albumtype = 'artist'
+        self.parent().do_new()
 
     def exit(self, *args):
-        self.close()
+        self.parent().close()
 
 
 class Select(qtw.QWidget):
@@ -348,38 +390,19 @@ class Select(qtw.QWidget):
     Of <link:> voer een nieuw album op bij deze selectie </link>
     """
 
-    def __init__(self):
-        super().__init__()
-        ## self.albumtype = albumtype
-        ## self.searchtype = search
-        ## if search == 2:
-            ## self.artistid = search_for
-        ## self.search_arg = search_for
-        ## self.sorttype = sort
-        ## self.create_widgets()
-        ## self.show()
+    def __init__(self, parent):
+        super().__init__(parent)
 
     def create_widgets(self):
 
-        gbox = qtw.QGridLayout()
-        row = 0
-        soort = {'studio': 'albums', 'live': 'concerten'}
-        text = 'Lijst {} {} - selectie: {} gesorteerd op {}'.format(
-            self.appdata.albumtype, soort[self.appdata.albumtype],
-            self.appdata.search_arg, self.appdata.sorttype)
-        row += 1
-        hbox = qtw.QHBoxLayout()
-        hbox.addWidget(qtw.QLabel(text, self))
-        gbox.addLayout(hbox, row, 0, 1, 3)
+        vbox = qtw.QVBoxLayout()
+        vbox.addLayout(newline(self))
 
-        row += 1
         hbox = qtw.QHBoxLayout()
-        frm = qtw.QFrame(self)
-        frm.setFrameShape(qtw.QFrame.HLine)
-        hbox.addWidget(frm)
-        gbox.addLayout(hbox, row, 0, 1, 3)
+        self.heading = qtw.QLabel("", self)
+        hbox.addWidget(self.heading)
+        vbox.addLayout(hbox)
 
-        row += 1
         hbox = qtw.QHBoxLayout()
         hbox.addWidget(qtw.QLabel('Snel naar dezelfde selectie voor een andere '
             'artiest:', self))
@@ -391,129 +414,281 @@ class Select(qtw.QWidget):
         hbox.addWidget(self.ask_artist)
         self.change_artist = qtw.QPushButton('Go', self)
         self.change_artist.setMaximumWidth(40)
+        self.change_artist.clicked.connect(self.other_artist)
         hbox.addWidget(self.change_artist)
         hbox.addStretch()
-        gbox.addLayout(hbox, row, 0, 1, 3)
+        vbox.addLayout(hbox)
 
-        row += 1
         hbox = qtw.QHBoxLayout()
         hbox.addWidget(qtw.QLabel('of naar een soortgelijke selectie voor ', self))
-        text = ('concertopnamen' if self.appdata.albumtype == 'studio' else
-            'studio albums')
-        self.change_type = qtw.QPushButton('{} van deze artiest'.format(text), self)
+        self.change_type = qtw.QPushButton('', self)
+        self.change_type.clicked.connect(self.other_albumtype)
         hbox.addWidget(self.change_type)
+        hbox.addWidget(qtw.QLabel(' van deze artiest', self))
         hbox.addStretch()
-        gbox.addLayout(hbox, row, 0, 1, 3)
+        vbox.addLayout(hbox)
 
-        row += 1
-        hbox = qtw.QHBoxLayout()
-        frm = qtw.QFrame(self)
-        frm.setFrameShape(qtw.QFrame.HLine)
-        hbox.addWidget(frm)
-        gbox.addLayout(hbox, row, 0, 1, 3)
+        vbox.addLayout(newline(self))
 
-        row += 1
         hbox = qtw.QHBoxLayout()
-        text = 'album' if self.appdata.albumtype == 'studio' else 'concert'
-        hbox.addWidget(qtw.QLabel('Kies een {} uit de lijst:'.format(text), self))
+        self.kiestekst = qtw.QLabel('Kies een item uit de lijst:', self)
+        hbox.addWidget(self.kiestekst)
         hbox.addStretch()
-        gbox.addLayout(hbox, row, 0, 1, 3)
+        vbox.addLayout(hbox)
 
-        ## if search == 2:
-            ## album_names, album_ids = get_albums_by_artist(search_for, sort_on)
-        ## else:
-            ## album_names, album_ids = get_albums_by_text(search_type, search_for,
-                ## sort_on)
-        album_names, album_ids = [
-            'Hello Sailor - Goodbye from the boys',
-            'Amazing Snorkesteijn - The Amazing Snorkesteijn',
-            "Grover Beurk - It's the end of an era, or isn't it? Oh well",
-            'No Nonsense - Just Kidding'
-            ], [1, 2, 3, 4]
+        self.album_names, self.album_ids = [], []
+            ## 'Hello Sailor - Goodbye from the boys',
+            ## 'Amazing Snorkesteijn - The Amazing Snorkesteijn',
+            ## "Grover Beurk - It's the end of an era, or isn't it? Oh well",
+            ## 'No Nonsense - Just Kidding'
+            ## ], [1, 2, 3, 4]
         self.go_buttons = []
-        for name in album_names:
-            row += 1
+        self.frm = qtw.QFrame(self)
+        vbox2 = qtw.QVBoxLayout()
+        for name in self.album_names:
             hbox = qtw.QHBoxLayout()
             hbox.addSpacing(40)
             hbox.addWidget(qtw.QLabel(name, self))
             hbox.addStretch()
             btn = qtw.QPushButton('Go', self)
             btn.setMaximumWidth(40)
+            btn.clicked.connect(self.todetail)
             hbox.addWidget(btn)
             hbox.addSpacing(40)
             self.go_buttons.append(btn)
-            gbox.addLayout(hbox, row, 0, 1, 3)
+            vbox2.addLayout(hbox)
+        self.frm.setLayout(vbox2)
+        scrl = qtw.QScrollArea()
+        scrl.setWidget(self.frm)
+        vbox.addWidget(scrl)
 
-        row += 1
+        vbox.addStretch()
+
         hbox = qtw.QHBoxLayout()
         hbox.addWidget(qtw.QLabel('Of', self))
-        self.add_new = qtw.QPushButton('voer een nieuw {} op bij deze selectie'
-            ''.format(text), self)
+        self.add_new = qtw.QPushButton('voer een nieuw item op bij deze selectie',
+            self)
+        self.add_new.clicked.connect(self.add_new_to_sel)
         hbox.addWidget(self.add_new)
         hbox.addStretch()
-        gbox.addLayout(hbox, row, 0, 1, 3)
+        vbox.addLayout(hbox)
 
-        row += 1
-        hbox = qtw.QHBoxLayout()
-        frm = qtw.QFrame(self)
-        frm.setFrameShape(qtw.QFrame.HLine)
-        hbox.addWidget(frm)
-        gbox.addLayout(hbox, row, 0, 1, 3)
+        vbox.addLayout(newline(self))
+        vbox.addLayout(button_strip(self, 'Start'))
+        vbox.addLayout(exitbutton(self, self.exit))
 
-        row+= 1
-        hbox = qtw.QHBoxLayout()
-        hbox.addStretch()
-        quit_button = qtw.QPushButton("E&xit", self)
-        quit_button.clicked.connect(self.exit)
-        hbox.addWidget(quit_button)
-        hbox.addStretch()
-        gbox.addLayout(hbox, row, 0, 1, 3)
+        self.setLayout(vbox)
 
-        self.setLayout(gbox)
+    def refresh_screen(self):
+        soort = {'studio': 'albums', 'live': 'concerten'}
+        self.heading.setText('Lijst {} {} - selectie: {} gesorteerd op {}'.format(
+            self.parent().albumtype, soort[self.parent().albumtype],
+            self.parent().search_arg, self.parent().sorttype))
+        if self.parent().albumtype == 'studio':
+            self.change_type.setText('concertopnamen')
+            itemtype  = 'album'
+        else:
+            self.change_type.setText('studio albums')
+            itemtype = 'concert'
+        self.kiestekst.setText('Kies een {} uit de lijst:'.format(itemtype))
+        if self.parent().searchtype == 1:
+            self.album_names, self.album_ids = get_albums_by_artist(
+                self.parent().albumtype, self.parent().artistid,
+                self.parent().sorttype)
+        else:
+            self.album_names, self.album_ids = get_albums_by_text(
+                self.parent().albumtype, self.parent().searchtype,
+                self.parent().search_arg, self.parent().sorttype)
+        self.add_new.setText('voer een nieuw {} op bij deze selectie'.format(
+            itemtype))
+
+    def other_artist(self, *args):
+        """read self.ask_artist for artist and change self.parent().artistid
+        """
+        self.parent().do_select()
+
+    def other_albumtype(self, *args):
+        """determine other type of selection and change accordingly, also change
+        self.parent().albumtype
+        """
+        self.parent().do_select()
+
+    def todetail(self, *args):
+        """determine which button was clicked and change accordingly
+        """
+        self.parent().do_detail()
+
+    def add_new_to_sel(self, *args, **kwargs):
+        """
+        """
+        self.parent().do_new(keep_sel=True)
 
     def exit(self, *args):
-        self.close()
+        self.parent().close()
 
 
 
 class Detail(qtw.QWidget):
     """
     """
+    def __init__(self, parent):
 
-    def __init__(self):
+        super().__init__(parent)
+        self.det_captions = {'studio': ['Label/jaar:', 'Produced by:', 'Credits:',
+            'Bezetting:', 'Tevens met:'],
+            'live': ['Locatie/datum:', 'Produced by:', 'Credits:',
+            'Bezetting:', 'Tevens met:']}
+        ## self.det_captions = ['Label/jaar:', 'Produced by:', 'Credits:',
+            ## 'Bezetting:', 'Tevens met:']
 
-        super().__init__()
-        ## self.albumtype = albumtype
-        ## self.searchtype = search
-        ## if search == 2:
-            ## self.artistid = search_for
-        ## self.search_arg = search_for
-        ## self.sorttype = sort
-        ## self.edit_det = self.edit_trk = self.edit_rec = True
-        ## self.select_data()
-        ## self.create_widgets()
-        ## self.show()
+    def create_widgets(self):
 
-    def new_data(self):
-        self.albumnaam = ''
-        self.album_names = []
-        if self.appdata.albumtype == 'studio':
-            self.details = collections.OrderedDict((
-                ('Label/jaar:', ''),
-                ('Produced by:', ''),
-                ('Credits:', ''),
-                ('Bezetting:', ''),
-                ('Tevens met:', '')))
-        else:
-            self.details = collections.OrderedDict((
-                ('Produced by:', ''),
-                ('Credits:', ''),
-                ('Bezetting:', ''),
-                ('Tevens met:', '')))
-        self.tracknames = []
-        self.recordings = []
-        self.edit_det = True
-        self.edit_trk = self.edit_rec = False
+        gbox = qtw.QGridLayout()
+        row = 0
+        ## row += 1
+        self.heading = qtw.QLabel('', self)
+        hbox = qtw.QHBoxLayout()
+        hbox.addWidget(self.heading)
+        gbox.addLayout(hbox, row, 0, 1, 3)
+
+        row += 1
+        gbox.addLayout(newline(self), row, 0, 1, 3)
+
+        row += 1
+        hbox = qtw.QHBoxLayout()
+        self.quickchange = qtw.QLabel('Snel naar een ander item van deze artiest:',
+            self)
+        hbox.addWidget(self.quickchange)
+        self.album_names = ['Hij was een smokkelaar', 'Moederziel Alleen',
+            'Overal en Nergens', 'Wat een drama']
+        self.ask_album = qtw.QComboBox(self)
+        self.ask_album.addItem('--- selecteer titel ---')
+        self.ask_album.addItems(self.album_names)
+        self.ask_album.setMaximumWidth(200)
+        self.ask_album.setMinimumWidth(200)
+        hbox.addWidget(self.ask_album)
+        self.change_album = qtw.QPushButton('Go', self)
+        self.change_album.setMaximumWidth(40)
+        hbox.addWidget(self.change_album)
+        hbox.addStretch()
+        gbox.addLayout(hbox, row, 0, 1, 3)
+
+        row += 1
+        gbox.addLayout(newline(self), row, 0, 1, 3)
+
+        row += 1
+        hbox = qtw.QHBoxLayout()
+        self.subheading = qtw.QLabel('Detailgegevens:', self)
+        hbox.addWidget(self.subheading)
+        self.chmode_alg = qtw.QPushButton('wijzigen', self)
+        self.chmode_alg.clicked.connect(self.edit_alg)
+        hbox.addWidget(self.chmode_alg)
+        hbox.addStretch()
+        gbox.addLayout(hbox, row, 0, 1, 3)
+
+        self.details = ['Nooit Meer Slapen Records, 1970', 'Hendrikus Jansonius',
+            '', 'Alle instrumenten bespeeld als door een wonder','']
+        self.detailwins = []
+
+        frm = qtw.QFrame(self)
+        gbox2 = qtw.QGridLayout()
+        row2 = -1
+        for num, title in enumerate(self.det_captions[self.parent().albumtype]):
+            row2 += 1
+            hbox = qtw.QHBoxLayout()
+            hbox.addSpacing(20)
+            hbox.addWidget(qtw.QLabel(title, self))
+            gbox2.addLayout(hbox, row2, 0, 1, 1)
+            win = qtw.QLabel(self.details[num], self)
+            gbox2.addWidget(win, row2, 1, 1, 2)
+        frm.setLayout(gbox2)
+        scrl = qtw.QScrollArea()
+        scrl.setWidget(frm)
+        row += 1
+        gbox.addWidget(scrl, row, 0, 1, 3)
+
+        row += 1
+        gbox.addLayout(newline(self), row, 0, 1, 3)
+
+        row += 1
+        hbox = qtw.QHBoxLayout()
+        hbox.addWidget(qtw.QLabel('Tracks:', self))
+        self.chmode_trk = qtw.QPushButton('wijzigen', self)
+        self.chmode_trk.clicked.connect(self.edit_trk)
+        hbox.addWidget(self.chmode_trk)
+        hbox.addStretch()
+        gbox.addLayout(hbox, row, 0, 1, 3)
+
+        self.tracknames = ['Morgen ben ik de bruid', 'Niemand de deur uit',
+            'Worstenbroodje en Uitknijpfruit', 'Sluitingstijd']
+        self.trackwins = []
+        self.edit_trk = False
+
+        row += 1
+        frm = qtw.QFrame(self)
+        vbox2 = qtw.QVBoxLayout()
+        for trackindex, trackname in enumerate(self.tracknames):
+            hbox = qtw.QHBoxLayout()
+            hbox.addWidget(qtw.QLabel('{:>8}.'.format(trackindex + 1), self))
+            win = qtw.QLabel(trackname, self)
+            hbox.addWidget(win)
+            hbox.addStretch()
+            vbox2.addLayout(hbox)
+        frm.setLayout(vbox2)
+        scrl = qtw.QScrollArea()
+        scrl.setWidget(frm)
+        gbox.addWidget(scrl, row, 0, 1, 3)
+
+        row += 1
+        gbox.addLayout(newline(self), row, 0, 1, 3)
+
+        row += 1
+        hbox = qtw.QHBoxLayout()
+        hbox.addWidget(qtw.QLabel('Opnames:', self))
+        self.chmode_rec = qtw.QPushButton('wijzigen', self)
+        self.chmode_rec.clicked.connect(self.edit_rec)
+        hbox.addWidget(self.chmode_rec)
+        hbox.addStretch()
+        gbox.addLayout(hbox, row, 0, 1, 3)
+
+        self.recordings = ['CD: enkel', 'Vinyl: LP 2 van 2', 'Banshee Music Player']
+        self.recwins = []
+        self.edit_rec = False
+
+        row += 1
+        frm = qtw.QFrame(self)
+        vbox2 = qtw.QVBoxLayout()
+        for opnindex, opname in enumerate(self.recordings):
+            hbox = qtw.QHBoxLayout()
+            hbox.addWidget(qtw.QLabel('{:>8}.'.format(opnindex + 1), self))
+            win = qtw.QLabel(opname, self)
+            hbox.addWidget(win)
+            hbox.addStretch()
+            vbox2.addLayout(hbox)
+        frm.setLayout(vbox2)
+        scrl = qtw.QScrollArea()
+        scrl.setWidget(frm)
+        gbox.addWidget(scrl, row, 0, 1, 3)
+
+        row += 1
+        gbox.addLayout(newline(self), row, 0, 1, 3)
+
+        row+= 1
+        gbox.addLayout(button_strip(self, 'Select', 'Start'), row, 0, 1, 3)
+
+        row+= 1
+        gbox.addLayout(exitbutton(self, self.exit), row, 0, 1, 3)
+
+        self.setLayout(gbox)
+
+    def refresh_screen(self):
+        soort = {'studio': 'album', 'live': 'concert'}
+        self.heading.setText('Gegevens van {} {}'.format(
+            soort[self.parent().albumtype], self.albumnaam))
+        self.quickchange.setText('Snel naar een ander {} van deze artiest:'.format(
+            soort[self.parent().albumtype]))
+        self.subheading.setText("{}gegevens:".format(
+            soort[self.parent().albumtype].title()))
 
     def select_data(self):
 
@@ -526,7 +701,7 @@ class Detail(qtw.QWidget):
                 ## sort_on)
         self.album_names = ['Hij was een smokkelaar', 'Moederziel Alleen',
             'Overal en Nergens', 'Wat een drama']
-        if self.appdata.albumtype == 'studio':
+        if self.parent().albumtype == 'studio':
             self.details = collections.OrderedDict((
                 ('Label/jaar:', 'Capricorn, 1970'),
                 ('Produced by:', 'Tom Dowd'),
@@ -548,164 +723,444 @@ class Detail(qtw.QWidget):
         self.recordings = ['CD: enkel', 'Vinyl: LP 2 van 2', 'Banshee Music Player']
         self.edit_det = self.edit_trk = self.edit_rec = False
 
+    def edit_alg(self):
+        self.parent().do_edit_alg()
+
+    def edit_trk(self):
+        self.parent().do_edit_trk()
+
+    def edit_rec(self):
+        self.parent().do_edit_rec()
+
+    def exit(self, *args):
+        self.parent().close()
+
+class EditDetails(qtw.QWidget):
+    """
+    """
+    def __init__(self, parent):
+
+        super().__init__(parent)
+        self.det_captions = {
+            'studio': ['Uitvoerende:', 'Albumtitel:', 'Label:',
+                'Jaar:', 'Produced by:', 'Credits:', 'Bezetting:', 'Tevens met:'],
+            'live': ['Uitvoerende:', 'Locatie:', 'Datum:', 'Produced by:',
+                'Credits:', 'Bezetting:', 'Tevens met:']}
+        ## self.det_captions = ['Label/jaar:', 'Produced by:', 'Credits:',
+            ## 'Bezetting:', 'Tevens met:']
+
     def create_widgets(self):
 
         gbox = qtw.QGridLayout()
         row = 0
-        soort = {'studio': 'album', 'live': 'concert'}
-        text = 'Gegevens van {} {}'.format(soort[self.appdata.albumtype],
-            self.albumnaam)
         ## row += 1
+        self.heading = qtw.QLabel('', self)
         hbox = qtw.QHBoxLayout()
-        hbox.addWidget(qtw.QLabel(text, self))
+        hbox.addWidget(self.heading)
         gbox.addLayout(hbox, row, 0, 1, 3)
 
         row += 1
-        hbox = qtw.QHBoxLayout()
-        frm = qtw.QFrame(self)
-        frm.setFrameShape(qtw.QFrame.HLine)
-        hbox.addWidget(frm)
-        gbox.addLayout(hbox, row, 0, 1, 3)
+        gbox.addLayout(newline(self), row, 0, 1, 3)
 
-        row += 1
-        hbox = qtw.QHBoxLayout()
-        hbox.addWidget(qtw.QLabel('Snel naar een ander {} van deze artiest:'.format(
-            soort[self.appdata.albumtype]), self))
-        self.ask_album = qtw.QComboBox(self)
-        self.ask_album.addItem('--- selecteer titel ---')
-        self.ask_album.addItems(self.album_names)
-        self.ask_album.setMaximumWidth(200)
-        self.ask_album.setMinimumWidth(200)
-        hbox.addWidget(self.ask_album)
-        self.change_album = qtw.QPushButton('Go', self)
-        self.change_album.setMaximumWidth(40)
-        hbox.addWidget(self.change_album)
-        hbox.addStretch()
-        gbox.addLayout(hbox, row, 0, 1, 3)
+        self.details = ['Worstenbroodje & Co', 'Overal en Nergens',
+            'Zultkop records', 'het jaar 0', 'Hendrikus Jansonius',
+            '', 'Alle instrumenten bespeeld als door een wonder','']
+        self.detailwins = []
 
-        row += 1
-        hbox = qtw.QHBoxLayout()
-        frm = qtw.QFrame(self)
-        frm.setFrameShape(qtw.QFrame.HLine)
-        hbox.addWidget(frm)
-        gbox.addLayout(hbox, row, 0, 1, 3)
-
-        row += 1
-        hbox = qtw.QHBoxLayout()
-        hbox.addWidget(qtw.QLabel("{}gegevens:".format(
-            soort[self.appdata.albumtype].title()), self))
-        self.chmode_alg = qtw.QPushButton('wijzigen', self)
-        hbox.addWidget(self.chmode_alg)
-        hbox.addStretch()
-        gbox.addLayout(hbox, row, 0, 1, 3)
-
-        for title, text in self.details.items():
-
+        for num, title in enumerate(self.det_captions[self.parent().albumtype]):
             row += 1
             hbox = qtw.QHBoxLayout()
             hbox.addSpacing(20)
-            hbox.addWidget(qtw.QLabel(title,self))
-            gbox.addLayout(hbox, row, 0, 1, 1)
-            if self.edit_det:
-                win = qtw.QLineEdit(text,self)
+            if title in ('Credits:', 'Bezetting:', 'Tevens met:'):
+                vbox = qtw.QVBoxLayout()
+                vbox.addWidget(qtw.QLabel(title, self))
+                vbox.addStretch()
+                hbox.addLayout(vbox)
             else:
-                win = qtw.QLabel(text,self)
+                hbox.addWidget(qtw.QLabel(title, self))
+            gbox.addLayout(hbox, row, 0, 1, 1)
+            if title == 'Uitvoerende:':
+                win = qtw.QComboBox(self)
+                win.addItem('--- Maak een selectie ---')
+                win.addItems(get_all_artists()[0])
+                ## win.setMaximumWidth(200)
+                ## win.setMinimumWidth(200)
+            elif title in ('Credits:', 'Bezetting:', 'Tevens met:'):
+                win = qtw.QTextEdit(self.details[num], self)
+            else:
+                win = qtw.QLineEdit(self.details[num], self)
+            self.detailwins.append(win)
             gbox.addWidget(win, row, 1, 1, 2)
 
-        row += 1
-        hbox = qtw.QHBoxLayout()
-        frm = qtw.QFrame(self)
-        frm.setFrameShape(qtw.QFrame.HLine)
-        hbox.addWidget(frm)
-        gbox.addLayout(hbox, row, 0, 1, 3)
-
-        row += 1
-        hbox = qtw.QHBoxLayout()
-        hbox.addWidget(qtw.QLabel('Tracks:', self))
-        self.chmode_alg = qtw.QPushButton('wijzigen', self)
-        hbox.addWidget(self.chmode_alg)
-        hbox.addStretch()
-        gbox.addLayout(hbox, row, 0, 1, 3)
-
-        for trackindex, trackname in enumerate(self.tracknames):
-
-            row += 1
-            hbox = qtw.QHBoxLayout()
-            hbox.addWidget(qtw.QLabel('{:>8}.'.format(trackindex + 1), self))
-            if self.edit_trk:
-                win = qtw.QLineEdit(trackname, self)
-            else:
-                win = qtw.QLabel(trackname, self)
-            hbox.addWidget(win)
-            hbox.addStretch()
-            gbox.addLayout(hbox, row, 0, 1, 3)
-
-        row += 1
-        hbox = qtw.QHBoxLayout()
-        frm = qtw.QFrame(self)
-        frm.setFrameShape(qtw.QFrame.HLine)
-        hbox.addWidget(frm)
-        gbox.addLayout(hbox, row, 0, 1, 3)
-
-        row += 1
-        hbox = qtw.QHBoxLayout()
-        hbox.addWidget(qtw.QLabel('Opnames:', self))
-        self.chmode_alg = qtw.QPushButton('wijzigen', self)
-        hbox.addWidget(self.chmode_alg)
-        hbox.addStretch()
-        gbox.addLayout(hbox, row, 0, 1, 3)
-
-        for opnindex, opname in enumerate(self.recordings):
-
-            row += 1
-            hbox = qtw.QHBoxLayout()
-            hbox.addWidget(qtw.QLabel('{:>8}.'.format(opnindex + 1), self))
-            if self.edit_rec:
-                win = qtw.QLineEdit(opname, self)
-            else:
-                win = qtw.QLabel(opname, self)
-            hbox.addWidget(win)
-            hbox.addStretch()
-            gbox.addLayout(hbox, row, 0, 1, 3)
-
-        row += 1
-        hbox = qtw.QHBoxLayout()
-        frm = qtw.QFrame(self)
-        frm.setFrameShape(qtw.QFrame.HLine)
-        hbox.addWidget(frm)
-        gbox.addLayout(hbox, row, 0, 1, 3)
+        row+= 1
+        vbox = qtw.QVBoxLayout()
+        vbox.addStretch()
+        gbox.addLayout(vbox, row, 0, 1, 3)
 
         row+= 1
-        hbox = qtw.QHBoxLayout()
-        hbox.addStretch()
-        quit_button = qtw.QPushButton("E&xit", self)
-        quit_button.clicked.connect(self.exit)
-        hbox.addWidget(quit_button)
-        hbox.addStretch()
-        gbox.addLayout(hbox, row, 0, 1, 3)
+        gbox.addLayout(button_strip(self, 'Cancel', 'Go', 'GoBack', 'Select',
+            'Start'), row, 0, 1, 3)
+
+        row+= 1
+        gbox.addLayout(exitbutton(self, self.exit), row, 0, 1, 3)
 
         self.setLayout(gbox)
 
+    def refresh_screen(self):
+        soort = {'studio': 'albums', 'live': 'concerten'}
+        self.albumnaam = ('Worstenbroodje & Co - Overal en Nergens (Zultkop records,'
+            ' het jaar 0)')
+        self.heading.setText('Gegevens van {} {}'.format(
+            soort[self.parent().albumtype], self.albumnaam))
+
+    def new_data(self, keep_sel=False):
+        self.albumnaam = ''
+        self.album_names = []
+        ## if self.parent().albumtype == 'studio':
+            ## self.details = collections.OrderedDict((
+                ## ('Label/jaar:', ''),
+                ## ('Produced by:', ''),
+                ## ('Credits:', ''),
+                ## ('Bezetting:', ''),
+                ## ('Tevens met:', '')))
+        ## else:
+            ## self.details = collections.OrderedDict((
+                ## ('Produced by:', ''),
+                ## ('Credits:', ''),
+                ## ('Bezetting:', ''),
+                ## ('Tevens met:', '')))
+        self.tracknames = []
+        self.recordings = []
+        self.edit_det = True
+        self.edit_trk = self.edit_rec = False
+
+        if keep_sel:
+            if self.parent().searchtype == 1:
+                self.parent().artistid
+            else:
+                self.parent().search_arg
+
+    def submit(self):
+        """neem de waarden van de invulvelden over en geef ze door aan de database
+        """
+
+    def submit_and_back(self):
+        self.submit()
+        self.parent().do_detail()
+
     def exit(self, *args):
-        self.close()
+        self.parent().close()
+
+class EditTracks(qtw.QWidget):
+    """
+    """
+    def __init__(self, parent):
+
+        super().__init__(parent)
+
+    def create_widgets(self):
+
+        vbox = qtw.QVBoxLayout()
+        row = 0
+        ## row += 1
+        self.heading = qtw.QLabel('', self)
+        hbox = qtw.QHBoxLayout()
+        hbox.addWidget(self.heading)
+        vbox.addLayout(hbox)
+
+        row += 1
+        vbox.addLayout(newline(self))
+        self.tracknames = ['Morgen ben ik de bruid', 'Niemand de deur uit',
+            'Worstenbroodje en Uitknijpfruit', 'Sluitingstijd']
+        self.trackwins = []
+
+        frm = qtw.QFrame(self)
+        self.vbox2 = qtw.QVBoxLayout()
+        for trackindex, trackname in enumerate(self.tracknames):
+            hbox = qtw.QHBoxLayout()
+            hbox.addWidget(qtw.QLabel('{:>8}.'.format(trackindex + 1), self))
+            win = qtw.QLineEdit(trackname, self)
+            self.trackwins.append(win)
+            hbox.addWidget(win)
+            ## hbox.addStretch()
+            self.vbox2.addLayout(hbox)
+        frm.setLayout(self.vbox2)
+        scrl = qtw.QScrollArea()
+        scrl.setWidget(frm)
+        vbox.addWidget(scrl)
+
+        hbox = qtw.QHBoxLayout()
+        self.add_new = qtw.QPushButton('Nieuw track', self)
+        self.add_new.clicked.connect(self.add_new_track)
+        hbox.addWidget(self.add_new)
+        hbox.addStretch()
+        vbox.addLayout(hbox)
+
+        ## vbox = qtw.QVBoxLayout()
+        ## vbox.addStretch()
+        ## gbox.addLayout(vbox, row, 0, 1, 3)
+
+        vbox.addLayout(newline(self))
+        vbox.addLayout(button_strip(self, 'Cancel', 'Go', 'GoBack', 'Select',
+            'Start'))
+
+        vbox.addLayout(exitbutton(self, self.exit))
+
+        self.setLayout(vbox)
+
+    def refresh_screen(self):
+        soort = {'studio': 'albums', 'live': 'concerten'}
+        self.albumnaam = ('Worstenbroodje & Co - Overal en Nergens (Zultkop records,'
+            ' het jaar 0)')
+        self.heading.setText('Gegevens van {} {}'.format(
+            soort[self.parent().albumtype], self.albumnaam))
+
+    def add_new_track(self):
+        hbox = qtw.QHBoxLayout()
+        hbox.addWidget(qtw.QLabel('    ', self))
+        win = qtw.QLineEdit(self)
+        self.trackwins.append(win)
+        hbox.addWidget(win)
+        ## hbox.addStretch()
+        self.vbox2.addLayout(hbox)
+
+
+    def submit(self):
+        """neem de waarden van de invulvelden over en geef ze door aan de database
+        """
+
+    def submit_and_back(self):
+        self.submit()
+        self.parent().do_detail()
+
+    def exit(self, *args):
+        self.parent().close()
+
+class EditRecordings(qtw.QWidget):
+    """
+    """
+    def __init__(self, parent):
+
+        super().__init__(parent)
+
+    def create_widgets(self):
+
+        vbox = qtw.QVBoxLayout()
+        self.heading = qtw.QLabel('', self)
+        hbox = qtw.QHBoxLayout()
+        hbox.addWidget(self.heading)
+        vbox.addLayout(hbox)
+
+        vbox.addLayout(newline(self))
+
+        self.recordings = ['CD: enkel', 'Vinyl: LP 2 van 2', 'Banshee Music Player']
+        self.recwins = []
+
+        frm = qtw.QFrame(self)
+        self.vbox2 = qtw.QVBoxLayout()
+        for opnindex, opname in enumerate(self.recordings):
+            hbox = qtw.QHBoxLayout()
+            hbox.addWidget(qtw.QLabel('{:>8}.'.format(opnindex + 1), self))
+            win = qtw.QLineEdit(opname, self)
+            self.recwins.append(win)
+            hbox.addWidget(win)
+            hbox.addStretch()
+            self.vbox2.addLayout(hbox)
+        frm.setLayout(self.vbox2)
+        scrl = qtw.QScrollArea()
+        scrl.setWidget(frm)
+        vbox.addWidget(scrl)
+
+        hbox = qtw.QHBoxLayout()
+        self.add_new = qtw.QPushButton('Nieuwe opname', self)
+        self.add_new.clicked.connect(self.add_new_track)
+        hbox.addWidget(self.add_new)
+        hbox.addStretch()
+        vbox.addLayout(hbox)
+
+        vbox.addLayout(newline(self))
+
+        vbox.addLayout(button_strip(self, 'Cancel', 'Go', 'GoBack', 'Select',
+            'Start'))
+
+        vbox.addLayout(exitbutton(self, self.exit))
+
+        self.setLayout(vbox)
+
+    def refresh_screen(self):
+        soort = {'studio': 'albums', 'live': 'concerten'}
+        self.albumnaam = ('Worstenbroodje & Co - Overal en Nergens (Zultkop records,'
+            ' het jaar 0)')
+        self.heading.setText('Gegevens van {} {}'.format(
+            soort[self.parent().albumtype], self.albumnaam))
+
+    def add_new_track(self):
+        hbox = qtw.QHBoxLayout()
+        hbox.addWidget(qtw.QLabel('    ', self))
+        win = qtw.QLineEdit(self)
+        self.recwins.append(win)
+        hbox.addWidget(win)
+        ## hbox.addStretch()
+        self.vbox2.addLayout(hbox)
+
+    def submit(self):
+        """neem de waarden van de invulvelden over en geef ze door aan de database
+        """
+
+    def submit_and_back(self):
+        self.submit()
+        self.parent().do_detail()
+
+    def exit(self, *args):
+        self.parent().close()
 
 class Artists(qtw.QWidget):
 
-    def __init__(self, albumtype='studio', search=2, search_for=5, sort=2):
-        super().__init__()
+    def __init__(self, parent):
+        super().__init__(parent)
 
     def create_widgets(self):
+
+        vbox = qtw.QVBoxLayout()
+        ## self.vbox2 = qtw.QVBoxLayout()
+        self.heading = qtw.QLabel('Artiestenlijst', self)
+        hbox = qtw.QHBoxLayout()
+        hbox.addWidget(self.heading)
+        vbox.addLayout(hbox)
+        vbox.addLayout(newline(self))
+
+        self.frm = qtw.QFrame(self)
+        self.vbox2 = qtw.QVBoxLayout()
+        for item in get_artist_list():
+            hbox = qtw.QHBoxLayout()
+            hbox.addWidget(qtw.QLabel('{:>3}.'.format(item['id']), self))
+            win = qtw.QLineEdit(item["first_name"], self)
+            hbox.addWidget(win)
+            win = qtw.QLineEdit(item["last_name"], self)
+            win.setMaximumWidth(200)
+            win.setMinimumWidth(200)
+            hbox.addWidget(win)
+            self.vbox2.addLayout(hbox)
+        self.frm.setLayout(self.vbox2)
+        scrl = qtw.QScrollArea()
+        scrl.setWidget(self.frm)
+        vbox.addWidget(scrl)
+
+        vbox.addLayout(button_strip(self, 'Edit', 'New', 'Start'))
+        vbox.addLayout(exitbutton(self, self.exit))
+
+        self.setLayout(vbox)
+
+    def refresh_screen(self):
         pass
+        ## del self.vbox2
+        ## self.vbox2 = qtw.QVBoxLayout()
+        ## for item in get_artist_list():
+            ## hbox = qtw.QHBoxLayout()
+            ## hbox.addWidget(qtw.QLabel('{:>3}.'.format(item['id']), self))
+            ## win = qtw.QLineEdit(item["first_name"], self)
+            ## hbox.addWidget(win)
+            ## win = qtw.QLineEdit(item["last_name"], self)
+            ## win.setMaximumWidth(200)
+            ## win.setMinimumWidth(200)
+            ## hbox.addWidget(win)
+            ## self.vbox2.addLayout(hbox)
+        ## self.frm.setLayout(self.vbox2)
+
+    def submit(self):
+        """neem de waarden van de invulvelden over en geef ze door aan de database
+        """
+
+    def new(self):
+        """open dialog to add new artist
+        """
+        if NewArtistDialog(self).exec_() == qtw.QDialog.Accepted:
+            self.refresh_screen()
 
     def exit(self, *args):
-        self.close()
+        self.parent().close()
+
+class MainFrame(qtw.QMainWindow):
+    """Het idee hierachter is om bij elke schermwijziging
+    het centralwidget opnieuw in te stellen
+    """
+    def __init__(self, parent):
+        super().__init__()
+        self.albumtype = ''
+        self.searchtype = 1
+        self.artistid = 0
+        self.search_arg = ''
+        self.sorttype = 1
+        self.end = False
+        self.move(300, 50)
+        self.resize(400, 600)
+        ## self.start = self.select = self.detail = self.artists = None
+        ## self.edit_det = self.edit_trk = self.edit_rec = None
+
+    def do_start(self):
+        go = Start(self)
+        go.create_widgets()
+        go.refresh_screen()
+        ## go.show()
+        self.setCentralWidget(go)
+
+    def do_select(self):
+        if self.albumtype == 'artist':
+            go = Artists(self)
+        else:
+            go = Select(self)
+        go.create_widgets()
+        go.refresh_screen()
+        ## go.show()
+        self.setCentralWidget(go)
+
+    def do_new(self, keep_sel=False):
+        if self.albumtype == 'artist':
+            if NewArtistDialog(self).exec_() == qtw.QDialog.Accepted:
+                self.do_select()
+        else:
+            self.do_edit_alg(new=True, keep_sel=keep_sel)
+
+    def do_detail(self):
+        if self.albumtype == 'artist':
+            go = Artists(self)
+        else:
+            go = Detail(self)
+        go.create_widgets()
+        go.select_data()
+        go.refresh_screen()
+        ## go.show()
+        self.setCentralWidget(go)
+
+    def do_edit_alg(self, new=False, keep_sel=False):
+        go = EditDetails(self)
+        go.create_widgets()
+        if new:
+            go.new_data(keep_sel)
+        ## go.select_data()
+        go.refresh_screen()
+        ## go.show()
+        self.setCentralWidget(go)
+
+    def do_edit_trk(self):
+        go = EditTracks(self)
+        go.create_widgets()
+        ## go.select_data()
+        go.refresh_screen()
+        ## go.show()
+        self.setCentralWidget(go)
+
+    def do_edit_rec(self):
+        go = EditRecordings(self)
+        go.create_widgets()
+        ## go.select_data()
+        go.refresh_screen()
+        ## go.show()
+        self.setCentralWidget(go)
 
 app = qtw.QApplication(sys.argv)
-main = Start()
-## main = Select()
-## main = Detail()
-main.create_widgets()
-main.refresh_screen()
+main = MainFrame(None)
 main.show()
+main.do_start()
 sys.exit(app.exec_())
 

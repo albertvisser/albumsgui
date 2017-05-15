@@ -19,6 +19,43 @@ def list_albums(db, artist_id):
     return execute_query(db, "select id, name from muziek_album "
         "where artist_id = {}".format(artist_id))
 
+def list_albums_by_artist(db, albumtype, artist_id, order_by):
+    if albumtype == 'studio':
+        seltxt = "label != ''"
+        sort = {'Uitvoerende': 'order by artist_id',
+            'Titel': 'order by name',
+            'Jaar': 'order by release_year',
+            'Niets': ''}[order_by]
+    elif albumtype == 'live':
+        seltxt = "label = ''"
+        sort = {'Uitvoerende': 'order by artist_id',
+            'Locatie': 'order by name',
+            'Datum': 'order by substr(naam, len(naam)-4)',
+            'Niets': ''}[order_by]
+    return execute_query(db, "select id, name from muziek_album "
+        "where artist_id = {} and {} {}".format(artist_id, seltxt, sort))
+
+def list_albums_by_search(db, albumtype, search_type, search_for, order_by):
+    if albumtype == 'studio':
+        seltxt = "label != ''"
+        sort = {'Uitvoerende': 'order by artist_id',
+            'Titel': 'order by name',
+            'Jaar': 'order by release_year',
+            'Niets': ''}[order_by]
+    elif albumtype == 'live':
+        seltxt = "label = ''"
+        sort = {'Uitvoerende': 'order by artist_id',
+            'Locatie': 'order by name',
+            'Datum': 'order by substr(naam, len(naam)-4)',
+            'Niets': ''}[order_by]
+    if search_type == '*':
+        colsel = ''
+    else:
+        colsel = 'and {} like "%{}%"'.format(search_type, search_for)
+    return execute_query(db, "select id, name from muziek_album "
+        "where {} {} {}".format(seltxt, colsel, sort))
+
+
 def list_tracks(db, album_id):
     return execute_query(db, "select volgnr, name from muziek_song inner join "
         "muziek_album_tracks on muziek_song.id = muziek_album_tracks.song_id "
