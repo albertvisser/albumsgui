@@ -153,7 +153,8 @@ class MainWidget(qtw.QWidget):
         self.close()
 
 
-app = qtw.QApplication(sys.argv)
-win = MainWidget()
-sys.exit(app.exec_())
+def main():
+    app = qtw.QApplication(sys.argv)
+    win = MainWidget()
+    sys.exit(app.exec_())
 
