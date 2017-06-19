@@ -6,6 +6,7 @@ import PyQt5.QtCore as core
 import albums_dml as dmla
 import banshee_dml as dmlb
 import clementine_dml as dmlc
+import cddb_dml as dmld
 import banshee_settings as config
 
 class MainWidget(qtw.QWidget):
@@ -13,7 +14,7 @@ class MainWidget(qtw.QWidget):
     def __init__(self):
 
         super().__init__()
-        self.dbnames = sorted([x for x in config.databases])
+        self.dbnames = sorted([x for x in config.databases], key=lambda x: x.lower())
         self.initializing = True
         self.create_widgets()
         self.initializing = False
@@ -97,6 +98,9 @@ class MainWidget(qtw.QWidget):
         elif self.dbname == 'clementine':
             data = dmlc.list_artists(self.db)
             self.artist_ids = self.artist_names = [x["artist"] for x in data]
+        elif self.dbname == 'CDDB':
+            self.db = dmld.CDDBData(self.db)
+            self.artist_ids = self.artist_names = sorted(self.db.list_artists())
         self.initializing = True
         self.ask_artist.clear()
         self.ask_artist.addItems([''] + self.artist_names)
@@ -122,6 +126,11 @@ class MainWidget(qtw.QWidget):
             self.artist = self.artist_ids[index - 1]
             data = dmlc.list_albums(self.db, self.artist)
             self.album_ids = self.album_names = [x["album"] for x in data]
+        elif self.dbname == 'CDDB':
+            self.artist = self.artist_ids[index - 1]
+            data = self.db.list_albums(self.artist)
+            self.album_ids = [x[0] for x in data]
+            self.album_names = [x[1] for x in data]
         self.initializing = True
         self.ask_album.clear()
         self.ask_album.addItems([''] + self.album_names)
@@ -145,6 +154,12 @@ class MainWidget(qtw.QWidget):
         elif self.dbname == 'clementine':
             data = dmlc.list_tracks(self.db, self.artist, self.album_ids[index - 1])
             self.trackids = self.tracknames = [x["title"] for x in data]
+        elif self.dbname == 'CDDB':
+            data = self.db.list_tracks(self.album_ids[index - 1])
+            self.trackids, self.tracknames = [], []
+            for x, y in enumerate(data):
+                self.trackids.append(x)
+                self.tracknames.append(y)
         self.tracks_list.clear()
         self.tracks_list.addItems(self.tracknames)
 
