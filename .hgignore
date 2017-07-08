@@ -1,3 +1,6 @@
 syntax: glob
 
+oude data*
+cddb*
+CDDB*
 *.pyc
