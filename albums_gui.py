@@ -92,35 +92,43 @@ def get_albums_by_text(albumtype, search_type, search_for, sort_on):
 def get_album(album_id, albumtype):
     """get the selected album's data
     """
-    data = dmla.list_album_details(dmla.db, album_id)
-    result = {'titel': data['name'],
-              'artist': ' '.join((data['first_name'], data['last_name'])).strip()}
-    text = data['label']
-    if data['release_year']:
+    ## if album_id:
+    test = dmla.list_album_details(dmla.db, album_id)
+    data = test[0] if test else {}
+    result = {'titel': data.get('name', ''),
+              'artist': ' '.join((data.get('first_name', ''),
+                                  data.get('last_name', ''))).strip()}
+    text = data.get('label', '')
+    if data.get('release_year', ''):
         if text:
             text += ', '
         text += str(data['release_year'])
     result['details'] = [
         ('Label/jaar:', text),
-        ('Produced by:', data['produced_by']),
-        ('Credits:', data['credits']),
-        ('Bezetting:', data['bezetting']),
-        ('Tevens met:', data['additional'])]
+        ('Produced by:', data.get('produced_by', '')),
+        ('Credits:', data.get('credits', '')),
+        ('Bezetting:', data.get('bezetting', '')),
+        ('Tevens met:', data.get('additional', ''))]
     if albumtype == 'live':
         result['details'].pop(0)
-    result['tracks'] = [(x["volgnr"], x["name"], x["written_by"], x["credits"])
-                        for x in dmla.list_tracks(dmla.db, album_id)]
-    result['opnames'] = [(x["type"], x["oms"])
-                         for x in dmla.list_recordings(dmla.db, album_id)]
-
+    if data:
+        result['tracks'] = [(x["volgnr"], x["name"], x["written_by"], x["credits"])
+                            for x in dmla.list_tracks(dmla.db, album_id)]
+        result['opnames'] = [(x["type"], x["oms"])
+                             for x in dmla.list_recordings(dmla.db, album_id)]
+    else:
+        result['tracks'], result['opnames'] = [], []
     return result
 
 
 def build_heading(win):
-    return 'Gegevens van {} {} - {}'.format(
-            TYPETXT[win.parent().albumtype],
-            win.parent().albumdata['artist'],
-            win.parent().albumdata['titel'])
+    if not win.parent().albumdata['artist'] or not win.parent().albumdata['titel']:
+        text = 'Opvoeren nieuw {}'.format(TYPETXT[win.parent().albumtype])
+    else:
+        text = 'Gegevens van {} {} - {}'.format(TYPETXT[win.parent().albumtype],
+                                                win.parent().albumdata['artist'],
+                                                win.parent().albumdata['titel'])
+    return text
 
 
 def newline(parent):
@@ -447,25 +455,28 @@ class Select(qtw.QWidget):
         hbox.addWidget(self.heading)
         vbox.addLayout(hbox)
 
-        hbox = qtw.QHBoxLayout()
-        # TODO: variabel maken m.b.t. zoeken op tekst (dan tekstvak ipv combobox)
-        hbox.addWidget(qtw.QLabel('Snel naar dezelfde selectie voor een andere '
-            'artiest:', self))
-        self.ask_artist = qtw.QComboBox(self)
-        self.ask_artist.addItem('--- Maak een selectie ---')
-        self.ask_artist.addItems(get_all_artists()[0])
-        self.ask_artist.setMaximumWidth(200)
-        self.ask_artist.setMinimumWidth(200)
-        hbox.addWidget(self.ask_artist)
-        self.change_artist = qtw.QPushButton('Go', self)
-        self.change_artist.setMaximumWidth(40)
-        self.change_artist.clicked.connect(self.other_artist)
-        hbox.addWidget(self.change_artist)
-        hbox.addStretch()
-        vbox.addLayout(hbox)
+        labeltxt = 'naar een soortgelijke selectie voor '
+        if self.parent().searchtype:
+            hbox = qtw.QHBoxLayout()
+            # TODO: variabel maken m.b.t. zoeken op tekst (dan tekstvak ipv combobox)
+            hbox.addWidget(qtw.QLabel('Snel naar dezelfde selectie voor een andere '
+                'artiest:', self))
+            self.ask_artist = qtw.QComboBox(self)
+            self.ask_artist.addItem('--- Maak een selectie ---')
+            self.ask_artist.addItems(get_all_artists()[0])
+            self.ask_artist.setMaximumWidth(200)
+            self.ask_artist.setMinimumWidth(200)
+            hbox.addWidget(self.ask_artist)
+            self.change_artist = qtw.QPushButton('Go', self)
+            self.change_artist.setMaximumWidth(40)
+            self.change_artist.clicked.connect(self.other_artist)
+            hbox.addWidget(self.change_artist)
+            hbox.addStretch()
+            vbox.addLayout(hbox)
+            labeltxt = 'of ' + labeltxt
 
         hbox = qtw.QHBoxLayout()
-        hbox.addWidget(qtw.QLabel('of naar een soortgelijke selectie voor ', self))
+        hbox.addWidget(qtw.QLabel(labeltxt, self))
         self.change_type = qtw.QPushButton('', self)
         self.change_type.clicked.connect(self.other_albumtype)
         hbox.addWidget(self.change_type)
@@ -481,15 +492,6 @@ class Select(qtw.QWidget):
         hbox.addStretch()
         vbox.addLayout(hbox)
 
-        if self.parent().searchtype == 1:
-            self.parent().album_artists = []
-            self.parent().album_names, self.parent().album_ids = get_albums_by_artist(
-                self.parent().albumtype, self.parent().artistid,
-                self.parent().sorttype)
-        else:
-            self.parent().album_artists, self.parent().album_names, self.parent().album_ids = get_albums_by_text(
-                self.parent().albumtype, self.parent().searchtype,
-                self.parent().search_arg, self.parent().sorttype)
         self.go_buttons = []
         self.frm = qtw.QFrame(self)
         vbox2 = qtw.QVBoxLayout()
@@ -568,12 +570,21 @@ class Select(qtw.QWidget):
     def other_artist(self, *args):
         """read self.ask_artist for artist and change self.parent().artistid
         """
-        self.parent().do_select()
+        test = self.ask_artist.currentIndex() + 1
+        if test:
+            self.parent().search_arg = test
+            if self.parent().searchtype == 1:
+                self.parent().artistid = test
+            self.parent().do_select()
 
     def other_albumtype(self, *args):
         """determine other type of selection and change accordingly, also change
         self.parent().albumtype
         """
+        if self.parent().albumtype == 'studio':
+            self.parent().albumtype = 'live'
+        else:
+            self.parent().albumtype = 'studio'
         self.parent().do_select()
 
     def todetail(self, *args):
@@ -610,8 +621,6 @@ class Detail(qtw.QWidget):
     def create_widgets(self):
         """setup screen
         """
-        self.parent().albumdata = get_album(self.parent().albumid,
-                                            self.parent().albumtype)
         gbox = qtw.QGridLayout()
         row = 0
         ## row += 1
@@ -636,6 +645,7 @@ class Detail(qtw.QWidget):
         hbox.addWidget(self.ask_album)
         self.change_album = qtw.QPushButton('Go', self)
         self.change_album.setMaximumWidth(40)
+        self.change_album.clicked.connect(self.other_album)
         hbox.addWidget(self.change_album)
         hbox.addStretch()
         gbox.addLayout(hbox, row, 0, 1, 3)
@@ -685,7 +695,6 @@ class Detail(qtw.QWidget):
         gbox.addLayout(hbox, row, 0, 1, 3)
 
         self.trackwins = []
-        ## self.edit_trk = False
 
         row += 1
         frm = qtw.QFrame(self)
@@ -718,7 +727,6 @@ class Detail(qtw.QWidget):
         gbox.addLayout(hbox, row, 0, 1, 3)
 
         self.recwins = []
-        ## self.edit_rec = False
 
         row += 1
         frm = qtw.QFrame(self)
@@ -754,6 +762,12 @@ class Detail(qtw.QWidget):
             TYPETXT[self.parent().albumtype]))
         self.subheading.setText("{}gegevens:".format(
             TYPETXT[self.parent().albumtype].title()))
+
+    def other_album(self):
+        test = self.ask_album.currentIndex()
+        if test:
+            self.parent().albumid = self.parent().album_ids[test - 1]
+        self.parent().do_detail()
 
     def edit_alg(self):
         self.parent().do_edit_alg()
@@ -816,7 +830,8 @@ class EditDetails(qtw.QWidget):
                 win.addItem('--- Maak een selectie ---')
                 listdata = get_all_artists()[0]
                 win.addItems(listdata)
-                win.setCurrentIndex(listdata.index(text) + 1)
+                if text:
+                    win.setCurrentIndex(listdata.index(text) + 1)
                 ## win.setMaximumWidth(200)
                 ## win.setMinimumWidth(200)
             elif caption in ('Credits:', 'Bezetting:', 'Tevens met:'):
@@ -826,16 +841,21 @@ class EditDetails(qtw.QWidget):
             self.detailwins.append(win)
             gbox.addWidget(win, row, 1, 1, 2)
 
-        row+= 1
+        row += 1
         vbox = qtw.QVBoxLayout()
         vbox.addStretch()
         gbox.addLayout(vbox, row, 0, 1, 3)
 
-        row+= 1
-        gbox.addLayout(button_strip(self, 'Cancel', 'Go', 'GoBack', 'Select',
-            'Start'), row, 0, 1, 3)
+        row += 1
+        buttons = ['Cancel', 'Go', 'GoBack', 'Select', 'Start']
+        if not self.parent().albumid:
+            buttons.remove('Cancel')
+            if not self.parent().search_arg:
+                buttons.remove('Select')
+        print(buttons)
+        gbox.addLayout(button_strip(self, *buttons), row, 0, 1, 3)
 
-        row+= 1
+        row += 1
         gbox.addLayout(exitbutton(self, self.exit), row, 0, 1, 3)
 
         self.setLayout(gbox)
@@ -1183,18 +1203,16 @@ class MainFrame(qtw.QMainWindow):
     def __init__(self, parent):
         super().__init__()
         self.albumtype = ''
-        self.searchtype = 1
+        self.searchtype = 0 # TODO: default zou 1 moeten zij maar dan ook tonen
         self.artistid = 0
         self.search_arg = ''
-        self.sorttype = 1
+        self.sorttype = ''
         self.album_artists, self.album_names, self.album_ids = [], [], []
         self.albumid = 0
         self.albumdata = {}
         self.end = False
         self.move(300, 50)
         self.resize(400, 600)
-        ## self.start = self.select = self.detail = self.artists = None
-        ## self.edit_det = self.edit_trk = self.edit_rec = None
         self.windows = []
 
     def do_start(self):
@@ -1213,8 +1231,16 @@ class MainFrame(qtw.QMainWindow):
         if self.albumtype == 'artist':
             go = Artists(self)
         else:
+            if self.searchtype == 1:
+                self.album_artists = []
+                self.album_names, self.album_ids = get_albums_by_artist(
+                    self.albumtype, self.artistid, self.sorttype)
+            else:
+                self.album_artists, self.album_names, self.album_ids = get_albums_by_text(
+                    self.albumtype, self.searchtype, self.search_arg, self.sorttype)
             go = Select(self)
         self.windows.append(go)
+        print(self.album_names)
         go.create_widgets()
         go.refresh_screen()
         ## go.show()
@@ -1227,8 +1253,8 @@ class MainFrame(qtw.QMainWindow):
             if NewArtistDialog(self).exec_() == qtw.QDialog.Accepted:
                 self.do_select()
         else:
+            self.albumdata = get_album(0, self.albumtype)
             self.do_edit_alg(new=True, keep_sel=keep_sel)
-            self.windows.append(go)
 
     def do_detail(self):
         """show albums details
@@ -1236,6 +1262,7 @@ class MainFrame(qtw.QMainWindow):
         if self.albumtype == 'artist':
             go = Artists(self)
         else:
+            self.albumdata = get_album(self.albumid, self.albumtype)
             go = Detail(self)
         self.windows.append(go)
         go.create_widgets()

@@ -35,6 +35,8 @@ def list_albums(db, artist_id):
 def list_albums_by_artist(db, albumtype, artist_id, order_by):
     seltxt = SEL[albumtype]
     sort = ORDER[order_by] if order_by != 'Uitvoerende' else ''
+    print("select id, name from muziek_album "
+        "where artist_id = {} and {} {}".format(artist_id, seltxt, sort))
     return execute_query(db, "select id, name from muziek_album "
         "where artist_id = {} and {} {}".format(artist_id, seltxt, sort))
 
@@ -47,9 +49,9 @@ def list_albums_by_search(db, albumtype, search_type, search_for, order_by):
         colsel = ''
     else:
         colsel = 'and {} like "%{}%"'.format(search_type, search_for)
-    print('select muziek_album.id, name, first_name, last_name '
-        'from muziek_album inner join muziek_act on muziek_album.artist_id = '
-        'muziek_act.id where {} {} {}'.format(seltxt, colsel, sort))
+    ## print('select muziek_album.id, name, first_name, last_name '
+        ## 'from muziek_album inner join muziek_act on muziek_album.artist_id = '
+        ## 'muziek_act.id where {} {} {}'.format(seltxt, colsel, sort))
     return execute_query(db, 'select muziek_album.id, name, first_name, last_name '
         'from muziek_album inner join muziek_act on muziek_album.artist_id = '
         'muziek_act.id where {} {} {}'.format(seltxt, colsel, sort))
@@ -58,7 +60,7 @@ def list_albums_by_search(db, albumtype, search_type, search_for, order_by):
 def list_album_details(db, album_id):
     return execute_query(db, 'select * from muziek_album '
         'inner join muziek_act on muziek_album.artist_id = muziek_act.id '
-        'where muziek_album.id = {}'.format(album_id))[0]
+        'where muziek_album.id = {}'.format(album_id))
 
 
 def list_tracks(db, album_id):
