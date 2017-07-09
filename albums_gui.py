@@ -32,7 +32,18 @@ SORTTXT = {
 SORTCOL = {
     'studio': ['', 'artist', 'titel', 'jaar'],
     'live': ['',  'artist', 'locatie', 'datum']}
-
+RECTYPES = (
+    'Cassette',
+    'CD: Enkel',
+    'CD: Dubbel',
+    'Vinyl: 1LP',
+    'Vinyl: 2LP',
+    'Vinyl: 3LP',
+    'Vinyl: single',
+    'Vinyl: 12" single',
+    'Tape',
+    'MP3 directory',
+    'Banshee music player',)
 
 def get_artist_list():
     """get artist data from the database
@@ -81,7 +92,6 @@ def get_album(album_id, albumtype):
     """get the selected album's data
     """
     data = dmla.list_album_details(dmla.db, album_id)
-    print(data)
     result = {'titel': data['name'],
               'artist': ' '.join((data['first_name'], data['last_name'])).strip()}
     ## result['Label/jaar:'] = ', '.join((data['label'], data['release_year']))
@@ -592,7 +602,8 @@ class Detail(qtw.QWidget):
     def create_widgets(self):
         """setup screen
         """
-        self.albumdata = get_album(self.parent().albumid, self.parent().albumtype)
+        self.parent().albumdata = get_album(self.parent().albumid,
+                                            self.parent().albumtype)
         gbox = qtw.QGridLayout()
         row = 0
         ## row += 1
@@ -640,7 +651,7 @@ class Detail(qtw.QWidget):
         gbox2 = qtw.QGridLayout()
         row2 = -1
         ## for num, title in enumerate(self.det_captions[self.parent().albumtype]):
-        for caption, text in self.albumdata['details']:
+        for caption, text in self.parent().albumdata['details']:
             row2 += 1
             hbox = qtw.QHBoxLayout()
             hbox.addSpacing(20)
@@ -674,7 +685,7 @@ class Detail(qtw.QWidget):
         row += 1
         frm = qtw.QFrame(self)
         vbox2 = qtw.QVBoxLayout()
-        for trackname, trackindex in self.albumdata['tracks']:
+        for trackname, trackindex in self.parent().albumdata['tracks']:
             hbox = qtw.QHBoxLayout()
             hbox.addWidget(qtw.QLabel('{:>8}.'.format(trackindex), self))
             win = qtw.QLabel(trackname, self)
@@ -704,7 +715,7 @@ class Detail(qtw.QWidget):
         row += 1
         frm = qtw.QFrame(self)
         vbox2 = qtw.QVBoxLayout()
-        for opnindex, opname in enumerate(self.albumdata['opnames']):
+        for opnindex, opname in enumerate(self.parent().albumdata['opnames']):
             hbox = qtw.QHBoxLayout()
             hbox.addWidget(qtw.QLabel('{:>8}.'.format(opnindex + 1), self))
             win = qtw.QLabel(' '.join(opname), self)
@@ -732,8 +743,8 @@ class Detail(qtw.QWidget):
         """
         soort = {'studio': 'album', 'live': 'concert'}
         self.heading.setText('Gegevens van {} {} - {}'.format(
-            soort[self.parent().albumtype], self.albumdata['artist'],
-            self.albumdata['titel']))
+            soort[self.parent().albumtype], self.parent().albumdata['artist'],
+            self.parent().albumdata['titel']))
         self.quickchange.setText('Snel naar een ander {} in deze selectie:'.format(
             soort[self.parent().albumtype]))
         self.subheading.setText("{}gegevens:".format(
@@ -785,11 +796,11 @@ class EditDetails(qtw.QWidget):
     def __init__(self, parent):
 
         super().__init__(parent)
-        self.det_captions = {
-            'studio': ['Uitvoerende:', 'Albumtitel:', 'Label:',
-                'Jaar:', 'Produced by:', 'Credits:', 'Bezetting:', 'Tevens met:'],
-            'live': ['Uitvoerende:', 'Locatie:', 'Datum:', 'Produced by:',
-                'Credits:', 'Bezetting:', 'Tevens met:']}
+        ## self.det_captions = {
+            ## 'studio': ['Uitvoerende:', 'Albumtitel:', 'Label:',
+                ## 'Jaar:', 'Produced by:', 'Credits:', 'Bezetting:', 'Tevens met:'],
+            ## 'live': ['Uitvoerende:', 'Locatie:', 'Datum:', 'Produced by:',
+                ## 'Credits:', 'Bezetting:', 'Tevens met:']}
         ## self.det_captions = ['Label/jaar:', 'Produced by:', 'Credits:',
             ## 'Bezetting:', 'Tevens met:']
 
@@ -807,33 +818,40 @@ class EditDetails(qtw.QWidget):
         row += 1
         gbox.addLayout(newline(self), row, 0, 1, 3)
 
-        self.details = ['Worstenbroodje & Co', 'Overal en Nergens',
-            'Zultkop records', 'het jaar 0', 'Hendrikus Jansonius',
-            '', 'Alle instrumenten bespeeld als door een wonder','']
+        ## self.details = ['Worstenbroodje & Co', 'Overal en Nergens',
+            ## 'Zultkop records', 'het jaar 0', 'Hendrikus Jansonius',
+            ## '', 'Alle instrumenten bespeeld als door een wonder','']
         self.detailwins = []
 
-        for num, title in enumerate(self.det_captions[self.parent().albumtype]):
+        data = [('Uitvoerende:', self.parent().albumdata['artist']),
+                ('Albumtitel:', self.parent().albumdata['titel'])]
+        if self.parent().albumtype == 'live':
+            data[1][0] = 'Locatie/datum:'
+        data += self.parent().albumdata['details']
+        for caption, text in data:
             row += 1
             hbox = qtw.QHBoxLayout()
             hbox.addSpacing(20)
-            if title in ('Credits:', 'Bezetting:', 'Tevens met:'):
+            if caption in ('Credits:', 'Bezetting:', 'Tevens met:'):
                 vbox = qtw.QVBoxLayout()
-                vbox.addWidget(qtw.QLabel(title, self))
+                vbox.addWidget(qtw.QLabel(caption, self))
                 vbox.addStretch()
                 hbox.addLayout(vbox)
             else:
-                hbox.addWidget(qtw.QLabel(title, self))
+                hbox.addWidget(qtw.QLabel(caption, self))
             gbox.addLayout(hbox, row, 0, 1, 1)
-            if title == 'Uitvoerende:':
+            if caption == 'Uitvoerende:':
                 win = qtw.QComboBox(self)
                 win.addItem('--- Maak een selectie ---')
-                win.addItems(get_all_artists()[0])
+                listdata = get_all_artists()[0]
+                win.addItems(listdata)
+                win.setCurrentIndex(listdata.index(text) + 1)
                 ## win.setMaximumWidth(200)
                 ## win.setMinimumWidth(200)
-            elif title in ('Credits:', 'Bezetting:', 'Tevens met:'):
-                win = qtw.QTextEdit(self.details[num], self)
+            elif caption in ('Credits:', 'Bezetting:', 'Tevens met:'):
+                win = qtw.QTextEdit(text, self)
             else:
-                win = qtw.QLineEdit(self.details[num], self)
+                win = qtw.QLineEdit(text, self)
             self.detailwins.append(win)
             gbox.addWidget(win, row, 1, 1, 2)
 
@@ -919,16 +937,18 @@ class EditTracks(qtw.QWidget):
 
         row += 1
         vbox.addLayout(newline(self))
-        self.tracknames = ['Morgen ben ik de bruid', 'Niemand de deur uit',
-            'Worstenbroodje en Uitknijpfruit', 'Sluitingstijd']
+        ## self.tracknames = ['Morgen ben ik de bruid', 'Niemand de deur uit',
+            ## 'Worstenbroodje en Uitknijpfruit', 'Sluitingstijd']
         self.trackwins = []
 
         frm = qtw.QFrame(self)
         self.vbox2 = qtw.QVBoxLayout()
-        for trackindex, trackname in enumerate(self.tracknames):
+        for trackname, trackindex in self.parent().albumdata['tracks']:
             hbox = qtw.QHBoxLayout()
-            hbox.addWidget(qtw.QLabel('{:>8}.'.format(trackindex + 1), self))
+            hbox.addWidget(qtw.QLabel('{:>8}.'.format(trackindex), self))
             win = qtw.QLineEdit(trackname, self)
+            win.setMaximumWidth(300)
+            win.setMinimumWidth(300)
             self.trackwins.append(win)
             hbox.addWidget(win)
             ## hbox.addStretch()
@@ -1006,15 +1026,24 @@ class EditRecordings(qtw.QWidget):
 
         vbox.addLayout(newline(self))
 
-        self.recordings = ['CD: enkel', 'Vinyl: LP 2 van 2', 'Banshee Music Player']
+        ## self.recordings = ['CD: enkel', 'Vinyl: LP 2 van 2', 'Banshee Music Player']
         self.recwins = []
 
         frm = qtw.QFrame(self)
         self.vbox2 = qtw.QVBoxLayout()
-        for opnindex, opname in enumerate(self.recordings):
+        for opnindex, opname in enumerate(self.parent().albumdata['opnames']):
+            opnsoort, opntext = opname
             hbox = qtw.QHBoxLayout()
             hbox.addWidget(qtw.QLabel('{:>8}.'.format(opnindex + 1), self))
-            win = qtw.QLineEdit(opname, self)
+            win = qtw.QComboBox(self)
+            win.addItem('--- Maak een selectie ---')
+            win.addItems(RECTYPES)
+            win.setCurrentIndex(RECTYPES.index(opnsoort) + 1)
+            hbox.addWidget(win)
+
+            win = qtw.QLineEdit(opntext, self)
+            win.setMaximumWidth(200)
+            win.setMinimumWidth(200)
             self.recwins.append(win)
             hbox.addWidget(win)
             hbox.addStretch()
@@ -1186,6 +1215,7 @@ class MainFrame(qtw.QMainWindow):
         self.sorttype = 1
         self.album_artists, self.album_names, self.album_ids = [], [], []
         self.albumid = 0
+        self.albumdata = {}
         self.end = False
         self.move(300, 50)
         self.resize(400, 600)
