@@ -6,6 +6,7 @@ import PyQt5.QtWidgets as qtw
 import PyQt5.QtGui as gui
 import PyQt5.QtCore as core
 import albums_dml as dmla
+TYPETXT = {'studio': 'album', 'live': 'concert'}
 SELTXT = {
     'studio': [
             'Niet zoeken, alles tonen',
@@ -94,7 +95,6 @@ def get_album(album_id, albumtype):
     data = dmla.list_album_details(dmla.db, album_id)
     result = {'titel': data['name'],
               'artist': ' '.join((data['first_name'], data['last_name'])).strip()}
-    ## result['Label/jaar:'] = ', '.join((data['label'], data['release_year']))
     text = data['label']
     if data['release_year']:
         if text:
@@ -107,12 +107,20 @@ def get_album(album_id, albumtype):
         ('Bezetting:', data['bezetting']),
         ('Tevens met:', data['additional'])]
     if albumtype == 'live':
-        result['details'].pop(1)
-    data = dmla.list_tracks(dmla.db, album_id)
-    result['tracks'] = [(x["name"], x["volgnr"]) for x in data]
-    data = dmla.list_recordings(dmla.db, album_id)
-    result['opnames'] = [(x["type"], x["oms"]) for x in data]
+        result['details'].pop(0)
+    result['tracks'] = [(x["volgnr"], x["name"], x["written_by"], x["credits"])
+                        for x in dmla.list_tracks(dmla.db, album_id)]
+    result['opnames'] = [(x["type"], x["oms"])
+                         for x in dmla.list_recordings(dmla.db, album_id)]
+
     return result
+
+
+def build_heading(win):
+    return 'Gegevens van {} {} - {}'.format(
+            TYPETXT[win.parent().albumtype],
+            win.parent().albumdata['artist'],
+            win.parent().albumdata['titel'])
 
 
 def newline(parent):
@@ -650,15 +658,12 @@ class Detail(qtw.QWidget):
         frm = qtw.QFrame(self)
         gbox2 = qtw.QGridLayout()
         row2 = -1
-        ## for num, title in enumerate(self.det_captions[self.parent().albumtype]):
         for caption, text in self.parent().albumdata['details']:
             row2 += 1
             hbox = qtw.QHBoxLayout()
             hbox.addSpacing(20)
-            ## hbox.addWidget(qtw.QLabel(title, self))
             hbox.addWidget(qtw.QLabel(caption, self))
             gbox2.addLayout(hbox, row2, 0, 1, 1)
-            ## win = qtw.QLabel(self.details[num], self)
             win = qtw.QLabel(text, self)
             gbox2.addWidget(win, row2, 1, 1, 2)
         frm.setLayout(gbox2)
@@ -685,13 +690,16 @@ class Detail(qtw.QWidget):
         row += 1
         frm = qtw.QFrame(self)
         vbox2 = qtw.QVBoxLayout()
-        for trackname, trackindex in self.parent().albumdata['tracks']:
+        for trackindex, trackname, author, cred in self.parent().albumdata['tracks']:
             hbox = qtw.QHBoxLayout()
             hbox.addWidget(qtw.QLabel('{:>8}.'.format(trackindex), self))
-            win = qtw.QLabel(trackname, self)
+            tracktext = '{} ({})'.format(trackname, author) if author else trackname
+            win = qtw.QLabel(tracktext, self)
             hbox.addWidget(win)
             hbox.addStretch()
             vbox2.addLayout(hbox)
+            if cred:
+                vbox2.addWidget(qtw.QLabel(cred, self))
         frm.setLayout(vbox2)
         scrl = qtw.QScrollArea()
         scrl.setWidget(frm)
@@ -741,41 +749,11 @@ class Detail(qtw.QWidget):
     def refresh_screen(self):
         """bring screen up-to-date
         """
-        soort = {'studio': 'album', 'live': 'concert'}
-        self.heading.setText('Gegevens van {} {} - {}'.format(
-            soort[self.parent().albumtype], self.parent().albumdata['artist'],
-            self.parent().albumdata['titel']))
+        self.heading.setText(build_heading(self))
         self.quickchange.setText('Snel naar een ander {} in deze selectie:'.format(
-            soort[self.parent().albumtype]))
+            TYPETXT[self.parent().albumtype]))
         self.subheading.setText("{}gegevens:".format(
-            soort[self.parent().albumtype].title()))
-
-    ## def select_data(self):
-
-        ## self.albumnaam = ('Worstenbroodje & Co - Overal en Nergens (Zultkop records,'
-            ## ' het jaar 0)')
-        ## if self.parent().albumtype == 'studio':
-            ## self.details = collections.OrderedDict((
-                ## ('Label/jaar:', 'Capricorn, 1970'),
-                ## ('Produced by:', 'Tom Dowd'),
-                ## ('Credits:', ''),
-                ## ('Bezetting:', 'Duane Allman - guitars; '
-                    ## 'Gregg Allman - organ/vocals; Dicky Betts - guitar/vocals; '
-                    ## 'Berry Oakley - bass; Butch Trucks - drums;Jai Johnny Johanson '
-                    ## "('Jaimoe') - drums"),
-                ## ('Tevens met:', '')))
-        ## else:
-            ## self.details = collections.OrderedDict((
-                ## ('Produced by:', ''),
-                ## ('Credits:', ''),
-                ## ('Bezetting:', 'Richard Jobson - vocals, guitar; '
-                    ## 'Russell Webb - bass; John McGeoch - guitar; John Doyle - drums'),
-                ## ('Tevens met:', '')))
-        ## self.tracknames = ['Morgen ben ik de bruid', 'Niemand de deur uit',
-            ## 'Worstenbroodje en Uitknijpfruit', 'Sluitingstijd']
-        ## self.recordings = ['CD: enkel', 'Vinyl: LP 2 van 2', 'Banshee Music Player']
-        ## self.details = ['Nooit Meer Slapen Records, 1970', 'Hendrikus Jansonius',
-            ## '', 'Alle instrumenten bespeeld als door een wonder','']
+            TYPETXT[self.parent().albumtype].title()))
 
     def edit_alg(self):
         self.parent().do_edit_alg()
@@ -796,13 +774,6 @@ class EditDetails(qtw.QWidget):
     def __init__(self, parent):
 
         super().__init__(parent)
-        ## self.det_captions = {
-            ## 'studio': ['Uitvoerende:', 'Albumtitel:', 'Label:',
-                ## 'Jaar:', 'Produced by:', 'Credits:', 'Bezetting:', 'Tevens met:'],
-            ## 'live': ['Uitvoerende:', 'Locatie:', 'Datum:', 'Produced by:',
-                ## 'Credits:', 'Bezetting:', 'Tevens met:']}
-        ## self.det_captions = ['Label/jaar:', 'Produced by:', 'Credits:',
-            ## 'Bezetting:', 'Tevens met:']
 
     def create_widgets(self):
         """setup screen
@@ -824,7 +795,7 @@ class EditDetails(qtw.QWidget):
         self.detailwins = []
 
         data = [('Uitvoerende:', self.parent().albumdata['artist']),
-                ('Albumtitel:', self.parent().albumdata['titel'])]
+                ['Albumtitel:', self.parent().albumdata['titel']]]
         if self.parent().albumtype == 'live':
             data[1][0] = 'Locatie/datum:'
         data += self.parent().albumdata['details']
@@ -872,11 +843,7 @@ class EditDetails(qtw.QWidget):
     def refresh_screen(self):
         """bring screen up-to-date
         """
-        soort = {'studio': 'albums', 'live': 'concerten'}
-        self.albumnaam = ('Worstenbroodje & Co - Overal en Nergens (Zultkop records,'
-            ' het jaar 0)')
-        self.heading.setText('Gegevens van {} {}'.format(
-            soort[self.parent().albumtype], self.albumnaam))
+        self.heading.setText(build_heading(self))
 
     def new_data(self, keep_sel=False):
         self.albumnaam = ''
@@ -942,18 +909,33 @@ class EditTracks(qtw.QWidget):
         self.trackwins = []
 
         frm = qtw.QFrame(self)
-        self.vbox2 = qtw.QVBoxLayout()
-        for trackname, trackindex in self.parent().albumdata['tracks']:
+        gbox = qtw.QGridLayout()
+        line = 0
+        for trackindex, trackname, author, text in self.parent().albumdata['tracks']:
+            line += 1
+            gbox.addWidget(qtw.QLabel('{:>8}.'.format(trackindex), self), line, 0)
             hbox = qtw.QHBoxLayout()
-            hbox.addWidget(qtw.QLabel('{:>8}.'.format(trackindex), self))
             win = qtw.QLineEdit(trackname, self)
             win.setMaximumWidth(300)
             win.setMinimumWidth(300)
             self.trackwins.append(win)
             hbox.addWidget(win)
+            win = qtw.QLineEdit(author, self)
+            win.setMaximumWidth(200)
+            win.setMinimumWidth(200)
+            self.trackwins.append(win)
+            hbox.addWidget(win)
             ## hbox.addStretch()
-            self.vbox2.addLayout(hbox)
-        frm.setLayout(self.vbox2)
+            gbox.addLayout(hbox, line, 1)
+            line += 1
+            win = qtw.QTextEdit(text, self)
+            win.setMaximumWidth(508)
+            win.setMinimumWidth(508)
+            win.setMaximumHeight(38)
+            win.setMinimumHeight(38)
+            gbox.addWidget(win, line, 1)
+
+        frm.setLayout(gbox)
         scrl = qtw.QScrollArea()
         scrl.setWidget(frm)
         vbox.addWidget(scrl)
@@ -980,11 +962,7 @@ class EditTracks(qtw.QWidget):
     def refresh_screen(self):
         """bring screen up-to-date
         """
-        soort = {'studio': 'albums', 'live': 'concerten'}
-        self.albumnaam = ('Worstenbroodje & Co - Overal en Nergens (Zultkop records,'
-            ' het jaar 0)')
-        self.heading.setText('Gegevens van {} {}'.format(
-            soort[self.parent().albumtype], self.albumnaam))
+        self.heading.setText(build_heading(self))
 
     def add_new_item(self):
         hbox = qtw.QHBoxLayout()
@@ -1072,11 +1050,7 @@ class EditRecordings(qtw.QWidget):
     def refresh_screen(self):
         """bring screen up-to-date
         """
-        soort = {'studio': 'albums', 'live': 'concerten'}
-        self.albumnaam = ('Worstenbroodje & Co - Overal en Nergens (Zultkop records,'
-            ' het jaar 0)')
-        self.heading.setText('Gegevens van {} {}'.format(
-            soort[self.parent().albumtype], self.albumnaam))
+        self.heading.setText(build_heading(self))
 
     def add_new_item(self):
         hbox = qtw.QHBoxLayout()

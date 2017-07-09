@@ -62,7 +62,8 @@ def list_album_details(db, album_id):
 
 
 def list_tracks(db, album_id):
-    return execute_query(db, "select volgnr, name from muziek_song inner join "
+    return execute_query(
+        db, "select volgnr, name, written_by, credits from muziek_song inner join "
         "muziek_album_tracks on muziek_song.id = muziek_album_tracks.song_id "
         "where muziek_album_tracks.album_id = {} order by volgnr".format(album_id))
 
