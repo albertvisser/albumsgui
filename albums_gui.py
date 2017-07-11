@@ -363,9 +363,8 @@ class Start(qtw.QWidget):
     def refresh_screen(self):
         """bring screen up-to-date
         """
-        self.names, self.ids = get_all_artists()
-        self.ask_studio_artist.addItems(self.names)
-        self.ask_live_artist.addItems(self.names)
+        self.ask_studio_artist.addItems(self.parent().names)
+        self.ask_live_artist.addItems(self.parent().names)
         if self.parent().albumtype == 'studio':
             widgets = [self.ask_studio_search, self.ask_studio_artist,
                        self.studio_zoektekst, self.ask_studio_sort]
@@ -373,10 +372,16 @@ class Start(qtw.QWidget):
             widgets = [self.ask_live_search, self.ask_live_artist,
                        self.live_zoektekst, self.ask_live_sort]
         else:
+            # set defaults
+            self.ask_studio_search.setCurrentIndex(self.parent().searchtype)
+            self.ask_studio_sort.setCurrentIndex(3)
+            self.ask_live_search.setCurrentIndex(self.parent().searchtype)
+            self.ask_live_sort.setCurrentIndex(2)
             return
         widgets[0].setCurrentIndex(self.parent().searchtype)
         if self.parent().searchtype == 1:
-            widgets[1].setCurrentIndex(self.parent().artistid - 1)
+            chosen = self.parent().ids.index(self.parent().artistid)
+            widgets[1].setCurrentIndex(chosen + 1)
         if self.parent().searchtype < 2:
             widgets[2].clear()
         else:
@@ -389,7 +394,7 @@ class Start(qtw.QWidget):
         self.parent().searchtype = self.ask_studio_search.currentIndex()
         self.parent().sorttype = self.ask_studio_sort.currentText()
         chosen = self.ask_studio_artist.currentIndex()
-        self.parent().artistid = self.ids[chosen - 1]
+        self.parent().artistid = self.parent().ids[chosen - 1]
         self.parent().search_arg = self.studio_zoektekst.text()
         if self.parent().searchtype == 1:
             self.parent().search_arg = self.parent().artistid
@@ -408,7 +413,7 @@ class Start(qtw.QWidget):
         self.parent().searchtype = self.ask_live_search.currentIndex()
         self.parent().sorttype = self.ask_live_sort.currentText()
         chosen = self.ask_live_artist.currentIndex()
-        self.parent().artistid = self.ids[chosen - 1]
+        self.parent().artistid = self.parent().ids[chosen - 1]
         self.parent().search_arg = self.live_zoektekst.text()
         if self.parent().searchtype == 1:
             self.parent().search_arg = self.parent().artistid
@@ -570,11 +575,11 @@ class Select(qtw.QWidget):
     def other_artist(self, *args):
         """read self.ask_artist for artist and change self.parent().artistid
         """
-        test = self.ask_artist.currentIndex() + 1
-        if test:
-            self.parent().search_arg = test
+        chosen = self.ask_artist.currentIndex()
+        if chosen:
+            self.parent().search_arg = self.parent().ids[chosen - 1]
             if self.parent().searchtype == 1:
-                self.parent().artistid = test
+                self.parent().artistid = self.parent().search_arg
             self.parent().do_select()
 
     def other_albumtype(self, *args):
@@ -1203,10 +1208,11 @@ class MainFrame(qtw.QMainWindow):
     def __init__(self, parent):
         super().__init__()
         self.albumtype = ''
-        self.searchtype = 0 # TODO: default zou 1 moeten zij maar dan ook tonen
+        self.searchtype = 1
         self.artistid = 0
         self.search_arg = ''
         self.sorttype = ''
+        self.names, self.ids = get_all_artists()
         self.album_artists, self.album_names, self.album_ids = [], [], []
         self.albumid = 0
         self.albumdata = {}
@@ -1240,7 +1246,6 @@ class MainFrame(qtw.QMainWindow):
                     self.albumtype, self.searchtype, self.search_arg, self.sorttype)
             go = Select(self)
         self.windows.append(go)
-        print(self.album_names)
         go.create_widgets()
         go.refresh_screen()
         ## go.show()
@@ -1251,6 +1256,7 @@ class MainFrame(qtw.QMainWindow):
         """
         if self.albumtype == 'artist':
             if NewArtistDialog(self).exec_() == qtw.QDialog.Accepted:
+                self.names, self.ids = get_all_artists()
                 self.do_select()
         else:
             self.albumdata = get_album(0, self.albumtype)

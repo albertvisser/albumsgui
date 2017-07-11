@@ -35,8 +35,8 @@ def list_albums(db, artist_id):
 def list_albums_by_artist(db, albumtype, artist_id, order_by):
     seltxt = SEL[albumtype]
     sort = ORDER[order_by] if order_by != 'Uitvoerende' else ''
-    print("select id, name from muziek_album "
-        "where artist_id = {} and {} {}".format(artist_id, seltxt, sort))
+    ## print("select id, name from muziek_album "
+        ## "where artist_id = {} and {} {}".format(artist_id, seltxt, sort))
     return execute_query(db, "select id, name from muziek_album "
         "where artist_id = {} and {} {}".format(artist_id, seltxt, sort))
 
