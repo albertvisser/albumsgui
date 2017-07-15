@@ -268,12 +268,6 @@ class Start(qtw.QWidget):
         hbox = qtw.QHBoxLayout()
         hbox.addWidget(qtw.QLabel('Live Concerten', self))
         gbox.addLayout(hbox, row, 0, 1, 3)
-        ## row += 1
-        ## hbox = qtw.QHBoxLayout()
-        ## frm = qtw.QFrame(self)
-        ## frm.setFrameShape(qtw.QFrame.HLine)
-        ## hbox.addWidget(frm)
-        ## gbox.addLayout(hbox, row, 0, 1, 3)
 
         row += 1
         hbox = qtw.QHBoxLayout()
@@ -336,9 +330,6 @@ class Start(qtw.QWidget):
         row+= 1
         hbox = qtw.QHBoxLayout()
         hbox.addWidget(qtw.QLabel('Uitvoerende Artiesten', self))
-        ## frm = qtw.QFrame(self)
-        ## frm.setFrameShape(qtw.QFrame.HLine)
-        ## hbox.addWidget(frm)
         gbox.addLayout(hbox, row, 0, 1, 3)
 
         row+= 1
@@ -561,14 +552,6 @@ class Select(qtw.QWidget):
             self.change_type.setText('studio albums')
             itemtype = 'concert'
         self.kiestekst.setText('Kies een {} uit de lijst:'.format(itemtype))
-        ## if self.parent().searchtype == 1:
-            ## self.album_names, self.album_ids = get_albums_by_artist(
-                ## self.parent().albumtype, self.parent().artistid,
-                ## self.parent().sorttype)
-        ## else:
-            ## self.album_names, self.album_ids = get_albums_by_text(
-                ## self.parent().albumtype, self.parent().searchtype,
-                ## self.parent().search_arg, self.parent().sorttype)
         self.add_new.setText('voer een nieuw {} op bij deze selectie'.format(
             itemtype))
 
@@ -628,7 +611,6 @@ class Detail(qtw.QWidget):
         """
         gbox = qtw.QGridLayout()
         row = 0
-        ## row += 1
         self.heading = qtw.QLabel('', self)
         hbox = qtw.QHBoxLayout()
         hbox.addWidget(self.heading)
@@ -799,7 +781,6 @@ class EditDetails(qtw.QWidget):
         """
         gbox = qtw.QGridLayout()
         row = 0
-        ## row += 1
         self.heading = qtw.QLabel('', self)
         hbox = qtw.QHBoxLayout()
         hbox.addWidget(self.heading)
@@ -807,11 +788,6 @@ class EditDetails(qtw.QWidget):
 
         row += 1
         gbox.addLayout(newline(self), row, 0, 1, 3)
-
-        ## self.details = ['Worstenbroodje & Co', 'Overal en Nergens',
-            ## 'Zultkop records', 'het jaar 0', 'Hendrikus Jansonius',
-            ## '', 'Alle instrumenten bespeeld als door een wonder','']
-        self.detailwins = []
 
         data = [('Uitvoerende:', self.parent().albumdata['artist']),
                 ['Albumtitel:', self.parent().albumdata['titel']]]
@@ -843,7 +819,6 @@ class EditDetails(qtw.QWidget):
                 win = qtw.QTextEdit(text, self)
             else:
                 win = qtw.QLineEdit(text, self)
-            self.detailwins.append(win)
             gbox.addWidget(win, row, 1, 1, 2)
 
         row += 1
@@ -857,7 +832,6 @@ class EditDetails(qtw.QWidget):
             buttons.remove('Cancel')
             if not self.parent().search_arg:
                 buttons.remove('Select')
-        print(buttons)
         gbox.addLayout(button_strip(self, *buttons), row, 0, 1, 3)
 
         row += 1
@@ -873,19 +847,6 @@ class EditDetails(qtw.QWidget):
     def new_data(self, keep_sel=False):
         self.albumnaam = ''
         self.album_names = []
-        ## if self.parent().albumtype == 'studio':
-            ## self.details = collections.OrderedDict((
-                ## ('Label/jaar:', ''),
-                ## ('Produced by:', ''),
-                ## ('Credits:', ''),
-                ## ('Bezetting:', ''),
-                ## ('Tevens met:', '')))
-        ## else:
-            ## self.details = collections.OrderedDict((
-                ## ('Produced by:', ''),
-                ## ('Credits:', ''),
-                ## ('Bezetting:', ''),
-                ## ('Tevens met:', '')))
         self.tracknames = []
         self.recordings = []
         self.edit_det = True
@@ -921,7 +882,6 @@ class EditTracks(qtw.QWidget):
         """
         vbox = qtw.QVBoxLayout()
         row = 0
-        ## row += 1
         self.heading = qtw.QLabel('', self)
         hbox = qtw.QHBoxLayout()
         hbox.addWidget(self.heading)
@@ -929,41 +889,30 @@ class EditTracks(qtw.QWidget):
 
         row += 1
         vbox.addLayout(newline(self))
-        ## self.tracknames = ['Morgen ben ik de bruid', 'Niemand de deur uit',
-            ## 'Worstenbroodje en Uitknijpfruit', 'Sluitingstijd']
-        self.trackwins = []
 
         frm = qtw.QFrame(self)
-        gbox = qtw.QGridLayout()
-        line = 0
+        self.vbox2 = qtw.QVBoxLayout()
+        self.gbox = qtw.QGridLayout()
+        self.line = 1
+        hbox2 = qtw.QHBoxLayout()
+        lbl = qtw.QLabel('Title\nCredits', self)
+        lbl.setMinimumWidth(304)
+        lbl.setMaximumWidth(304)
+        hbox2.addWidget(lbl)
+        hbox2.addWidget(qtw.QLabel('Author\n', self))
+        self.gbox.addLayout(hbox2, self.line, 1)
         for trackindex, trackname, author, text in self.parent().albumdata['tracks']:
-            line += 1
-            gbox.addWidget(qtw.QLabel('{:>8}.'.format(trackindex), self), line, 0)
-            hbox = qtw.QHBoxLayout()
-            win = qtw.QLineEdit(trackname, self)
-            win.setMaximumWidth(300)
-            win.setMinimumWidth(300)
-            self.trackwins.append(win)
-            hbox.addWidget(win)
-            win = qtw.QLineEdit(author, self)
-            win.setMaximumWidth(200)
-            win.setMinimumWidth(200)
-            self.trackwins.append(win)
-            hbox.addWidget(win)
-            ## hbox.addStretch()
-            gbox.addLayout(hbox, line, 1)
-            line += 1
-            win = qtw.QTextEdit(text, self)
-            win.setMaximumWidth(508)
-            win.setMinimumWidth(508)
-            win.setMaximumHeight(38)
-            win.setMinimumHeight(38)
-            gbox.addWidget(win, line, 1)
+            self.add_track_fields(trackindex, trackname, author, text)
 
-        frm.setLayout(gbox)
-        scrl = qtw.QScrollArea()
-        scrl.setWidget(frm)
-        vbox.addWidget(scrl)
+        self.tracks = int(trackindex)
+        self.vbox2.addLayout(self.gbox)
+        self.vbox2.addStretch()
+        frm.setLayout(self.vbox2)
+        ## frm.setLayout(self.gbox)
+        self.scrl = qtw.QScrollArea()
+        self.scrl.setWidget(frm)
+        self.scrl.setWidgetResizable(True)
+        vbox.addWidget(self.scrl)
 
         hbox = qtw.QHBoxLayout()
         self.add_new = qtw.QPushButton('Nieuw track', self)
@@ -971,10 +920,6 @@ class EditTracks(qtw.QWidget):
         hbox.addWidget(self.add_new)
         hbox.addStretch()
         vbox.addLayout(hbox)
-
-        ## vbox = qtw.QVBoxLayout()
-        ## vbox.addStretch()
-        ## gbox.addLayout(vbox, row, 0, 1, 3)
 
         vbox.addLayout(newline(self))
         vbox.addLayout(button_strip(self, 'Cancel', 'Go', 'GoBack', 'Select',
@@ -984,20 +929,45 @@ class EditTracks(qtw.QWidget):
 
         self.setLayout(vbox)
 
+    def add_track_fields(self, trackindex, trackname='', author='', text=''):
+        line = self.line + 1
+        self.gbox.addWidget(qtw.QLabel('{:>8}.'.format(trackindex), self), line, 0)
+        hbox = qtw.QHBoxLayout()
+        win = qtw.QLineEdit(trackname, self)
+        win.setMaximumWidth(300)
+        win.setMinimumWidth(300)
+        hbox.addWidget(win)
+        win = qtw.QLineEdit(author, self)
+        win.setMaximumWidth(200)
+        win.setMinimumWidth(200)
+        hbox.addWidget(win)
+        self.gbox.addLayout(hbox, line, 1)
+        line += 1
+        win = qtw.QTextEdit(text, self)
+        win.setMaximumWidth(508)
+        win.setMinimumWidth(508)
+        win.setMaximumHeight(38)
+        win.setMinimumHeight(38)
+        self.gbox.addWidget(win, line, 1)
+        self.line = line
+
     def refresh_screen(self):
         """bring screen up-to-date
         """
         self.heading.setText(build_heading(self))
 
     def add_new_item(self):
-        hbox = qtw.QHBoxLayout()
-        hbox.addWidget(qtw.QLabel('    ', self))
-        win = qtw.QLineEdit(self)
-        self.trackwins.append(win)
-        hbox.addWidget(win)
-        ## hbox.addStretch()
-        self.vbox2.addLayout(hbox)
-
+        self.tracks += 1
+        self.add_track_fields(self.tracks)
+        ## oldfrm = self.scrl.takeWidget()
+        ## frm = qtw.QFrame(self)
+        ## frm.setLayout(self.gbox)
+        ## self.scrl.setWidget(frm)
+        ## self.scrl.ensureVisible(0, frm.sizeHint().height())
+        ## del oldfrm
+        vbar = self.scrl.verticalScrollBar()
+        vbar.setMaximum(vbar.maximum() + 68)
+        vbar.setValue(vbar.maximum())
 
     def submit(self):
         """neem de waarden van de invulvelden over en geef ze door aan de database
@@ -1029,32 +999,20 @@ class EditRecordings(qtw.QWidget):
 
         vbox.addLayout(newline(self))
 
-        ## self.recordings = ['CD: enkel', 'Vinyl: LP 2 van 2', 'Banshee Music Player']
         self.recwins = []
 
         frm = qtw.QFrame(self)
         self.vbox2 = qtw.QVBoxLayout()
+        self.vbox2.addStretch()
         for opnindex, opname in enumerate(self.parent().albumdata['opnames']):
-            opnsoort, opntext = opname
-            hbox = qtw.QHBoxLayout()
-            hbox.addWidget(qtw.QLabel('{:>8}.'.format(opnindex + 1), self))
-            win = qtw.QComboBox(self)
-            win.addItem('--- Maak een selectie ---')
-            win.addItems(RECTYPES)
-            win.setCurrentIndex(RECTYPES.index(opnsoort) + 1)
-            hbox.addWidget(win)
+            self.add_rec_fields(opnindex, opname)
 
-            win = qtw.QLineEdit(opntext, self)
-            win.setMaximumWidth(200)
-            win.setMinimumWidth(200)
-            self.recwins.append(win)
-            hbox.addWidget(win)
-            hbox.addStretch()
-            self.vbox2.addLayout(hbox)
+        self.recs = opnindex
         frm.setLayout(self.vbox2)
-        scrl = qtw.QScrollArea()
-        scrl.setWidget(frm)
-        vbox.addWidget(scrl)
+        self.scrl = qtw.QScrollArea()
+        self.scrl.setWidget(frm)
+        self.scrl.setWidgetResizable(True)
+        vbox.addWidget(self.scrl)
 
         hbox = qtw.QHBoxLayout()
         self.add_new = qtw.QPushButton('Nieuwe opname', self)
@@ -1072,19 +1030,45 @@ class EditRecordings(qtw.QWidget):
 
         self.setLayout(vbox)
 
+    def add_rec_fields(self, opnindex, opname=None):
+        if opname is None: opname = ['', '']
+        opnsoort, opntext = opname
+        hbox = qtw.QHBoxLayout()
+        hbox.addWidget(qtw.QLabel('{:>8}.'.format(opnindex + 1), self))
+        win = qtw.QComboBox(self)
+        win.addItem('--- Maak een selectie ---')
+        win.addItems(RECTYPES)
+        try:
+            win.setCurrentIndex(RECTYPES.index(opnsoort) + 1)
+        except:
+            pass
+        hbox.addWidget(win)
+
+        win = qtw.QLineEdit(opntext, self)
+        win.setMaximumWidth(200)
+        win.setMinimumWidth(200)
+        self.recwins.append(win)
+        hbox.addWidget(win)
+        hbox.addStretch()
+        self.vbox2.insertLayout(self.vbox2.count() - 1, hbox)
+
     def refresh_screen(self):
         """bring screen up-to-date
         """
         self.heading.setText(build_heading(self))
 
     def add_new_item(self):
-        hbox = qtw.QHBoxLayout()
-        hbox.addWidget(qtw.QLabel('    ', self))
-        win = qtw.QLineEdit(self)
-        self.recwins.append(win)
-        hbox.addWidget(win)
-        ## hbox.addStretch()
-        self.vbox2.addLayout(hbox)
+        self.recs += 1
+        self.add_rec_fields(self.recs)
+        ## oldfrm = self.scrl.takeWidget()
+        ## frm = qtw.QFrame(self)
+        ## frm.setLayout(self.vbox2)
+        ## self.scrl.setWidget(frm)
+        ## self.scrl.ensureVisible(0, frm.sizeHint().height())
+        ## del oldfrm
+        vbar = self.scrl.verticalScrollBar()
+        vbar.setMaximum(vbar.maximum() + 36)
+        vbar.setValue(vbar.maximum())
 
     def submit(self):
         """neem de waarden van de invulvelden over en geef ze door aan de database
@@ -1108,7 +1092,6 @@ class Artists(qtw.QWidget):
         """setup screen
         """
         vbox = qtw.QVBoxLayout()
-        ## self.vbox2 = qtw.QVBoxLayout()
         self.heading = qtw.QLabel('Artiestenlijst', self)
         hbox = qtw.QHBoxLayout()
         hbox.addWidget(self.heading)
@@ -1117,43 +1100,45 @@ class Artists(qtw.QWidget):
 
         self.frm = qtw.QFrame(self)
         self.vbox2 = qtw.QVBoxLayout()
+        ## hbox2 = qtw.QHBoxLayout()
+        ## lbl = qtw.QLabel('First name / prefix', self)
+        ## lbl.setMaximumWidth(80)
+        ## lbl.setMinimumWidth(80)
+        ## hbox2.addWidget(lbl)
+        ## hbox2.addWidget(qtw.QLabel('Last name / to be sorted on)', self))
+        ## self.vbox2.addLayout(hbox2)
+        self.last_artistid = 0
         for item in get_artist_list():
-            hbox = qtw.QHBoxLayout()
-            hbox.addWidget(qtw.QLabel('{:>3}.'.format(item['id']), self))
-            win = qtw.QLineEdit(item["first_name"], self)
-            hbox.addWidget(win)
-            win = qtw.QLineEdit(item["last_name"], self)
-            win.setMaximumWidth(300)
-            win.setMinimumWidth(300)
-            hbox.addWidget(win)
-            self.vbox2.addLayout(hbox)
+            test = item['id']
+            if test > self.last_artistid:
+                self.last_artistid = test
+            self.add_artist_line(test, item["first_name"], item["last_name"])
         self.frm.setLayout(self.vbox2)
-        scrl = qtw.QScrollArea()
-        scrl.setWidget(self.frm)
-        vbox.addWidget(scrl)
+        self.scrl = qtw.QScrollArea()
+        self.scrl.setWidget(self.frm)
+        self.scrl.setWidgetResizable(True)
+        vbox.addWidget(self.scrl)
 
         vbox.addLayout(button_strip(self, 'Edit', 'New', 'Start'))
         vbox.addLayout(exitbutton(self, self.exit))
 
         self.setLayout(vbox)
 
+    def add_artist_line(self, itemid, first_name='', last_name=''):
+        hbox = qtw.QHBoxLayout()
+        hbox.addWidget(qtw.QLabel('{:>3}.'.format(itemid), self))
+        win = qtw.QLineEdit(first_name, self)
+        hbox.addWidget(win)
+        win = qtw.QLineEdit(last_name, self)
+        win.setMaximumWidth(300)
+        win.setMinimumWidth(300)
+        hbox.addWidget(win)
+        self.vbox2.addLayout(hbox)
+
     def refresh_screen(self):
         """bring screen up-to-date
         """
         pass
-        ## del self.vbox2
-        ## self.vbox2 = qtw.QVBoxLayout()
-        ## for item in get_artist_list():
-            ## hbox = qtw.QHBoxLayout()
-            ## hbox.addWidget(qtw.QLabel('{:>3}.'.format(item['id']), self))
-            ## win = qtw.QLineEdit(item["first_name"], self)
-            ## hbox.addWidget(win)
-            ## win = qtw.QLineEdit(item["last_name"], self)
-            ## win.setMaximumWidth(200)
-            ## win.setMinimumWidth(200)
-            ## hbox.addWidget(win)
-            ## self.vbox2.addLayout(hbox)
-        ## self.frm.setLayout(self.vbox2)
 
     def submit(self):
         """neem de waarden van de invulvelden over en geef ze door aan de database
@@ -1162,8 +1147,19 @@ class Artists(qtw.QWidget):
     def new(self):
         """open dialog to add new artist
         """
-        if NewArtistDialog(self).exec_() == qtw.QDialog.Accepted:
-            self.refresh_screen()
+        ## if NewArtistDialog(self).exec_() == qtw.QDialog.Accepted:
+            ## self.refresh_screen()
+        self.last_artistid += 1
+        self.add_artist_line(self.last_artistid)
+        ## oldfrm = self.scrl.takeWidget()
+        ## frm = qtw.QFrame(self)
+        ## frm.setLayout(self.vbox2)
+        ## self.scrl.setWidget(frm)
+        ## self.scrl.ensureVisible(0, frm.sizeHint().height())
+        ## del oldfrm
+        vbar = self.scrl.verticalScrollBar()
+        vbar.setMaximum(vbar.maximum() + 34)
+        vbar.setValue(vbar.maximum())
 
     def exit(self, *args):
         """shutdown application"""
@@ -1205,7 +1201,8 @@ class MainFrame(qtw.QMainWindow):
     """Het idee hierachter is om bij elke schermwijziging
     het centralwidget opnieuw in te stellen
     """
-    def __init__(self, parent):
+    def __init__(self, parent=None):
+        app = qtw.QApplication(sys.argv)
         super().__init__()
         self.albumtype = ''
         self.searchtype = 1
@@ -1220,6 +1217,9 @@ class MainFrame(qtw.QMainWindow):
         self.move(300, 50)
         self.resize(400, 600)
         self.windows = []
+        self.show()
+        self.do_start()
+        sys.exit(app.exec_())
 
     def do_start(self):
         """show initial sceen
@@ -1228,7 +1228,6 @@ class MainFrame(qtw.QMainWindow):
         self.windows.append(go)
         go.create_widgets()
         go.refresh_screen()
-        ## go.show()
         self.setCentralWidget(go)
 
     def do_select(self):
@@ -1248,7 +1247,6 @@ class MainFrame(qtw.QMainWindow):
         self.windows.append(go)
         go.create_widgets()
         go.refresh_screen()
-        ## go.show()
         self.setCentralWidget(go)
 
     def do_new(self, keep_sel=False):
@@ -1272,9 +1270,7 @@ class MainFrame(qtw.QMainWindow):
             go = Detail(self)
         self.windows.append(go)
         go.create_widgets()
-        ## go.select_data()
         go.refresh_screen()
-        ## go.show()
         self.setCentralWidget(go)
 
     def do_edit_alg(self, new=False, keep_sel=False):
@@ -1285,9 +1281,7 @@ class MainFrame(qtw.QMainWindow):
         go.create_widgets()
         if new:
             go.new_data(keep_sel)
-        ## go.select_data()
         go.refresh_screen()
-        ## go.show()
         self.setCentralWidget(go)
 
     def do_edit_trk(self):
@@ -1296,9 +1290,7 @@ class MainFrame(qtw.QMainWindow):
         go = EditTracks(self)
         self.windows.append(go)
         go.create_widgets()
-        ## go.select_data()
         go.refresh_screen()
-        ## go.show()
         self.setCentralWidget(go)
 
     def do_edit_rec(self):
@@ -1307,14 +1299,9 @@ class MainFrame(qtw.QMainWindow):
         go = EditRecordings(self)
         self.windows.append(go)
         go.create_widgets()
-        ## go.select_data()
         go.refresh_screen()
-        ## go.show()
         self.setCentralWidget(go)
 
-app = qtw.QApplication(sys.argv)
-main = MainFrame(None)
-main.show()
-main.do_start()
-sys.exit(app.exec_())
+if __name__ == '__main__':
+    main = MainFrame(None)
 
