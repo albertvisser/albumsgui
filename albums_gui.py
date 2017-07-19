@@ -1,55 +1,47 @@
-# simple music database frontend
+"""PyQT version of albums webapp
+"""
 import sys
-import types
-import collections
+
+
 import PyQt5.QtWidgets as qtw
-import PyQt5.QtGui as gui
-import PyQt5.QtCore as core
+## import PyQt5.QtGui as gui
+## import PyQt5.QtCore as core
 import albums_dml as dmla
 TYPETXT = {'studio': 'album', 'live': 'concert'}
-SELTXT = {
-    'studio': [
-            'Niet zoeken, alles tonen',
-            'Zoek op Uitvoerende',
-            'Zoek op tekst in titel',
-            'Zoek op tekst in producer',
-            'Zoek op tekst in credits',
-            'Zoek op tekst in bezetting',
-            ],
-    'live': [
-            'Niet zoeken, alles tonen',
-            'Zoek op Uitvoerende',
-            'Zoek op tekst in locatie',
-            'Zoek op tekst in datum',
-            ## 'Zoek op tekst in credits',
-            'Zoek op tekst in bezetting',
-            ]}
-SELCOL = {
-    'studio': ['', 'artist', 'titel', 'producer',  'credits', 'bezetting'],
-    'live': ['',  'artist', 'locatie', 'datum', 'bezetting']}
-SORTTXT = {
-    'studio': ['Niet sorteren', 'Uitvoerende', 'Titel', 'Jaar'],
-    'live': ['Niet sorteren', 'Uitvoerende', 'Locatie', 'Datum']}
-SORTCOL = {
-    'studio': ['', 'artist', 'titel', 'jaar'],
-    'live': ['',  'artist', 'locatie', 'datum']}
-RECTYPES = (
-    'Cassette',
-    'CD: Enkel',
-    'CD: Dubbel',
-    'Vinyl: 1LP',
-    'Vinyl: 2LP',
-    'Vinyl: 3LP',
-    'Vinyl: single',
-    'Vinyl: 12" single',
-    'Tape',
-    'MP3 directory',
-    'Banshee music player',)
+SELTXT = {'studio': ['Niet zoeken, alles tonen',
+                     'Zoek op Uitvoerende',
+                     'Zoek op tekst in titel',
+                     'Zoek op tekst in producer',
+                     'Zoek op tekst in credits',
+                     'Zoek op tekst in bezetting'],
+          'live': ['Niet zoeken, alles tonen',
+                   'Zoek op Uitvoerende',
+                   'Zoek op tekst in locatie',
+                   'Zoek op tekst in datum',
+                   'Zoek op tekst in bezetting']}
+SELCOL = {'studio': ['', 'artist', 'titel', 'producer', 'credits', 'bezetting'],
+          'live': ['', 'artist', 'locatie', 'datum', 'bezetting']}
+SORTTXT = {'studio': ['Niet sorteren', 'Uitvoerende', 'Titel', 'Jaar'],
+           'live': ['Niet sorteren', 'Uitvoerende', 'Locatie', 'Datum']}
+SORTCOL = {'studio': ['', 'artist', 'titel', 'jaar'],
+           'live': ['', 'artist', 'locatie', 'datum']}
+RECTYPES = ('Cassette',
+            'CD: Enkel',
+            'CD: Dubbel',
+            'Vinyl: 1LP',
+            'Vinyl: 2LP',
+            'Vinyl: 3LP',
+            'Vinyl: single',
+            'Vinyl: 12" single',
+            'Tape',
+            'MP3 directory',
+            'Banshee music player',)
+
 
 def get_artist_list():
     """get artist data from the database
     """
-    return dmla.list_artists(dmla.db)
+    return dmla.list_artists(dmla.DB)
 
 
 def get_all_artists():
@@ -57,7 +49,7 @@ def get_all_artists():
     """
     data = get_artist_list()
     artist_names = [' '.join((x["first_name"], x['last_name'])).lstrip()
-        for x in data]
+                    for x in data]
     artist_ids = [x["id"] for x in data]
     return artist_names, artist_ids
 
@@ -65,7 +57,7 @@ def get_all_artists():
 def get_albums_by_artist(albumtype, search_for, sort_on):
     """get the selected artist's ID and build a list of albums
     """
-    data = dmla.list_albums_by_artist(dmla.db, albumtype, search_for, sort_on)
+    data = dmla.list_albums_by_artist(dmla.DB, albumtype, search_for, sort_on)
     album_names = [x["name"] for x in data]
     album_ids = [x["id"] for x in data]
     return album_names, album_ids
@@ -76,24 +68,23 @@ def get_albums_by_text(albumtype, search_type, search_for, sort_on):
     """
     if albumtype == 'studio':
         search_type = {0: '*', 2: 'name', 3: 'produced_by', 4: 'credits',
-            5: 'bezetting'}[search_type]
+                       5: 'bezetting'}[search_type]
     elif albumtype == 'live':
         search_type = {0: '*', 2: 'name', 3: 'name', 4: 'produced_by',
-            5: 'bezetting'}[search_type]
-    data = dmla.list_albums_by_search(dmla.db, albumtype, search_type, search_for,
-        sort_on)
+                       5: 'bezetting'}[search_type]
+    data = dmla.list_albums_by_search(dmla.DB, albumtype, search_type, search_for,
+                                      sort_on)
     album_names = [x["name"] for x in data]
     album_ids = [x["id"] for x in data]
     album_artists = [' '.join((x["first_name"], x["last_name"])).lstrip()
-        for x in data]
+                     for x in data]
     return album_artists, album_names, album_ids
 
 
 def get_album(album_id, albumtype):
     """get the selected album's data
     """
-    ## if album_id:
-    test = dmla.list_album_details(dmla.db, album_id)
+    test = dmla.list_album_details(dmla.DB, album_id)
     data = test[0] if test else {}
     result = {'titel': data.get('name', ''),
               'artist': ' '.join((data.get('first_name', ''),
@@ -103,25 +94,26 @@ def get_album(album_id, albumtype):
         if text:
             text += ', '
         text += str(data['release_year'])
-    result['details'] = [
-        ('Label/jaar:', text),
-        ('Produced by:', data.get('produced_by', '')),
-        ('Credits:', data.get('credits', '')),
-        ('Bezetting:', data.get('bezetting', '')),
-        ('Tevens met:', data.get('additional', ''))]
+    result['details'] = [('Label/jaar:', text),
+                         ('Produced by:', data.get('produced_by', '')),
+                         ('Credits:', data.get('credits', '')),
+                         ('Bezetting:', data.get('bezetting', '')),
+                         ('Tevens met:', data.get('additional', ''))]
     if albumtype == 'live':
         result['details'].pop(0)
     if data:
         result['tracks'] = [(x["volgnr"], x["name"], x["written_by"], x["credits"])
-                            for x in dmla.list_tracks(dmla.db, album_id)]
+                            for x in dmla.list_tracks(dmla.DB, album_id)]
         result['opnames'] = [(x["type"], x["oms"])
-                             for x in dmla.list_recordings(dmla.db, album_id)]
+                             for x in dmla.list_recordings(dmla.DB, album_id)]
     else:
         result['tracks'], result['opnames'] = [], []
     return result
 
 
 def build_heading(win):
+    """Generate heading text for screen
+    """
     if not win.parent().albumdata['artist'] or not win.parent().albumdata['titel']:
         text = 'Opvoeren nieuw {}'.format(TYPETXT[win.parent().albumtype])
     else:
@@ -251,7 +243,7 @@ class Start(qtw.QWidget):
         self.ask_studio_sort.setMinimumWidth(200)
         gbox.addWidget(self.ask_studio_sort, row, 1)
 
-        row+= 1
+        row += 1
         hbox = qtw.QHBoxLayout()
         self.studio_go = qtw.QPushButton('Selectie uitvoeren', self)
         self.studio_new = qtw.QPushButton('Nieuw album opvoeren', self)
@@ -310,7 +302,7 @@ class Start(qtw.QWidget):
         self.ask_live_sort.setMinimumWidth(200)
         gbox.addWidget(self.ask_live_sort, row, 1)
 
-        row+= 1
+        row += 1
         hbox = qtw.QHBoxLayout()
         self.live_go = qtw.QPushButton('Selectie uitvoeren', self)
         self.live_new = qtw.QPushButton('Nieuw album opvoeren', self)
@@ -321,18 +313,18 @@ class Start(qtw.QWidget):
         hbox.addStretch()
         gbox.addLayout(hbox, row, 0, 1, 3)
 
-        row+= 1
+        row += 1
         hbox = qtw.QHBoxLayout()
         frm = qtw.QFrame(self)
         frm.setFrameShape(qtw.QFrame.HLine)
         hbox.addWidget(frm)
         gbox.addLayout(hbox, row, 0, 1, 3)
-        row+= 1
+        row += 1
         hbox = qtw.QHBoxLayout()
         hbox.addWidget(qtw.QLabel('Uitvoerende Artiesten', self))
         gbox.addLayout(hbox, row, 0, 1, 3)
 
-        row+= 1
+        row += 1
         hbox = qtw.QHBoxLayout()
         self.artist_go = qtw.QPushButton('Lijst tonen/wijzigen', self)
         self.artist_new = qtw.QPushButton('Nieuwe opvoeren', self)
@@ -343,10 +335,10 @@ class Start(qtw.QWidget):
         hbox.addStretch()
         gbox.addLayout(hbox, row, 0, 1, 3)
 
-        row+= 1
+        row += 1
         gbox.addLayout(newline(self), row, 0, 1, 3)
 
-        row+= 1
+        row += 1
         gbox.addLayout(exitbutton(self, self.exit), row, 0, 1, 3)
 
         self.setLayout(gbox)
@@ -379,7 +371,7 @@ class Start(qtw.QWidget):
             widgets[2].setText(self.parent().search_arg)
         widgets[3].setCurrentText(self.parent().sorttype)
 
-    def select_album(self, *args):
+    def select_album(self):
         "get selection type and argument for studio album"
         # -> selectiescherm
         self.parent().searchtype = self.ask_studio_search.currentIndex()
@@ -392,13 +384,13 @@ class Start(qtw.QWidget):
         self.parent().albumtype = 'studio'
         self.parent().do_select()
 
-    def new_album(self, *args):
+    def new_album(self):
         "add a studio album to the collection"
         # -> direct naar detailscherm in wijzig modus
         self.parent().albumtype = 'studio'
         self.parent().do_new()
 
-    def select_concert(self, *args):
+    def select_concert(self):
         "get selection type and argument for live concert"
         # -> selectiescherm
         self.parent().searchtype = self.ask_live_search.currentIndex()
@@ -411,25 +403,25 @@ class Start(qtw.QWidget):
         self.parent().albumtype = 'live'
         self.parent().do_select()
 
-    def new_concert(self, *args):
+    def new_concert(self):
         "add a live concert to the collection"
         # -> direct naar detailscherm in wijzig modus
         self.parent().albumtype = 'live'
         self.parent().do_new()
 
-    def view_artists(self, *args):
+    def view_artists(self):
         "go to artists screen"
         # -> "selectie"scherm in wijzig modus
         self.parent().albumtype = 'artist'
         self.parent().do_select()
 
-    def new_artist(self, *args):
+    def new_artist(self):
         "add an artist to the collection"
         # -> direct naar detailscherm in wijzig modus
         self.parent().albumtype = 'artist'
         self.parent().do_new()
 
-    def exit(self, *args):
+    def exit(self):
         """shutdown application"""
         self.parent().close()
 
@@ -456,7 +448,7 @@ class Select(qtw.QWidget):
             hbox = qtw.QHBoxLayout()
             # TODO: variabel maken m.b.t. zoeken op tekst (dan tekstvak ipv combobox)
             hbox.addWidget(qtw.QLabel('Snel naar dezelfde selectie voor een andere '
-                'artiest:', self))
+                                      'artiest:', self))
             self.ask_artist = qtw.QComboBox(self)
             self.ask_artist.addItem('--- Maak een selectie ---')
             self.ask_artist.addItems(get_all_artists()[0])
@@ -514,8 +506,7 @@ class Select(qtw.QWidget):
 
         hbox = qtw.QHBoxLayout()
         hbox.addWidget(qtw.QLabel('Of', self))
-        self.add_new = qtw.QPushButton('voer een nieuw item op bij deze selectie',
-            self)
+        self.add_new = qtw.QPushButton('voer een nieuw item op bij deze selectie', self)
         self.add_new.clicked.connect(self.add_new_to_sel)
         hbox.addWidget(self.add_new)
         hbox.addStretch()
@@ -547,7 +538,7 @@ class Select(qtw.QWidget):
             searchtext, self.parent().sorttype))
         if self.parent().albumtype == 'studio':
             self.change_type.setText('concertopnamen')
-            itemtype  = 'album'
+            itemtype = 'album'
         else:
             self.change_type.setText('studio albums')
             itemtype = 'concert'
@@ -555,7 +546,7 @@ class Select(qtw.QWidget):
         self.add_new.setText('voer een nieuw {} op bij deze selectie'.format(
             itemtype))
 
-    def other_artist(self, *args):
+    def other_artist(self):
         """read self.ask_artist for artist and change self.parent().artistid
         """
         chosen = self.ask_artist.currentIndex()
@@ -565,7 +556,7 @@ class Select(qtw.QWidget):
                 self.parent().artistid = self.parent().search_arg
             self.parent().do_select()
 
-    def other_albumtype(self, *args):
+    def other_albumtype(self):
         """determine other type of selection and change accordingly, also change
         self.parent().albumtype
         """
@@ -575,7 +566,7 @@ class Select(qtw.QWidget):
             self.parent().albumtype = 'studio'
         self.parent().do_select()
 
-    def todetail(self, *args):
+    def todetail(self):
         """determine which button was clicked and change accordingly
         """
         for ix, btn in enumerate(self.go_buttons):
@@ -585,11 +576,11 @@ class Select(qtw.QWidget):
         self.parent().do_detail()
 
     def add_new_to_sel(self, *args, **kwargs):
-        """
+        """TODO
         """
         self.parent().do_new(keep_sel=True)
 
-    def exit(self, *args):
+    def exit(self):
         """shutdown application"""
         self.parent().close()
 
@@ -621,8 +612,7 @@ class Detail(qtw.QWidget):
 
         row += 1
         hbox = qtw.QHBoxLayout()
-        self.quickchange = qtw.QLabel('Snel naar een ander item in deze selectie:',
-            self)
+        self.quickchange = qtw.QLabel('Snel naar een ander item in deze selectie:', self)
         hbox.addWidget(self.quickchange)
         self.ask_album = qtw.QComboBox(self)
         self.ask_album.addItem('--- selecteer titel ---')
@@ -733,10 +723,10 @@ class Detail(qtw.QWidget):
         row += 1
         gbox.addLayout(newline(self), row, 0, 1, 3)
 
-        row+= 1
+        row += 1
         gbox.addLayout(button_strip(self, 'Select', 'Start'), row, 0, 1, 3)
 
-        row+= 1
+        row += 1
         gbox.addLayout(exitbutton(self, self.exit), row, 0, 1, 3)
 
         self.setLayout(gbox)
@@ -751,23 +741,29 @@ class Detail(qtw.QWidget):
             TYPETXT[self.parent().albumtype].title()))
 
     def other_album(self):
+        """Determine which other album to show and do so
+        """
         test = self.ask_album.currentIndex()
         if test:
             self.parent().albumid = self.parent().album_ids[test - 1]
         self.parent().do_detail()
 
     def edit_alg(self):
+        "Go to Edit Details screen"
         self.parent().do_edit_alg()
 
     def edit_trk(self):
+        "Go to Edit Tracks screen"
         self.parent().do_edit_trk()
 
     def edit_rec(self):
+        "Go to Edit Recordings screen"
         self.parent().do_edit_rec()
 
-    def exit(self, *args):
+    def exit(self):
         """shutdown application"""
         self.parent().close()
+
 
 class EditDetails(qtw.QWidget):
     """show album details in editable form
@@ -845,6 +841,8 @@ class EditDetails(qtw.QWidget):
         self.heading.setText(build_heading(self))
 
     def new_data(self, keep_sel=False):
+        """Prepare to show empty screen for entering new album
+        """
         self.albumnaam = ''
         self.album_names = []
         self.tracknames = []
@@ -852,7 +850,7 @@ class EditDetails(qtw.QWidget):
         self.edit_det = True
         self.edit_trk = self.edit_rec = False
 
-        if keep_sel:
+        if keep_sel:  # what was this about again?
             if self.parent().searchtype == 1:
                 self.parent().artistid
             else:
@@ -863,12 +861,15 @@ class EditDetails(qtw.QWidget):
         """
 
     def submit_and_back(self):
+        """return to previous (details) screen after completion
+        """
         self.submit()
         self.parent().do_detail()
 
-    def exit(self, *args):
+    def exit(self):
         """shutdown application"""
         self.parent().close()
+
 
 class EditTracks(qtw.QWidget):
     """show list of tracks in editable form
@@ -923,13 +924,15 @@ class EditTracks(qtw.QWidget):
 
         vbox.addLayout(newline(self))
         vbox.addLayout(button_strip(self, 'Cancel', 'Go', 'GoBack', 'Select',
-            'Start'))
+                                    'Start'))
 
         vbox.addLayout(exitbutton(self, self.exit))
 
         self.setLayout(vbox)
 
     def add_track_fields(self, trackindex, trackname='', author='', text=''):
+        """Build line in edit area with track data (or not)
+        """
         line = self.line + 1
         self.gbox.addWidget(qtw.QLabel('{:>8}.'.format(trackindex), self), line, 0)
         hbox = qtw.QHBoxLayout()
@@ -957,6 +960,8 @@ class EditTracks(qtw.QWidget):
         self.heading.setText(build_heading(self))
 
     def add_new_item(self):
+        """Create new line to enter new track
+        """
         self.tracks += 1
         self.add_track_fields(self.tracks)
         ## oldfrm = self.scrl.takeWidget()
@@ -974,12 +979,15 @@ class EditTracks(qtw.QWidget):
         """
 
     def submit_and_back(self):
+        """return to details screen after completion
+        """
         self.submit()
         self.parent().do_detail()
 
-    def exit(self, *args):
+    def exit(self):
         """shutdown application"""
         self.parent().close()
+
 
 class EditRecordings(qtw.QWidget):
     """show list of recordings in editable form
@@ -1024,14 +1032,16 @@ class EditRecordings(qtw.QWidget):
         vbox.addLayout(newline(self))
 
         vbox.addLayout(button_strip(self, 'Cancel', 'Go', 'GoBack', 'Select',
-            'Start'))
+                                    'Start'))
 
         vbox.addLayout(exitbutton(self, self.exit))
 
         self.setLayout(vbox)
 
     def add_rec_fields(self, opnindex, opname=None):
-        if opname is None: opname = ['', '']
+        """Build line in edit area with recording data (or not)"""
+        if opname is None:
+            opname = ['', '']
         opnsoort, opntext = opname
         hbox = qtw.QHBoxLayout()
         hbox.addWidget(qtw.QLabel('{:>8}.'.format(opnindex + 1), self))
@@ -1058,14 +1068,10 @@ class EditRecordings(qtw.QWidget):
         self.heading.setText(build_heading(self))
 
     def add_new_item(self):
+        """Create empty line to enter new recording data
+        """
         self.recs += 1
         self.add_rec_fields(self.recs)
-        ## oldfrm = self.scrl.takeWidget()
-        ## frm = qtw.QFrame(self)
-        ## frm.setLayout(self.vbox2)
-        ## self.scrl.setWidget(frm)
-        ## self.scrl.ensureVisible(0, frm.sizeHint().height())
-        ## del oldfrm
         vbar = self.scrl.verticalScrollBar()
         vbar.setMaximum(vbar.maximum() + 36)
         vbar.setValue(vbar.maximum())
@@ -1075,12 +1081,15 @@ class EditRecordings(qtw.QWidget):
         """
 
     def submit_and_back(self):
+        """Return to details screen after completion
+        """
         self.submit()
         self.parent().do_detail()
 
-    def exit(self, *args):
+    def exit(self):
         """shutdown application"""
         self.parent().close()
+
 
 class Artists(qtw.QWidget):
     """show list of artists
@@ -1125,6 +1134,8 @@ class Artists(qtw.QWidget):
         self.setLayout(vbox)
 
     def add_artist_line(self, itemid, first_name='', last_name=''):
+        """Create line in edit area with artist data (or not)
+        """
         hbox = qtw.QHBoxLayout()
         hbox.addWidget(qtw.QLabel('{:>3}.'.format(itemid), self))
         win = qtw.QLineEdit(first_name, self)
@@ -1145,25 +1156,18 @@ class Artists(qtw.QWidget):
         """
 
     def new(self):
-        """open dialog to add new artist
+        """open empty line to add new artist
         """
-        ## if NewArtistDialog(self).exec_() == qtw.QDialog.Accepted:
-            ## self.refresh_screen()
         self.last_artistid += 1
         self.add_artist_line(self.last_artistid)
-        ## oldfrm = self.scrl.takeWidget()
-        ## frm = qtw.QFrame(self)
-        ## frm.setLayout(self.vbox2)
-        ## self.scrl.setWidget(frm)
-        ## self.scrl.ensureVisible(0, frm.sizeHint().height())
-        ## del oldfrm
         vbar = self.scrl.verticalScrollBar()
         vbar.setMaximum(vbar.maximum() + 34)
         vbar.setValue(vbar.maximum())
 
-    def exit(self, *args):
+    def exit(self):
         """shutdown application"""
         self.parent().close()
+
 
 class NewArtistDialog(qtw.QDialog):
     """show dialog for adding a new artist
@@ -1177,8 +1181,7 @@ class NewArtistDialog(qtw.QDialog):
         gbox.addWidget(qtw.QLabel('Last name:', self), 1, 0)
         self.last_name = qtw.QLineEdit(self)
         gbox.addWidget(self.last_name, 1, 1)
-        gbox.addWidget(qtw.QLabel('Names wil be shown sorted on last name'), 2, 0,
-            1, 2)
+        gbox.addWidget(qtw.QLabel('Names wil be shown sorted on last name'), 2, 0, 1, 2)
         hbox = qtw.QHBoxLayout()
         hbox.addStretch()
         btn = qtw.QPushButton('Cancel', self)
@@ -1196,6 +1199,7 @@ class NewArtistDialog(qtw.QDialog):
         """
         # wijzigingen doorvoeren in de database
         self.accept()
+
 
 class MainFrame(qtw.QMainWindow):
     """Het idee hierachter is om bij elke schermwijziging
@@ -1304,4 +1308,3 @@ class MainFrame(qtw.QMainWindow):
 
 if __name__ == '__main__':
     main = MainFrame(None)
-
