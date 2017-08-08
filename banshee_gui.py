@@ -84,8 +84,6 @@ class MainWidget(qtw.QWidget):
         self.ask_db.setCurrentIndex(1)
         self.ask_artist.setFocus()
 
-        self.show()
-
     def change_db(self, index):
         """prepare for querying the correct database
         """
@@ -181,5 +179,6 @@ def main():
     """start application
     """
     app = qtw.QApplication(sys.argv)
-    MainWidget()
+    win = MainWidget()
+    win.show()
     sys.exit(app.exec_())
