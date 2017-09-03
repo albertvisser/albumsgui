@@ -41,15 +41,14 @@ RECTYPES = ('Cassette',
 def get_artist_list():
     """get artist data from the database
     """
-    return dmla.list_artists(dmla.DB)
+    return dmla.list_artists()
 
 
 def get_all_artists():
     """retrieve artists and keys
     """
     data = get_artist_list()
-    artist_names = [' '.join((x["first_name"], x['last_name'])).lstrip()
-                    for x in data]
+    artist_names = [x["name"] for x in data]
     artist_ids = [x["id"] for x in data]
     return artist_names, artist_ids
 
@@ -57,9 +56,9 @@ def get_all_artists():
 def get_albums_by_artist(albumtype, search_for, sort_on):
     """get the selected artist's ID and build a list of albums
     """
-    data = dmla.list_albums_by_artist(dmla.DB, albumtype, search_for, sort_on)
-    album_names = [x["name"] for x in data]
-    album_ids = [x["id"] for x in data]
+    data = dmla.list_albums_by_artist(albumtype, search_for, sort_on)
+    album_names = [x.name for x in data]
+    album_ids = [x.id for x in data]
     return album_names, album_ids
 
 
@@ -72,40 +71,34 @@ def get_albums_by_text(albumtype, search_type, search_for, sort_on):
     elif albumtype == 'live':
         search_type = {0: '*', 2: 'name', 3: 'name', 4: 'produced_by',
                        5: 'bezetting'}[search_type]
-    data = dmla.list_albums_by_search(dmla.DB, albumtype, search_type, search_for,
-                                      sort_on)
-    album_names = [x["name"] for x in data]
-    album_ids = [x["id"] for x in data]
-    album_artists = [' '.join((x["first_name"], x["last_name"])).lstrip()
-                     for x in data]
+    data = dmla.list_albums_by_search(albumtype, search_type, search_for, sort_on)
+    album_names = [x.name for x in data[0]]
+    album_ids = [x.id for x in data[0]]
+    album_artists = data[1]
     return album_artists, album_names, album_ids
 
 
 def get_album(album_id, albumtype):
     """get the selected album's data
     """
-    test = dmla.list_album_details(dmla.DB, album_id)
-    data = test[0] if test else {}
-    result = {'titel': data.get('name', ''),
-              'artist': ' '.join((data.get('first_name', ''),
-                                  data.get('last_name', ''))).strip()}
-    text = data.get('label', '')
-    if data.get('release_year', ''):
+    album, artist = dmla.list_album_details(album_id)
+    result = {'titel': album.name, 'artist': artist}
+    text = album.label
+    if album.release_year:
         if text:
             text += ', '
-        text += str(data['release_year'])
+        text += str(album.release_year)
     result['details'] = [('Label/jaar:', text),
-                         ('Produced by:', data.get('produced_by', '')),
-                         ('Credits:', data.get('credits', '')),
-                         ('Bezetting:', data.get('bezetting', '')),
-                         ('Tevens met:', data.get('additional', ''))]
+                         ('Produced by:', album.produced_by),
+                         ('Credits:', album.credits),
+                         ('Bezetting:', album.bezetting),
+                         ('Tevens met:', album.additional)]
     if albumtype == 'live':
         result['details'].pop(0)
-    if data:
-        result['tracks'] = [(x["volgnr"], x["name"], x["written_by"], x["credits"])
-                            for x in dmla.list_tracks(dmla.DB, album_id)]
-        result['opnames'] = [(x["type"], x["oms"])
-                             for x in dmla.list_recordings(dmla.DB, album_id)]
+    if album:
+        result['tracks'] = [(x.volgnr, x.name, x.written_by, x.credits)
+                            for x in dmla.list_tracks(album_id)]
+        result['opnames'] = [(x.type, x.oms) for x in dmla.list_recordings(album_id)]
     else:
         result['tracks'], result['opnames'] = [], []
     return result
@@ -157,10 +150,6 @@ def button_strip(parent, *buttons):
     if 'New' in buttons:
         btn = qtw.QPushButton("Nieuwe opvoeren", parent)
         btn.clicked.connect(parent.new)
-        hbox.addWidget(btn)
-    if 'Detail' in buttons:
-        btn = qtw.QPushButton("Naar Details", parent)
-        btn.clicked.connect(parent.parent().do_details)
         hbox.addWidget(btn)
     if 'Select' in buttons:
         btn = qtw.QPushButton("Terug naar Selectie", parent)
@@ -581,7 +570,7 @@ class Select(qtw.QWidget):
         self.parent().do_detail()
 
     def add_new_to_sel(self, *args, **kwargs):
-        """TODO
+        """
         """
         self.parent().do_new(keep_sel=True)
 
@@ -777,6 +766,7 @@ class EditDetails(qtw.QWidget):
 
         super().__init__(parent)
         self.new_album = self.keep_sel = False
+        self.first_time = True
 
     def create_widgets(self):
         """setup screen
@@ -837,7 +827,8 @@ class EditDetails(qtw.QWidget):
             buttons.remove('Cancel')
             if not self.parent().search_arg:
                 buttons.remove('Select')
-        gbox.addLayout(button_strip(self, *buttons), row, 0, 1, 3)
+        self.bbox = button_strip(self, *buttons)
+        gbox.addLayout(self.bbox, row, 0, 1, 3)
 
         row += 1
         gbox.addLayout(exitbutton(self, self.exit), row, 0, 1, 3)
@@ -872,6 +863,17 @@ class EditDetails(qtw.QWidget):
         """bring screen up-to-date
         """
         self.heading.setText(build_heading(self))
+        if not self.first_time:
+            for i in range(self.bbox.count()):
+                btn = self.bbox.itemAt(i).widget()
+                if btn:  # try:
+                    test = btn.text()
+                else:  # except AttributeError:
+                    continue
+                if test == "Uitvoeren en terug":
+                    btn.setText("Naar Details")
+                    btn.clicked.connect(self.parent().do_detail)
+                    break
 
     def submit(self):
         """neem de waarden van de invulvelden over en geef ze door aan de database
@@ -885,6 +887,9 @@ class EditDetails(qtw.QWidget):
                 data = win.toPlainText()
             else:
                 data = win.text()
+        if self.first_time:
+            self.first_time = False
+            self.refresh_screen()
 
     def submit_and_back(self):
         """return to previous (details) screen after completion
