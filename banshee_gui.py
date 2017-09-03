@@ -4,7 +4,7 @@ import sys
 import PyQt5.QtWidgets as qtw
 ## import PyQt5.QtGui as gui
 ## import PyQt5.QtCore as core
-import albums_dml as dmla
+import albums_dml_sql as dmla
 import banshee_dml as dmlb
 import clementine_dml as dmlc
 import cddb_dml as dmld
