@@ -158,6 +158,10 @@ def button_strip(parent, *buttons):
         btn = qtw.QPushButton("Nieuwe opvoeren", parent)
         btn.clicked.connect(parent.new)
         hbox.addWidget(btn)
+    if 'Detail' in buttons:
+        btn = qtw.QPushButton("Naar Details", parent)
+        btn.clicked.connect(parent.parent().do_details)
+        hbox.addWidget(btn)
     if 'Select' in buttons:
         btn = qtw.QPushButton("Terug naar Selectie", parent)
         btn.clicked.connect(parent.parent().do_select)
@@ -363,8 +367,9 @@ class Start(qtw.QWidget):
             return
         widgets[0].setCurrentIndex(self.parent().searchtype)
         if self.parent().searchtype == 1:
-            chosen = self.parent().ids.index(self.parent().artistid)
-            widgets[1].setCurrentIndex(chosen + 1)
+            if self.parent().artistid:
+                chosen = self.parent().ids.index(self.parent().artistid)
+                widgets[1].setCurrentIndex(chosen + 1)
         if self.parent().searchtype < 2:
             widgets[2].clear()
         else:
@@ -771,6 +776,7 @@ class EditDetails(qtw.QWidget):
     def __init__(self, parent):
 
         super().__init__(parent)
+        self.new_album = self.keep_sel = False
 
     def create_widgets(self):
         """setup screen
@@ -790,17 +796,19 @@ class EditDetails(qtw.QWidget):
         if self.parent().albumtype == 'live':
             data[1][0] = 'Locatie/datum:'
         data += self.parent().albumdata['details']
+        self.screendata = []
         for caption, text in data:
             row += 1
             hbox = qtw.QHBoxLayout()
             hbox.addSpacing(20)
+            lbl = qtw.QLabel(caption, self)
             if caption in ('Credits:', 'Bezetting:', 'Tevens met:'):
                 vbox = qtw.QVBoxLayout()
-                vbox.addWidget(qtw.QLabel(caption, self))
+                vbox.addWidget(lbl)
                 vbox.addStretch()
                 hbox.addLayout(vbox)
             else:
-                hbox.addWidget(qtw.QLabel(caption, self))
+                hbox.addWidget(lbl)
             gbox.addLayout(hbox, row, 0, 1, 1)
             if caption == 'Uitvoerende:':
                 win = qtw.QComboBox(self)
@@ -816,6 +824,7 @@ class EditDetails(qtw.QWidget):
             else:
                 win = qtw.QLineEdit(text, self)
             gbox.addWidget(win, row, 1, 1, 2)
+            self.screendata.append((lbl, win))
 
         row += 1
         vbox = qtw.QVBoxLayout()
@@ -835,14 +844,11 @@ class EditDetails(qtw.QWidget):
 
         self.setLayout(gbox)
 
-    def refresh_screen(self):
-        """bring screen up-to-date
-        """
-        self.heading.setText(build_heading(self))
-
     def new_data(self, keep_sel=False):
         """Prepare to show empty screen for entering new album
         """
+        self.keep_sel = keep_sel
+        self.new_album = True
         self.albumnaam = ''
         self.album_names = []
         self.tracknames = []
@@ -850,21 +856,48 @@ class EditDetails(qtw.QWidget):
         self.edit_det = True
         self.edit_trk = self.edit_rec = False
 
-        if keep_sel:  # what was this about again?
-            if self.parent().searchtype == 1:
-                self.parent().artistid
+        if not keep_sel:
+            return
+        # TODO: prefill field(s) based on the selection we're in
+        # loop over screendata fields to select the field to prefill
+        for lbl, win in self.screendata:
+            caption = lbl.text()
+            if self.parent().searchtype == 1 and caption == 'Uitvoerende:':
+                win.setCurrentIndex(self.parent().ids.index(self.parent().artistid) + 1)
             else:
+                # also take albumtype into account
                 self.parent().search_arg
+
+    def refresh_screen(self):
+        """bring screen up-to-date
+        """
+        self.heading.setText(build_heading(self))
 
     def submit(self):
         """neem de waarden van de invulvelden over en geef ze door aan de database
         """
+        for lbl, win in self.screendata:
+            caption = lbl.text()
+            if caption == 'Uitvoerende:':
+                data = win.currentText()
+                ## self.parent().artistid = win.currentIndex() # niet goed, maar kijken of het werkt
+            elif caption in ('Credits:', 'Bezetting:', 'Tevens met:'):
+                data = win.toPlainText()
+            else:
+                data = win.text()
 
     def submit_and_back(self):
         """return to previous (details) screen after completion
         """
         self.submit()
-        self.parent().do_detail()
+        print(self.new_album, self.keep_sel)
+        if self.new_album:
+            if self.keep_sel:
+                self.parent().do_select()
+            else:
+                self.parent().do_start()
+        else:
+            self.parent().do_detail()
 
     def exit(self):
         """shutdown application"""
