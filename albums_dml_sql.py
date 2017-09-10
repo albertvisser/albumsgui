@@ -1,7 +1,6 @@
 """dml for reading Albums database from banshee_gui
 """
 import sqlite3
-from contextlib import closing
 from banshee_settings import databases
 DB = databases['albums']
 
@@ -10,7 +9,7 @@ def execute_query(db, query):
     """get data from database
     """
     result = []
-    with closing(sqlite3.connect(db)) as conn:
+    with sqlite3.connect(db) as conn:
         conn.row_factory = sqlite3.Row
         cur = conn.cursor()
         for row in cur.execute(query):
@@ -49,5 +48,30 @@ def main():
         print(list_albums(DB, 1), file=_out)
         print(list_tracks(DB, 1), file=_out)
 
+
+def restore_artists():
+    fromdb = '/home/albert/projects/albums/albums/pythoneer.db'
+    todb = '/home/albert/projects/albums/albums/albums.db'
+    with sqlite3.connect(fromdb) as conn:
+        cur = conn.cursor()
+        query = 'select * from muziek_act'
+        result = cur.execute(query)
+        data = {x[0]: (x[1], x[2]) for x in result}
+
+        ## data = cur.fetchall()
+    print(data)
+    # niet weggoien en opnieuw opvoeren: waarden vervangen
+    # dan data iets slimmer opzetten
+
+    with sqlite3.connect(todb) as conn:
+        cur = conn.cursor()
+        ## cur.execute('delete from muziek_act')
+        for key, names in data.items():
+            cur.execute('update muziek_act set first_name = ?, last_name = ?'
+                        ' where id = ?', (names[0], names[1], key))
+        conn.commit()
+
+
 if __name__ == "__main__":
-    main()
+    ## main()
+    restore_artists()
