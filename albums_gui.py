@@ -574,17 +574,11 @@ class Select(qtw.QWidget):
         """determine other type of selection and change accordingly, also change
         self.parent().albumtype
         """
-        # bezetting: is 5 bij studio en 4 bij live
-        # producer en credits alleen bij studio - afgevangen bij refresh_screen
-        # titel bij studio is locatie of datum bij live
-        print('before:', self.parent().searchtype, type(self.parent().searchtype))
-        print('self.old_seltype is', self.parent().old_seltype)
         if self.parent().albumtype == 'studio':
             self.parent().albumtype = 'live'
             if self.parent().searchtype == 5:
                 self.parent().searchtype = 4
             elif self.parent().searchtype == 2 and self.parent().old_seltype:
-                print('searchtype gelijkstellen aan oldtype')
                 self.parent().searchtype = self.parent().old_seltype
         else:
             self.parent().albumtype = 'studio'
@@ -594,10 +588,7 @@ class Select(qtw.QWidget):
                 self.parent().old_seltype = self.parent().searchtype
                 if self.parent().searchtype == 3:
                     self.parent().searchtype = 2
-        print('after: ', self.parent().searchtype)
-        print('self.old_seltype is', self.parent().old_seltype)
-        self.parent().do_select()   # old_seltype werkt alleen maar als ik niet een nieuwe
-        # class maak
+        self.parent().do_select()
 
     def todetail(self):
         """determine which button was clicked and change accordingly
@@ -836,12 +827,30 @@ class EditDetails(qtw.QWidget):
                 win.addItems(listdata)
                 if text:
                     win.setCurrentIndex(listdata.index(text.get_name()) + 1)
+            elif caption == 'Label/jaar:':
+                hbox2 = qtw.QHBoxLayout()
+                text = text.split(', ')
+                if len(text) == 1:
+                    text.append('')
+                win_l = qtw.QLineEdit(text[0], self)
+                win_l.setMaximumWidth(200)
+                win_l.setMinimumWidth(200)
+                hbox2.addWidget(win_l)
+                win_y = qtw.QLineEdit(text[1], self)
+                win_y.setMaximumWidth(80)
+                win_y.setMinimumWidth(80)
+                hbox2.addWidget(win_y)
+                hbox2.addStretch()
             elif caption in ('Credits:', 'Bezetting:', 'Tevens met:'):
                 win = qtw.QTextEdit(text, self)
             else:
                 win = qtw.QLineEdit(text, self)
-            gbox.addWidget(win, row, 1, 1, 2)
-            self.screendata.append((lbl, win))
+            if caption == 'Label/jaar:':
+                gbox.addLayout(hbox2, row, 1, 1, 2)
+                self.screendata.append((lbl, win_l, win_y))
+            else:
+                gbox.addWidget(win, row, 1, 1, 2)
+                self.screendata.append((lbl, win))
 
         row += 1
         vbox = qtw.QVBoxLayout()
@@ -878,7 +887,7 @@ class EditDetails(qtw.QWidget):
             return
         # prefill field(s) based on the selection we're in
         # loop over screendata fields to select the field to prefill
-        for lbl, win in self.screendata:
+        for lbl, win in self.screendata[:2]:
             caption = lbl.text()
             if self.parent().searchtype == 1 and caption == 'Uitvoerende:':
                 ## win.setCurrentIndex([x for x in self.parent().artists].index(
@@ -934,11 +943,11 @@ class EditDetails(qtw.QWidget):
                     break
             return changed
         is_changed = False
-        for lbl, win in self.screendata:
+        for fields in self.screendata:
+            lbl, win = fields[:2]
             caption = lbl.text()
             if caption == 'Uitvoerende:':
                 test = win.currentText()
-                print(test, win.currentIndex())
                 ix = win.currentIndex() - 1
                 if test != self.parent().albumdata['artist']:
                     self.parent().albumdata['artist'] = self.parent().artists[ix]
@@ -948,6 +957,12 @@ class EditDetails(qtw.QWidget):
                 test = win.text()
                 if test != self.parent().albumdata['titel']:
                     self.parent().albumdata['titel'] = test
+                    is_changed = True
+            elif caption == 'Label/jaar:':
+                win_l, win_y = fields[1:]
+                test = replace_details(
+                    caption, ', '.join((win_l.text(), win_y.text())))
+                if test:
                     is_changed = True
             elif caption in ('Credits:', 'Bezetting:', 'Tevens met:'):
                 test = replace_details(caption, win.toPlainText())
@@ -1003,7 +1018,6 @@ class EditDetails(qtw.QWidget):
         """return to previous (details) screen after completion
         """
         self.submit(goback=True)
-        print(self.new_album, self.keep_sel)
         if self.first_time:
             if self.keep_sel:
                 self.parent().do_select()

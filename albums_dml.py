@@ -56,7 +56,6 @@ def list_albums_by_artist(albumtype, artist_id, order_by):
 def list_albums_by_search(albumtype, search_type, search_for, order_by):
     """produce list of albums by text search and sorted
     """
-    print(albumtype, search_type, search_for, order_by)
     if albumtype == 'studio':
         sel = my.Album.objects.exclude(label="")
     elif albumtype == 'live':
