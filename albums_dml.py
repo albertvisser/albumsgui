@@ -6,14 +6,19 @@ import django
 sys.path.append('/home/albert/projects/albums')
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "albums.settings")
 django.setup()
-
+from django.db.models import Q
 import albums.muziek.models as my
 
 
-def list_artists():
+def list_artists(sel=""):
     """produce list of artists
     """
-    artist_list = my.Act.objects.order_by('last_name')
+    if not sel:
+        artist_list = my.Act.objects.order_by('last_name')
+    else:
+        artist_list = my.Act.objects.filter(
+            Q(first_name__icontains=sel) | Q(last_name__icontains=sel)).order_by(
+                'last_name')
     ## return [{'id': x.id, 'name': x.get_name()} for x in artist_list]
     return artist_list
 
@@ -101,9 +106,7 @@ def list_recordings(album_id):
 
 
 def update_album_details(album_id, albumdata):
-    """store album as prepared - return updated version
-    """
-    """prepare data from screen for storing in database
+    """store data from screen in database - return updated version
     """
     if album_id:
         album = my.Album.objects.get(pk=album_id)
@@ -146,14 +149,11 @@ def update_album_tracks(album_id, tracks):
     old_tracks = {x.volgnr: x for x in album.tracks.all()}
     new_track = changed = False
     for ix, item in tracks:
-        print(ix, type(ix), item)
         if ix in old_tracks:
             if item != old_tracks[ix]:
-                print('updating track')
                 trk = old_tracks[ix]
                 changed = True
         else:
-            print('adding track')
             trk = my.Song.objects.create(volgnr=ix)
             album.tracks.add(trk)
             new_track = True
@@ -190,6 +190,8 @@ def update_album_recordings(album_id, recordings):
 
 
 def update_artists(changes):
+    """store data from screen in database
+    """
     ok = True
     for id, first_name, last_name in changes:
         if id:
