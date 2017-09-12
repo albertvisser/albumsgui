@@ -50,6 +50,9 @@ def main():
 
 
 def restore_artists():
+    """needed to copy artists over from an older database after I replaced them
+    with references to the screen fields during testing
+    """
     fromdb = '/home/albert/projects/albums/albums/pythoneer.db'
     todb = '/home/albert/projects/albums/albums/albums.db'
     with sqlite3.connect(fromdb) as conn:
