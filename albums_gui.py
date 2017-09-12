@@ -435,12 +435,11 @@ class Select(qtw.QWidget):
         hbox.addWidget(self.heading)
         vbox.addLayout(hbox)
 
-        labeltxt = 'naar een soortgelijke selectie voor '
+        labeltxt = 'Snel naar dezelfde selectie voor '
+        labeltxt2 = 'naar een soortgelijke selectie voor '
         if self.parent().searchtype == 1:
             hbox = qtw.QHBoxLayout()
-            # TODO: variabel maken m.b.t. zoeken op tekst (dan tekstvak ipv combobox)
-            hbox.addWidget(qtw.QLabel('Snel naar dezelfde selectie voor een andere '
-                                      'artiest:', self))
+            hbox.addWidget(qtw.QLabel(labeltxt + 'een andere artiest:', self))
             self.ask_artist = qtw.QComboBox(self)
             self.ask_artist.addItem('--- Maak een selectie ---')
             self.ask_artist.addItems(self.parent().artist_names)
@@ -453,7 +452,21 @@ class Select(qtw.QWidget):
             hbox.addWidget(self.change_artist)
             hbox.addStretch()
             vbox.addLayout(hbox)
-            labeltxt = 'of ' + labeltxt
+            labeltxt = 'of ' + labeltxt2
+        else:
+            hbox = qtw.QHBoxLayout()
+            hbox.addWidget(qtw.QLabel(labeltxt + 'een andere waarde:', self))
+            self.ask_zoekarg = qtw.QLineEdit(self)
+            self.ask_zoekarg.setMaximumWidth(200)
+            self.ask_zoekarg.setMinimumWidth(200)
+            hbox.addWidget(self.ask_zoekarg)
+            self.change_zoekarg = qtw.QPushButton('Go', self)
+            self.change_zoekarg.setMaximumWidth(40)
+            self.change_zoekarg.clicked.connect(self.other_search)
+            hbox.addWidget(self.change_zoekarg)
+            hbox.addStretch()
+            vbox.addLayout(hbox)
+            labeltxt = 'of ' + labeltxt2
 
         if not (self.parent().albumtype == 'studio'
                 and self.parent().searchtype in (3, 4)):
@@ -462,7 +475,7 @@ class Select(qtw.QWidget):
             self.change_type = qtw.QPushButton('', self)
             self.change_type.clicked.connect(self.other_albumtype)
             hbox.addWidget(self.change_type)
-            hbox.addWidget(qtw.QLabel(' van deze artiest', self))
+            ## hbox.addWidget(qtw.QLabel(' van deze artiest', self))
             hbox.addStretch()
             vbox.addLayout(hbox)
 
@@ -547,6 +560,14 @@ class Select(qtw.QWidget):
             self.parent().search_arg = self.parent().artist_ids[chosen - 1]
             if self.parent().searchtype == 1:
                 self.parent().artist = self.parent().artists[chosen - 1]
+            self.parent().do_select()
+
+    def other_search(self):
+        """read self.ask_zoekarg and change self.parent().search_arg
+        """
+        test = self.ask_zoekarg.text()
+        if test:
+            self.parent().search_arg = test
             self.parent().do_select()
 
     def other_albumtype(self):
@@ -815,8 +836,6 @@ class EditDetails(qtw.QWidget):
                 win.addItems(listdata)
                 if text:
                     win.setCurrentIndex(listdata.index(text.get_name()) + 1)
-                ## win.setMaximumWidth(200)
-                ## win.setMinimumWidth(200)
             elif caption in ('Credits:', 'Bezetting:', 'Tevens met:'):
                 win = qtw.QTextEdit(text, self)
             else:
@@ -862,13 +881,28 @@ class EditDetails(qtw.QWidget):
         for lbl, win in self.screendata:
             caption = lbl.text()
             if self.parent().searchtype == 1 and caption == 'Uitvoerende:':
-                win.setCurrentIndex([x for x in self.parent().artists].index(
-                    self.parent().artist) + 1)
-                ## win.setCurrentIndex(self.parent().artist_ids.index(
-                    ## self.parent().search_arg.id) + 1)
-            else:
-                # TODO also take albumtype into account
-                self.parent().search_arg
+                ## win.setCurrentIndex([x for x in self.parent().artists].index(
+                    ## self.parent().artist) + 1)
+                win.setCurrentIndex(self.parent().artist_ids.index(
+                    self.parent().search_arg.id) + 1)
+            elif self.parent().searchtype == 2:
+                if self.parent().albumtype == 'studio' and caption == 'Albumtitel:':
+                    win.setText(self.parent().search_arg)
+                elif self.parent().albumtype == 'live' and caption == 'Locatie/datum:':
+                    win.setText(self.parent().search_arg)
+            elif self.parent().searchtype == 3:
+                if self.parent().albumtype == 'studio' and caption == 'Produced by:':
+                    win.setText(self.parent().search_arg)
+                elif self.parent().albumtype == 'live' and caption == 'Locatie/datum:':
+                    win.setText(self.parent().search_arg)
+            elif self.parent().searchtype == 4:
+                if self.parent().albumtype == 'studio' and caption == 'Credits:':
+                    win.setText(self.parent().search_arg)
+                elif self.parent().albumtype == 'live' and caption == 'Bezetting:':
+                    win.setText(self.parent().search_arg)
+            elif self.parent().searchtype == 5:
+                if self.parent().albumtype == 'studio' and caption == 'Bezetting:':
+                    win.setText(self.parent().search_arg)
 
     def refresh_screen(self):
         """bring screen up-to-date
@@ -886,7 +920,7 @@ class EditDetails(qtw.QWidget):
                     btn.clicked.connect(self.parent().do_detail)
                     break
 
-    def submit(self):
+    def submit(self, goback = False):
         """neem de waarden van de invulvelden over en geef ze door aan de database
         """
         def replace_details(caption, value):
@@ -900,7 +934,6 @@ class EditDetails(qtw.QWidget):
                     break
             return changed
         is_changed = False
-        print('before:', self.parent().albumdata)
         for lbl, win in self.screendata:
             caption = lbl.text()
             if caption == 'Uitvoerende:':
@@ -927,16 +960,19 @@ class EditDetails(qtw.QWidget):
 
         if is_changed:
             albumid = 0 if self.new_album else self.parent().album.id
-            print('still before:', albumid, self.parent().albumdata)
             album, ok = dmla.update_album_details(albumid, self.parent().albumdata)
-            print('after update:', album)
             # eigenlijk wil ik hier de nieuwe waarden teruggeven om ze op het scherm te zetten
             # zodat je kunt zien wat er daadwerkelijk in de database zit / is bijgewerkt
             if ok:
-                qtw.QMessageBox.information(self, 'Albums', 'Details updated')
+                if not goback:
+                    if self.new_album:
+                        self.add_another()
+                    else:
+                        qtw.QMessageBox.information(self, 'Albums',
+                            'Details updated')
             else:
                 qtw.QMessageBox.information(self, 'Albums',
-                    'Something went wrong, please try again')
+                                            'Something went wrong, please try again')
                 return
             self.parent().album = album
             if self.new_album:
@@ -951,10 +987,22 @@ class EditDetails(qtw.QWidget):
             self.first_time = False
             self.refresh_screen()
 
+    def add_another(self):
+        """Show message with possibility to continue adding items
+        """
+        message = qtw.QMessageBox(qtw.QMessageBox.Information, 'Albums',
+            "Album added", buttons=qtw.QMessageBox.Ok, parent=self)
+        message.setDefaultButton(qtw.QMessageBox.Ok)
+        message.setEscapeButton(qtw.QMessageBox.Ok)
+        next = message.addButton('&Add Another', qtw.QMessageBox.AcceptRole)
+        message.exec_()
+        if message.clickedButton() == next:
+            self.parent().do_new(keep_sel=self.keep_sel)
+
     def submit_and_back(self):
         """return to previous (details) screen after completion
         """
-        self.submit()
+        self.submit(goback=True)
         print(self.new_album, self.keep_sel)
         if self.first_time:
             if self.keep_sel:
@@ -1065,17 +1113,6 @@ class EditTracks(qtw.QWidget):
         """bring screen up-to-date
         """
         self.heading.setText(build_heading(self))
-        ## if not self.first_time:
-            ## for i in range(self.bbox.count()):
-                ## btn = self.bbox.itemAt(i).widget()
-                ## if btn:  # try:
-                    ## test = btn.text()
-                ## else:  # except AttributeError:
-                    ## continue
-                ## if test == "Uitvoeren en terug":
-                    ## btn.setText("Naar Details")
-                    ## btn.clicked.connect(self.parent().do_detail)
-                    ## break
 
     def add_new_item(self):
         """Create new line to enter new track
@@ -1113,7 +1150,7 @@ class EditTracks(qtw.QWidget):
                 qtw.QMessageBox.information(self, 'Albums', 'Tracks updated')
             else:
                 qtw.QMessageBox.information(self, 'Albums',
-                    'Something went wrong, please try again')
+                                            'Something went wrong, please try again')
             # eigenlijk zou je hierna de data opnieuw moeten ophalen en het scherm opnieuw
             # opbouwen - wat nu alleen gebeurt als je naar het detailscherm gaat
         else:
@@ -1213,17 +1250,6 @@ class EditRecordings(qtw.QWidget):
         """bring screen up-to-date
         """
         self.heading.setText(build_heading(self))
-        ## if not self.first_time:
-            ## for i in range(self.bbox.count()):
-                ## btn = self.bbox.itemAt(i).widget()
-                ## if btn:  # try:
-                    ## test = btn.text()
-                ## else:  # except AttributeError:
-                    ## continue
-                ## if test == "Uitvoeren en terug":
-                    ## btn.setText("Naar Details")
-                    ## btn.clicked.connect(self.parent().do_detail)
-                    ## break
 
     def add_new_item(self):
         """Create empty line to enter new recording data
@@ -1261,7 +1287,7 @@ class EditRecordings(qtw.QWidget):
                 qtw.QMessageBox.information(self, 'Albums', 'Recordings updated')
             else:
                 qtw.QMessageBox.information(self, 'Albums',
-                    'Something went wrong, please try again')
+                                            'Something went wrong, please try again')
             # eigenlijk zou je hierna de data opnieuw moeten ophalen en het scherm opnieuw
             # opbouwen - wat nu alleen gebeurt als je naar het detailscherm gaat
         else:
@@ -1289,21 +1315,28 @@ class Artists(qtw.QWidget):
         """setup screen
         """
         vbox = qtw.QVBoxLayout()
-        self.heading = qtw.QLabel('Artiestenlijst', self)
-        self.fields = []
         hbox = qtw.QHBoxLayout()
+        self.heading = qtw.QLabel('Artiestenlijst - gefilterd op', self)
         hbox.addWidget(self.heading)
+        self.ask_filter = qtw.QLineEdit(self.parent().artist_filter, self)
+        self.artist_list = self.parent().artists
+        hbox.addWidget(self.ask_filter)
+        self.set_filter = qtw.QPushButton('&Go', self)
+        self.set_filter.clicked.connect(self.filter)
+        hbox.addWidget(self.set_filter)
         vbox.addLayout(hbox)
         vbox.addLayout(newline(self))
 
+        self.fields = []
         self.frm = qtw.QFrame(self)
         self.vbox2 = qtw.QVBoxLayout()
         self.last_artistid = 0
-        for artist in self.parent().artists:  # get_artist_list():
+        for artist in self.artist_list:
             test = artist.id
             if test > self.last_artistid:
                 self.last_artistid = test
             self.add_artist_line(test, artist.first_name, artist.last_name)
+        self.vbox2.addStretch()
         self.frm.setLayout(self.vbox2)
         self.scrl = qtw.QScrollArea()
         self.scrl.setWidget(self.frm)
@@ -1314,6 +1347,15 @@ class Artists(qtw.QWidget):
         vbox.addLayout(exitbutton(self, self.exit))
 
         self.setLayout(vbox)
+
+    def filter(self):
+        filter = self.ask_filter.text()
+        if filter:
+            self.parent().artists = dmla.list_artists(filter)
+        else:
+            self.parent().artists = self.parent().all_artists
+        self.parent().artist_filter = filter
+        self.parent().do_select()
 
     def add_artist_line(self, itemid, first_name='', last_name=''):
         """Create line in edit area with artist data (or not)
@@ -1354,7 +1396,7 @@ class Artists(qtw.QWidget):
         if changed or new:
             dmla.update_artists(changes)
         else:
-            qtw.QMessageBox.information(self, 'Albums','Nothing changed')
+            qtw.QMessageBox.information(self, 'Albums', 'Nothing changed')
         self.parent().app.restoreOverrideCursor()
         self.parent().get_all_artists()
         self.parent().do_select()
@@ -1425,7 +1467,6 @@ class MainFrame(qtw.QMainWindow):
         self.search_arg = ''
         self.sorttype = ''
         self.old_seltype = 0
-        self.get_all_artists()
         self.albumdata = {}
         self.end = False
         self.albums = []
@@ -1437,13 +1478,16 @@ class MainFrame(qtw.QMainWindow):
     def get_all_artists(self):
         """refresh list of artist convenience variables
         """
-        self.artists = get_artist_list()
+        self.all_artists = get_artist_list()
+        self.artists = self.all_artists
         self.artist_names = [x.get_name() for x in self.artists]
         self.artist_ids = [x.id for x in self.artists]
 
     def do_start(self):
         """show initial sceen
         """
+        self.artist_filter = ''
+        self.get_all_artists()
         go = Start(self)
         self.windows.append(go)
         go.create_widgets()
