@@ -108,9 +108,13 @@ def build_heading(win, readonly=False):
         text = 'Opvoeren nieuw {}'.format(TYPETXT[win.parent().albumtype])
     else:
         text = 'G' if readonly else 'Wijzigen g'
-        text = '{}egevens van {} {} - {}'.format(
+        wintext = win.heading.text()
+        if wintext:
+            ## wintext = '({})'.format(wintext)
+            wintext = ': {}'.format(wintext)
+        text = '{}egevens van {} {} - {} {}'.format(
             text, TYPETXT[win.parent().albumtype], win.parent().albumdata['artist'],
-            win.parent().albumdata['titel'])
+            win.parent().albumdata['titel'], wintext)
     return text
 
 
@@ -1040,7 +1044,7 @@ class EditTracks(qtw.QWidget):
         self.first_time = True
         vbox = qtw.QVBoxLayout()
         row = 0
-        self.heading = qtw.QLabel('', self)
+        self.heading = qtw.QLabel('tracks', self)
         hbox = qtw.QHBoxLayout()
         hbox.addWidget(self.heading)
         vbox.addLayout(hbox)
@@ -1193,7 +1197,7 @@ class EditRecordings(qtw.QWidget):
         """
         self.first_time = True
         vbox = qtw.QVBoxLayout()
-        self.heading = qtw.QLabel('', self)
+        self.heading = qtw.QLabel('opnames', self)
         hbox = qtw.QHBoxLayout()
         hbox.addWidget(self.heading)
         vbox.addLayout(hbox)
