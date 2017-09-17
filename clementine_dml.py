@@ -3,6 +3,8 @@
 import pprint
 import sqlite3
 from contextlib import closing
+from banshee_settings import databases
+DB = databases['clementine']
 
 
 def execute_query(db, query):
@@ -11,7 +13,7 @@ def execute_query(db, query):
     with closing(sqlite3.connect(db)) as conn:
         conn.row_factory = sqlite3.Row
         cur = conn.cursor()
-        print(query)
+        ## print(query)
         for row in cur.execute(query):
             result.append({name: row[name] for name in row.keys()})
     return result
@@ -40,7 +42,8 @@ def list_tracks(db, artist_id, album_id):
 def main():
     """simple test: print data
     """
-    db = '/home/albert/.config/Clementine.orig/clementine.db'
+    ## db = '/home/albert/.config/Clementine.orig/clementine.db'
+    db = DB
     with open("/tmp/test_clementine_output", "w") as _out:
         artist_list = list_artists(db)
         pprint.pprint(artist_list, stream=_out)

@@ -1477,7 +1477,7 @@ class MainFrame(qtw.QMainWindow):
         self.app = qtw.QApplication(sys.argv)
         super().__init__()
         self.move(300, 50)
-        self.resize(400, 600)
+        ## self.resize(400, 600)
         self.artist = None
         self.album = None
         self.albumtype = ''

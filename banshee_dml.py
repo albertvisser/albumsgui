@@ -2,6 +2,8 @@
 """
 import sqlite3
 from contextlib import closing
+from banshee_settings import databases
+DB = databases['banshee']
 
 
 def execute_query(db, query):
@@ -41,7 +43,7 @@ def list_tracks(db, album_id):
 def main():
     """simple test: print data
     """
-    db = '/home/albert/.config/banshee-1/banshee.db'
+    db = DB
     with open("test_banshee_output", "w") as _out:
         print(list_artists(db), file=_out)
         print(list_albums(db, 19), file=_out)

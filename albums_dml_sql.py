@@ -54,7 +54,7 @@ def restore_artists():
     with references to the screen fields during testing
     """
     fromdb = '/home/albert/projects/albums/albums/pythoneer.db'
-    todb = '/home/albert/projects/albums/albums/albums.db'
+    todb = DB
     with sqlite3.connect(fromdb) as conn:
         cur = conn.cursor()
         query = 'select * from muziek_act'
