@@ -7,6 +7,7 @@ import PyQt5.QtWidgets as qtw
 import PyQt5.QtGui as gui
 import PyQt5.QtCore as core
 import albums_dml as dmla
+# these should actually also be in the Albums database
 TYPETXT = {'studio': 'album', 'live': 'concert'}
 SELTXT = {'studio': ['Niet zoeken, alles tonen',
                      'Zoek op Uitvoerende',
@@ -35,7 +36,8 @@ RECTYPES = ('Cassette',
             'Vinyl: 12" single',
             'Tape',
             'MP3 directory',
-            'Banshee music player',)
+            'Banshee music player',
+            'Clementine music player')
 
 
 def get_artist_list():
@@ -107,14 +109,19 @@ def build_heading(win, readonly=False):
     if not win.parent().albumdata['artist'] or not win.parent().albumdata['titel']:
         text = 'Opvoeren nieuw {}'.format(TYPETXT[win.parent().albumtype])
     else:
-        text = 'G' if readonly else 'Wijzigen g'
         wintext = win.heading.text()
-        if wintext:
-            ## wintext = '({})'.format(wintext)
-            wintext = ': {}'.format(wintext)
+        newtext = ''
+        for text in ('tracks', 'opnames'):
+            if wintext == text:
+                newtext = ': {}'.format(wintext)
+                break
+            elif wintext.endswith(text):
+                newtext = ': {}'.format(text)
+                break
+        text = 'G' if readonly else 'Wijzigen g'
         text = '{}egevens van {} {} - {} {}'.format(
             text, TYPETXT[win.parent().albumtype], win.parent().albumdata['artist'],
-            win.parent().albumdata['titel'], wintext)
+            win.parent().albumdata['titel'], newtext)
     return text
 
 
@@ -1278,7 +1285,7 @@ class EditRecordings(qtw.QWidget):
         vbar.setMaximum(vbar.maximum() + 36)
         vbar.setValue(vbar.maximum())
 
-    def submit(self):
+    def submit(self, skip=False):
         """neem de waarden van de invulvelden over en geef ze door aan de database
         """
         recordings = []
@@ -1301,15 +1308,17 @@ class EditRecordings(qtw.QWidget):
 
         if recordings:
             ok = dmla.update_album_recordings(self.parent().album.id, recordings)
-            if ok:
-                qtw.QMessageBox.information(self, 'Albums', 'Recordings updated')
-            else:
-                qtw.QMessageBox.information(self, 'Albums',
+            if not skip:
+                if ok:
+                    qtw.QMessageBox.information(self, 'Albums', 'Recordings updated')
+                else:
+                    qtw.QMessageBox.information(self, 'Albums',
                                             'Something went wrong, please try again')
             # eigenlijk zou je hierna de data opnieuw moeten ophalen en het scherm opnieuw
             # opbouwen - wat nu alleen gebeurt als je naar het detailscherm gaat
         else:
-            qtw.QMessageBox.information(self, 'Albums', 'Nothing changed')
+            if not skip:
+                qtw.QMessageBox.information(self, 'Albums', 'Nothing changed')
 
         if self.first_time:
             self.first_time = False
@@ -1318,7 +1327,7 @@ class EditRecordings(qtw.QWidget):
     def submit_and_back(self):
         """Return to details screen after completion
         """
-        self.submit()
+        self.submit(skip=True)
         self.parent().do_detail()
 
     def exit(self):
