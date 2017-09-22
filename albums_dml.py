@@ -37,6 +37,8 @@ def list_albums_by_artist(albumtype, artist_id, order_by):
         sel = my.Album.objects.exclude(label="")
     elif albumtype == 'live':
         sel = my.Album.objects.filter(label="")
+    else:
+        sel = my.Album.objects.all()
     sel = sel.filter(artist=artist_id)
     if order_by == 'Uitvoerende':
         sel = sel.order_by('artist')
@@ -172,8 +174,8 @@ def update_album_recordings(album_id, recordings):
     old_recs = [x for x in album.opnames.all()]
     new_rec = changed = False
     for ix, item in recordings:
-        old_item = (old_recs[ix].type, old_recs[ix].oms)
         if ix < len(old_recs):
+            old_item = (old_recs[ix].type, old_recs[ix].oms)
             if item != old_item:
                 rec = old_recs[ix]
                 changed = True
@@ -201,6 +203,48 @@ def update_artists(changes):
         it.last_name = last_name
         it.save()
     return ok
+
+
+def update_albums_by_artist(artist_id, changes):
+    """store data from screen in database
+
+    also add "recorded in Clementine"
+    when provided, also add tracks
+    """
+    c_type = 'Clementine music player'
+    artist = my.Act.objects.get(pk=artist_id)
+    results = []
+    for id, name, year, tracks in changes:
+        if id:
+            it = my.Album.objects.get(pk=id)
+            changed = True
+            if name == it.name and year == it.release_year:
+                for item in it.opnames:
+                    if item.type == c_type:
+                        changed = False
+                        break
+        else:
+            it = my.Album()
+            it.artist = artist
+            it.label = "(unknown)"
+            changed = True
+        if changed:
+            it.name = name
+            if year:
+                it.release_year = int(year)
+            it.save()
+            found = False
+            for opn in it.opnames.all():
+                if opn.type == c_type:
+                    found = True
+                    break
+            if not found:
+                it.opnames.add(my.Opname.objects.create(type=c_type))
+            for num, title in tracks:
+                it.tracks.add(my.Song.objects.create(volgnr=num, name=title))
+            it.save()
+        results.append(it)
+    return results
 
 if __name__ == '__main__':
     test = list_artists()
