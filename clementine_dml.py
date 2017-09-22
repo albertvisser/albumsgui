@@ -25,18 +25,19 @@ def list_artists(db):
         db, "select distinct artist from songs where unavailable = '0' order by artist;")
 
 
-def list_albums(db, artist_id):
+def list_albums(db, artist_name):
     "produce list of albums for artist"
     return execute_query(
         db, "select distinct album from songs where artist = '{}' "
-        "and unavailable = '0';".format(artist_id))
+        "and unavailable = '0';".format(artist_name))
 
 
-def list_tracks(db, artist_id, album_id):
+def list_tracks(db, artist_name, album_name):
     "produce list of tracks for album"
     return execute_query(
         db, "select track, title from songs where artist = '{}' and album = '{}' "
-        "and unavailable = '0' order by disc, track;".format(artist_id, album_id))
+        "and unavailable = '0' order by disc, track;".format(artist_name,
+                                                             album_name))
 
 
 def main():
