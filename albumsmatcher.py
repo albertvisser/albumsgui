@@ -191,9 +191,10 @@ class CompareArtists(qtw.QWidget):
             act.setShortcuts(keys)
             self.addAction(act)
 
-    def refresh_screen(self):
+    def refresh_screen(self, artist=None):
         """update screen contents
         """
+        print(artist)
         self.modified = False
         self.artist_list_a, self.artist_list_c = read_artists()
         self.lookup = {' '.join((x, y)).strip(): z for x, y, z in self.artist_list_a}
@@ -211,7 +212,26 @@ class CompareArtists(qtw.QWidget):
             new = qtw.QTreeWidgetItem(item)
             self.albums_artists.addTopLevelItem(new)
         self.artist_buffer = ''
+        self.focus_artist(artist)
+
+    def focus_artist(self, artist=None):
+        """select given artist or first unhandled one in left-hand side list
+        """
         self.clementine_artists.setFocus()
+        if artist:
+            findstr = artist
+            column = 0
+        else:
+            findstr = ''
+            column = 1
+        test = self.clementine_artists.findItems(findstr,
+                                                 core.Qt.MatchFixedString,
+                                                 column)
+        if test:
+            item = test[0]
+        else:
+            item = self.clementine_albums.topLevelItem(0)
+        self.clementine_artists.setCurrentItem(item)
 
     def find_artist(self):
         """search artist in other list
@@ -223,6 +243,8 @@ class CompareArtists(qtw.QWidget):
         if not item:
             return
         search = item.text(0)
+        if not self._parent.current_data:       # remember first handled item for
+            self._parent.current_data = search  # currency communication over panels
         try:
             found = self.lookup[search]
         except KeyError:
@@ -320,7 +342,7 @@ class CompareArtists(qtw.QWidget):
         self._parent.artist_map = self.artist_map
         self._parent.artist_map.update({x: '' for x, y in self.artist_map.items()
                                         if not y})
-        self.refresh_screen()
+        self.refresh_screen(self.clementine_artists.currentItem().text(0))
 
     def help(self):
         """explain intended workflow
@@ -476,7 +498,7 @@ class CompareAlbums(qtw.QWidget):
             act.setShortcuts(keys)
             self.addAction(act)
 
-    def refresh_screen(self):
+    def refresh_screen(self, artist=None):
         """update screen contents
         """
         self.modified = False
@@ -495,6 +517,12 @@ class CompareAlbums(qtw.QWidget):
             if item.text(1) == 'X':
                 a_item = self.albums_map[self.c_artist][item.text(0)][1]
                 item.setText(1, str(a_item))
+        if artist:
+            try:
+                self.artist_list.setCurrentIndex(artist)
+            except TypeError:
+                indx = clementine_artists.index(artist)
+                self.artist_list.setCurrentIndex(indx)
         self.focus_albums()
 
     def get_albums(self):
@@ -506,8 +534,8 @@ class CompareAlbums(qtw.QWidget):
         if self.artist_list.count() == 0:   # this happens when the panel is reshown
             return                          # after another panel was shown
         self.c_artist = self.artist_list.currentText()
-        ## if not self.c_artist:
-            ## return
+        # remember first handled item for currency communication over panels
+        self._parent.current_data = self.c_artist
         self.a_artist = self.artist_map[self.c_artist]
         log("c_artist '%s', a_artist '%s'", self.c_artist, self.a_artist)
         a_albums, c_albums = read_artist_albums(self.a_artist, self.c_artist)
@@ -530,7 +558,7 @@ class CompareAlbums(qtw.QWidget):
         self.tracks = collections.defaultdict(list)
 
     def focus_albums(self):
-        """select first unhand;es album in left-hand side list
+        """select first unhandled album in left-hand side list
         """
         self.clementine_albums.setFocus()
         for ix in range(self.clementine_albums.topLevelItemCount()):
@@ -559,37 +587,47 @@ class CompareAlbums(qtw.QWidget):
         """search album in other list
 
         if found, show dialog to confirm match
+        if you have to confirm anyway, why not select right away?
         """
         item = self.clementine_albums.currentItem()
         if not item:
             return
-        search = item.text(0)
-        try:
-            found = self.lookup[search]
-        except KeyError:
+        if item.text(0) in self.albums_map[self.c_artist]:
+            ok = qtw.QMessageBox.question(self, self.appname, 'Album already has a '
+                'match - do you want to reassign?', qtw.QMessageBox.Yes |
+                qtw.QMessageBox.No, qtw.QMessageBox.No)
+            if ok == qtw.QMessageBox.No:
+                return
+            self.albums_map[self.c_artist].pop(item.text(0))
+        # select albums for self.a_artist and remove the ones that are already matched
+        albums = dmla.list_albums_by_artist('', self.a_artist, 'Titel')
+        album_list = []
+        for album in albums:
+            test = album.id
             found = False
-        if found:
-            data = []
-            for id in found:
-                ## a_items = self.albums_albums.findItems(search, core.Qt.MatchFixedString,
-                a_items = self.albums_albums.findItems(id, core.Qt.MatchFixedString,
-                                                       2)
-                data.extend([build_album_name(x) for x in a_items])
-            selected, ok = qtw.QInputDialog.getItem(self, self.appname,
-                                                    'Select Album', data,
-                                                    editable=False)
+            for c_name, a_item in self.albums_map[self.c_artist].items():
+                a_name, a_id = a_item
+                if a_id == test:
+                    found = True
+                    break
+            if not found:
+                album_list.append((build_album_name(album), album.id))
+        if album_list:
+            albums = [x[0] for x in album_list]
+            selected, ok = qtw.QInputDialog.getItem(self, self.appname, 'Select Album',
+                                                    albums, editable=False)
             if ok:
-                a_item = a_items[data.index(selected)]
+                a_item = self.albums_albums.findItems(
+                    str(album_list[albums.index(selected)][1]),
+                    core.Qt.MatchFixedString, 2)[0]
                 self.update_item(a_item, item)
-            else:
-                found = False
-        if not found:
-            self.album_buffer = item
-            self.add_album()
+                return
+        self.add_album()
 
     def update_item(self, new_item, from_item):
         """remember changes and make them visible
         """
+        print(new_item)
         self.albums_albums.setCurrentItem(new_item)
         self.albums_albums.scrollToItem(new_item)
         self.albums_map[self.c_artist][from_item.text(0)] = (
@@ -604,8 +642,11 @@ class CompareAlbums(qtw.QWidget):
 
     def add_album(self):
         """if present, enter the copied album's name into name field
+
+        better yet, show all albums for the matched artist and choose one
+        which means, we have to remember the selected artist, not the name
         """
-        item = self.album_buffer
+        item = self.clementine_albums.currentItem()
         albumname = item.text(0) if item else ''
         dlg = NewAlbumDialog(self, albumname).exec_()
         if dlg != qtw.QDialog.Accepted:
@@ -658,7 +699,7 @@ class CompareAlbums(qtw.QWidget):
         self._parent.albums_map = self.albums_map
         self._parent.albums_map.update({x: {} for x, y in self.albums_map.items()
                                         if not y})
-        self.refresh_screen()
+        self.refresh_screen(self.artist_list.currentIndex())
 
     def help(self):
         """explain intended workflow
@@ -668,16 +709,24 @@ class CompareAlbums(qtw.QWidget):
             "",
             "",
             "Select an artist in the combobox at the top and see two lists of al"
-            "bums appear. Select an album in the left-hand side list and press the "
-            "`Check Album` button to see if it's present on the right-hand side.",
+            "bums appear: albums present in the Clementine and Albums databases "
+            "respectively. You can tell if a relation exists by the value in "
+            "the second column (an X or a number indicating the right-hand side "
+            "album's id).",
             "",
-            "If it is, a relation between the two will be established. You can tell "
-            "by the `X` appearing in the Match column.",
-            "If it isn't, the `Add Album` dialog will pop up.",
+            "Select an album in the left-hand side list and press the `Check "
+            "Album` button to match it with one of the albums on the right-hand "
+            "side. "
             "",
-            "After confirmation, this will make the name appear in the list "
-            "on the right-hand side and establish the relation (again, indicated "
-            "in the Match column).",
+            "If the names match, a relation between the two will be established, "
+            "unless you decide it's not the correct one. "
+            "If the names don't match or the suggested relation isn't right, a "
+            "selection dialog will pop up where you can choose an album from "
+            "the right-hand side.",
+            "",
+            "If no right-hand side albums are available or none is the right one, "
+            "a dialog will open with the left-hand side's album shown in the `last "
+            "name` field so you can add a new one.",
             "",
             "To save the entire list to the Albums database, press `Save All`. The "
             "relations will also be saved, they are needed to keep track of albums "
@@ -835,7 +884,11 @@ class CompareTracks(qtw.QWidget):
         self.artists_list.clear()
         self.artists_list.addItems(clementine_artists)
         if artist:
-            self.artists_list.setCurrentIndex(artist)
+            try:
+                self.artists_list.setCurrentIndex(artist)
+            except TypeError:
+                indx = clementine_artists.index(artist)
+                self.artists_list.setCurrentIndex(indx)
         if album:
             self.albums_list.setCurrentIndex(album)
 
@@ -942,6 +995,7 @@ class MainFrame(qtw.QMainWindow):
         self.setWindowTitle(self.title)
         self.move(300, 50)
         self.resize(600, 650)
+        self.current_data = None
         self.nb = qtw.QTabWidget(self)
         self.nb.currentChanged.connect(self.page_changed)
 
@@ -987,7 +1041,7 @@ class MainFrame(qtw.QMainWindow):
             self.nb.addTab(item[1], item[0].title())
         self.nb.setCurrentIndex(0)
         self.show()
-        self.nb.currentWidget().setFocus()
+        ## self.nb.currentWidget().setFocus()
         sys.exit(self.app.exec_())
 
     def page_changed(self):
@@ -1010,7 +1064,8 @@ class MainFrame(qtw.QMainWindow):
             go.first_time = False
             go.create_widgets()
             go.create_actions()
-        go.refresh_screen()
+        log(self.current_data)
+        go.refresh_screen(self.current_data)
 
     def check_oldpage(self, pageno):
         "check if page can be left"
