@@ -246,6 +246,28 @@ def update_albums_by_artist(artist_id, changes):
         results.append(it)
     return results
 
+
+def update_album_tracks(album_id, tracks):
+    """store data from screen in database
+    """
+    it = my.Album.objects.get(pk=album_id)
+    for num, title in tracks:
+        it.tracks.add(my.Song.objects.create(volgnr=num, name=title))
+    it.save()
+
+
+def unlink_album(album_id):
+    """remove Clementine indicator
+    """
+    c_type = 'Clementine music player'
+    it = my.Album.objects.get(pk=album_id)
+    for item in it.opnames:
+        if item.type == ctype:
+            it.opnames.remove(item)
+            it.save()
+            break
+
+
 if __name__ == '__main__':
     test = list_artists()
     ## test = list_albums(15)

@@ -5,8 +5,9 @@ import collections
 import json
 import shutil
 import logging
+import contextlib
 import PyQt5.QtWidgets as qtw
-## import PyQt5.QtGui as gui
+import PyQt5.QtGui as gui
 import PyQt5.QtCore as core
 import albums_dml as dmla
 import clementine_dml as dmlc
@@ -15,20 +16,10 @@ DB_A = databases['albums']
 DB_C = databases['clementine']
 FNAME = 'albumsmatcher.json'
 logging.basicConfig(filename='/tmp/albumscatcher.log', level=logging.DEBUG,
-    format='%(asctime)s %(funcName)s %(message)s')
+                    format='%(asctime)s %(funcName)s %(message)s')
 log = logging.info
 
-## def log(*args, **kwargs):
-    ## "log a message"
-    ## logging.info(*args, **kwargs)
 
-
-## def build_name(fname, lname):
-    ## if fname:
-        ## name = ', '.join(fname, lname)
-    ## else:
-        ## name = lname
-    ## return name
 def build_album_name(album):
     """combine album name and release year
     first try as if it's an Album album, otherwise treat as tree item
@@ -91,6 +82,33 @@ def read_artist_albums(id, name):
     return list_a, list_c
 
 
+def read_albums_tracks(id, artist_name, album_name):
+    """get lists of tracks for albums
+    """
+    list_a = [x.name for x in dmla.list_tracks(id)]
+    list_c = [x['title'] for x in dmlc.list_tracks(DB_C, artist_name, album_name)]
+    return list_a, list_c
+
+
+def popuptext(item, colno):
+    """show complete text of description if moused over
+    """
+    if item.text(2):
+        if colno == 1:
+            item.setToolTip(colno, ' '.join((item.text(0), item.text(colno))))
+    elif colno == 0:
+        item.setToolTip(colno, item.text(colno))
+
+
+@contextlib.contextmanager
+def wait_cursor(win):
+    """change cursor bfore and after executing some function
+    """
+    win.app.setOverrideCursor(gui.QCursor(core.Qt.WaitCursor))
+    yield
+    win.app.restoreOverrideCursor()
+
+
 class CompareArtists(qtw.QWidget):
     """artiesten uit Clementine naast artiesten uit Albums zetten
     """
@@ -106,6 +124,8 @@ class CompareArtists(qtw.QWidget):
         hdr.setSectionResizeMode(0, qtw.QHeaderView.Stretch)
         tree.setColumnWidth(1, 50)
         tree.setHeaderLabels(['Artist', 'Match'])
+        tree.setMouseTracking(True)
+        tree.itemEntered.connect(popuptext)
         self.clementine_artists = tree
 
         tree = qtw.QTreeWidget(self)
@@ -116,6 +136,8 @@ class CompareArtists(qtw.QWidget):
         tree.setColumnWidth(2, 50)
         hdr.setSectionResizeMode(1, qtw.QHeaderView.Stretch)
         tree.setHeaderLabels(['First Name', 'Last Name', 'Id'])
+        tree.setMouseTracking(True)
+        tree.itemEntered.connect(popuptext)
         self.albums_artists = tree
 
         b_help = qtw.QPushButton('&Help', self)
@@ -379,12 +401,10 @@ class CompareAlbums(qtw.QWidget):
         """
         self.appname = self._parent.title
         vbox = qtw.QVBoxLayout()
+
         hbox = qtw.QHBoxLayout()
-        ## hbox.addStretch()
         hbox.addWidget(qtw.QLabel('Selecteer een uitvoerende:', self))
         self.artist_list = qtw.QComboBox(self)
-        ## self.artist_list.addItem('--- Selecteer een uitvoerende ---')
-        ## self.album_artists = {}
         self.artist_list.currentIndexChanged.connect(self.get_albums)
         hbox.addWidget(self.artist_list)
         hbox.addStretch()
@@ -400,7 +420,7 @@ class CompareAlbums(qtw.QWidget):
         hdr.setSectionResizeMode(0, qtw.QHeaderView.Stretch)
         tree.setHeaderLabels(['Album Name in Clementine', 'Match'])
         tree.setMouseTracking(True)
-        tree.itemEntered.connect(self.popuptext)
+        tree.itemEntered.connect(popuptext)
         self.clementine_albums = tree
         vbox2.addWidget(self.clementine_albums)
         hbox2 = qtw.QHBoxLayout()
@@ -424,7 +444,7 @@ class CompareAlbums(qtw.QWidget):
         hdr.setSectionResizeMode(0, qtw.QHeaderView.Stretch)
         tree.setHeaderLabels(['Album Name in Albums', 'Year', 'Id'])
         tree.setMouseTracking(True)
-        tree.itemEntered.connect(self.popuptext)
+        tree.itemEntered.connect(popuptext)
         self.albums_albums = tree
         vbox2.addWidget(self.albums_albums)
         hbox2 = qtw.QHBoxLayout()
@@ -444,7 +464,7 @@ class CompareAlbums(qtw.QWidget):
         """
         actions = (
             ('Help', self.help, ['F1', 'Ctrl+H']),
-            ('Select', self.artist_list.setFocus, ['Ctrl+A']),
+            ('Select', self.artist_list.setFocus, ['Ctrl+Home']),
             ('Focus', self.focus_albums, ['Ctrl+L']),
             ('Next', self.next_artist, ['Ctrl+N']),
             ('Prev', self.prev_artist, ['Ctrl+P']),
@@ -461,33 +481,33 @@ class CompareAlbums(qtw.QWidget):
         """
         self.modified = False
         self.artist_map = self._parent.artist_map
+        ## log('self.artist_map: %s', self.artist_map)
         self.albums_map = collections.defaultdict(dict)
         self.albums_map.update(self._parent.albums_map)
         ## log('self.albums_map: %s', self.albums_map)
         clementine_artists = [x['artist'] for x in dmlc.list_artists(DB_C)
                               if self._parent.artist_map[x['artist']]]
+        ## log('clementine_artists: %s', clementine_artists)
         self.artist_list.clear()
         self.artist_list.addItems(clementine_artists)
         for ix in range(self.clementine_albums.topLevelItemCount()):
             item = self.clementine_albums.topLevelItem(ix)
             if item.text(1) == 'X':
-                text, a_item = self.albums_map[self.c_artist][item.text(0)]
+                a_item = self.albums_map[self.c_artist][item.text(0)][1]
                 item.setText(1, str(a_item))
         self.focus_albums()
 
-    def popuptext(self, item, colno):
-        """show complete text of description if moused over
-        """
-        if colno == 0:
-            item.setToolTip(colno, item.text(colno))
-
     def get_albums(self):
-        """get lists of albums for the selected artist in other list
+        """get lists of albums for the selected artist
         and show them in the treewidgets
         """
         if not self._parent.check_oldpage(1):
             return
+        if self.artist_list.count() == 0:   # this happens when the panel is reshown
+            return                          # after another panel was shown
         self.c_artist = self.artist_list.currentText()
+        ## if not self.c_artist:
+            ## return
         self.a_artist = self.artist_map[self.c_artist]
         log("c_artist '%s', a_artist '%s'", self.c_artist, self.a_artist)
         a_albums, c_albums = read_artist_albums(self.a_artist, self.c_artist)
@@ -510,6 +530,8 @@ class CompareAlbums(qtw.QWidget):
         self.tracks = collections.defaultdict(list)
 
     def focus_albums(self):
+        """select first unhand;es album in left-hand side list
+        """
         self.clementine_albums.setFocus()
         for ix in range(self.clementine_albums.topLevelItemCount()):
             item = self.clementine_albums.topLevelItem(ix)
@@ -520,11 +542,15 @@ class CompareAlbums(qtw.QWidget):
         self.clementine_albums.setCurrentItem(item)
 
     def next_artist(self):
+        """select next artist in dropdown
+        """
         test = self.artist_list.currentIndex() + 1
         if test < self.artist_list.count():
             self.artist_list.setCurrentIndex(test)
 
     def prev_artist(self):
+        """select previous artist in dropdown
+        """
         test = self.artist_list.currentIndex() - 1
         if test >= 0:
             self.artist_list.setCurrentIndex(test)
@@ -545,8 +571,8 @@ class CompareAlbums(qtw.QWidget):
         if found:
             data = []
             for id in found:
+                ## a_items = self.albums_albums.findItems(search, core.Qt.MatchFixedString,
                 a_items = self.albums_albums.findItems(id, core.Qt.MatchFixedString,
-            ## a_items = self.albums_albums.findItems(search, core.Qt.MatchFixedString,
                                                        2)
                 data.extend([build_album_name(x) for x in a_items])
             selected, ok = qtw.QInputDialog.getItem(self, self.appname,
@@ -621,7 +647,8 @@ class CompareAlbums(qtw.QWidget):
             name, year, id = item.text(0), item.text(1), item.text(2)
             tracks = [] if id != '0' else self.tracks[(name, year, id)]
             data.append((int(id), name, year, tracks))
-        albums = dmla.update_albums_by_artist(self.a_artist, data)
+        with wait_cursor(self._parent):
+            albums = dmla.update_albums_by_artist(self.a_artist, data)
         albums_map_lookup = {build_album_name(x): x.id for x in albums}
         for c_name, value in self.albums_map[self.c_artist].items():
             a_name, id = value
@@ -713,21 +740,194 @@ class CompareTracks(qtw.QWidget):
         """setup screen
         """
         self.appname = self._parent.title
+        self.artist_index = self.album_index = 0
+        self.artists_list = qtw.QComboBox(self)
+        self.artists_list.currentIndexChanged.connect(self.get_albums)
+
+        self.albums_list = qtw.QComboBox(self)
+        self.albums_list.currentIndexChanged.connect(self.get_tracks)
+
+        tree = qtw.QTreeWidget(self)
+        tree.setColumnCount(1)
+        tree.setHeaderLabels(['Track Name in Clementine'])
+        tree.setMouseTracking(True)
+        tree.itemEntered.connect(popuptext)
+        self.clementine_tracks = tree
+
+        b_help = qtw.QPushButton('&Help', self)
+        b_help.clicked.connect(self.help)
+        self.b_copy = qtw.QPushButton('&Copy Tracks', self)
+        self.b_copy.clicked.connect(self.copy_tracks)
+
+        tree = qtw.QTreeWidget(self)
+        tree.setColumnCount(1)
+        tree.setHeaderLabels(['Track Name in Albums'])
+        tree.setMouseTracking(True)
+        tree.itemEntered.connect(popuptext)
+        self.albums_tracks = tree
+
+        b_unlink = qtw.QPushButton('&Unlink Albums', self)
+        b_unlink.clicked.connect(self.unlink)
+
+        vbox = qtw.QVBoxLayout()
+
+        hbox = qtw.QHBoxLayout()
+        gbox = qtw.QGridLayout()
+        gbox.addWidget(qtw.QLabel('Selecteer een uitvoerende:', self), 0, 0)
+        hbox.addWidget(self.artists_list)
+        hbox.addStretch()
+        gbox.addLayout(hbox, 0, 1)
+
+        hbox = qtw.QHBoxLayout()
+        gbox.addWidget(qtw.QLabel('Selecteer een album:', self), 1, 0)
+        hbox.addWidget(self.albums_list)
+        hbox.addStretch()
+        gbox.addLayout(hbox, 1, 1)
+        vbox.addLayout(gbox)
+
+        hbox = qtw.QHBoxLayout()
+        vbox2 = qtw.QVBoxLayout()
+        vbox2.addWidget(self.clementine_tracks)
+        hbox2 = qtw.QHBoxLayout()
+        hbox2.addStretch()
+        hbox2.addWidget(b_help)
+        hbox2.addWidget(self.b_copy)
+        hbox2.addStretch()
+        vbox2.addLayout(hbox2)
+        hbox.addLayout(vbox2)
+        vbox2 = qtw.QVBoxLayout()
+        vbox2.addWidget(self.albums_tracks)
+        hbox2 = qtw.QHBoxLayout()
+        hbox2.addStretch()
+        hbox2.addWidget(b_unlink)
+        hbox2.addStretch()
+        vbox2.addLayout(hbox2)
+        hbox.addLayout(vbox2)
+        vbox.addLayout(hbox)
+
+        self.setLayout(vbox)
 
     def create_actions(self):
         """keyboard shortcuts
         """
-        actions = ()
+        actions = (
+            ('Help', self.help, ['F1', 'Ctrl+H']),
+            ('Select_U', self.artists_list.setFocus, ['Ctrl+Home']),
+            ('Select_A', self.albums_list.setFocus, ['Ctrl+A']),
+            ('Copy', self.copy_tracks, ['Ctrl+C']),
+            ('Unlink', self.unlink, ['Ctrl+U']),
+            )
         for text, callback, keys in actions:
             act = qtw.QAction(text, self)
             act.triggered.connect(callback)
             act.setShortcuts(keys)
             self.addAction(act)
 
-    def refresh_screen(self):
+    def refresh_screen(self, artist=None, album=None):
         """update screen contents
         """
         self.modified = False
+        self.artist_map = self._parent.artist_map
+        self.albums_map = collections.defaultdict(dict)
+        self.albums_map.update(self._parent.albums_map)
+        clementine_artists = [x['artist'] for x in dmlc.list_artists(DB_C)
+                              if self._parent.artist_map[x['artist']]]
+        self.artists_list.clear()
+        self.artists_list.addItems(clementine_artists)
+        if artist:
+            self.artists_list.setCurrentIndex(artist)
+        if album:
+            self.albums_list.setCurrentIndex(album)
+
+
+    def get_albums(self):
+        """get list of matched albums for the selected artist
+        and show it in the other combobox
+        """
+        self.artist = self.artists_list.currentText()
+        clementine_albums = [x['album'] for x in dmlc.list_albums(DB_C, self.artist)
+                              if [x['album'] in self.albums_map[self.artist]]]
+        self.albums_list.clear()
+        self.albums_list.addItems(clementine_albums)
+
+    def get_tracks(self):
+        """get lists of tracks for the matched albums
+        and show them in the treewidgets
+        """
+        self.c_album = self.albums_list.currentText()
+        self.clementine_tracks.clear()
+        self.albums_tracks.clear()
+        if self.artists_list.count() == 0:  # this happens when the panel is reshown
+            return                          # after another panel was shown
+        if self.albums_list.count() == 0: # this happens during screen buildup
+            return                        # when only the first combobox is filled
+        ## if not self.c_album:    # this happens when the first combobox is filled
+            ## return              # but the second hasn't been filled yet
+        if not self.albums_map[self.artist]:
+            qtw.QMessageBox.information(self, self._parent.title,
+                                        "No (matched) albums for this artist")
+            return
+        try:
+            self.a_album = self.albums_map[self.artist][self.c_album][1]
+        except KeyError:
+            qtw.QMessageBox.information(self, self._parent.title, "This album "
+                                        "has not been matched yet")
+            return
+        a_tracks, c_tracks = read_albums_tracks(self.a_album,
+                                                self.artist, self.c_album)
+        for item in c_tracks:
+            new = qtw.QTreeWidgetItem([item])
+            self.clementine_tracks.addTopLevelItem(new)
+        for item in a_tracks:
+            new = qtw.QTreeWidgetItem([item])
+            self.albums_tracks.addTopLevelItem(new)
+        self.b_copy.setEnabled(not len(a_tracks))
+
+    def copy_tracks(self):
+        tracks = []
+        for ix in range(self.clementine_tracks.topLevelItemCount()):
+            tracks.append((ix + 1, self.clementine_tracks.topLevelItem(ix).text(0)))
+        with wait_cursor(self._parent):
+            dmla.update_album_tracks(self.a_album, tracks)
+        self.refresh_screen(self.artists_list.currentIndex(),
+                            self.albums_list.currentIndex())
+
+    def unlink(self):
+        dmla.unlink_album(self.a_album)
+        self.refresh_screen(self.artists_list.currentIndex(),
+                            self.albums_list.currentIndex())
+
+    def save_all(self):
+        """save changes (additions) to Albums database
+        """
+        ## data = []
+        ## for i in range(self.albums_artists.topLevelItemCount()):
+            ## item = self.albums_artists.topLevelItem(i)
+            ## data.append((int(item.text(2)), item.text(0), item.text(1)))
+        ## update_artists(data)
+        ## self._parent.artist_map = self.artist_map
+        ## self._parent.artist_map.update({x: '' for x, y in self.artist_map.items()
+                                        ## if not y})
+        ## self.refresh_screen()
+
+    def help(self):
+        """explain intended workflow
+        """
+        workflow = '\n'.join((
+            "Intended workflow:",
+            "",
+            "",
+            "Select an artist and an album in the two comboboxes at the top "
+            "and if two lists of tracks appear, that means that most of the work"
+            "has been done.",
+            "",
+            "It's possible, however, that the wrong album has been matched or that "
+            "the tracks have not been imported into the Albums database.",
+            "",
+            "This panel is intended to do a final comparison and correct eventual "
+            "errors.",
+            ""))
+        qtw.QMessageBox.information(self, self._parent.title, workflow)
 
 
 class MainFrame(qtw.QMainWindow):
@@ -767,9 +967,9 @@ class MainFrame(qtw.QMainWindow):
 
         self.current = -1
         self.not_again = False
-        self.artist_map = {}  # map clementine artist name to albums artist id
-        self.albums_map = {}  # map clementine artist name to dict that maps
-                              # clementine album names to albums album ids
+        self.artist_map = {}    # map clementine artist name to albums artist id
+        self.albums_map = {}    # map clementine artist name to dict that maps
+                                # clementine album names to albums album ids
         appdata = load_appdata()
         if appdata:
             self.artist_map, self.albums_map = appdata
