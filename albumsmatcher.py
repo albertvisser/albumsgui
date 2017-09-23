@@ -594,8 +594,9 @@ class CompareAlbums(qtw.QWidget):
             return
         if item.text(0) in self.albums_map[self.c_artist]:
             ok = qtw.QMessageBox.question(self, self.appname, 'Album already has a '
-                'match - do you want to reassign?', qtw.QMessageBox.Yes |
-                qtw.QMessageBox.No, qtw.QMessageBox.No)
+                                          'match - do you want to reassign?',
+                                          qtw.QMessageBox.Yes | qtw.QMessageBox.No,
+                                          qtw.QMessageBox.No)
             if ok == qtw.QMessageBox.No:
                 return
             self.albums_map[self.c_artist].pop(item.text(0))
@@ -605,9 +606,8 @@ class CompareAlbums(qtw.QWidget):
         for album in albums:
             test = album.id
             found = False
-            for c_name, a_item in self.albums_map[self.c_artist].items():
-                a_name, a_id = a_item
-                if a_id == test:
+            for a_item in self.albums_map[self.c_artist].values():
+                if a_item[1] == test:
                     found = True
                     break
             if not found:
@@ -716,21 +716,18 @@ class CompareAlbums(qtw.QWidget):
             "",
             "Select an album in the left-hand side list and press the `Check "
             "Album` button to match it with one of the albums on the right-hand "
-            "side. "
+            "side. A selection dialog will pop up where you can choose an album "
+            "from the right-hand side to esablish a relation with.",
             "",
-            "If the names match, a relation between the two will be established, "
-            "unless you decide it's not the correct one. "
-            "If the names don't match or the suggested relation isn't right, a "
-            "selection dialog will pop up where you can choose an album from "
-            "the right-hand side.",
+            "If no right-hand side albums are available or you cancel the `Select "
+            "Album` dialog because none is the right one, a dialog will open with "
+            "the `title` field set to the left-hand side's album title so you can "
+            "add a new one and make a relation with it.",
             "",
-            "If no right-hand side albums are available or none is the right one, "
-            "a dialog will open with the left-hand side's album shown in the `last "
-            "name` field so you can add a new one.",
-            "",
-            "To save the entire list to the Albums database, press `Save All`. The "
-            "relations will also be saved, they are needed to keep track of albums "
-            "that have already been matched.",
+            "To save the entire list to the Albums database, press `Save All`. Newly "
+            "created albums will be saved to the Albums database together with their "
+            "tracks. The relations will also be saved, they are needed to keep track "
+            "of albums that have already been matched.",
             "",
             "For now, you have to save the added/changed albums and relations "
             "before you proceed to another artist or change panels.",
@@ -864,8 +861,7 @@ class CompareTracks(qtw.QWidget):
             ('Select_U', self.artists_list.setFocus, ['Ctrl+Home']),
             ('Select_A', self.albums_list.setFocus, ['Ctrl+A']),
             ('Copy', self.copy_tracks, ['Ctrl+C']),
-            ('Unlink', self.unlink, ['Ctrl+U']),
-            )
+            ('Unlink', self.unlink, ['Ctrl+U']),)
         for text, callback, keys in actions:
             act = qtw.QAction(text, self)
             act.triggered.connect(callback)
@@ -892,14 +888,13 @@ class CompareTracks(qtw.QWidget):
         if album:
             self.albums_list.setCurrentIndex(album)
 
-
     def get_albums(self):
         """get list of matched albums for the selected artist
         and show it in the other combobox
         """
         self.artist = self.artists_list.currentText()
         clementine_albums = [x['album'] for x in dmlc.list_albums(DB_C, self.artist)
-                              if [x['album'] in self.albums_map[self.artist]]]
+                             if [x['album'] in self.albums_map[self.artist]]]
         self.albums_list.clear()
         self.albums_list.addItems(clementine_albums)
 
@@ -912,8 +907,8 @@ class CompareTracks(qtw.QWidget):
         self.albums_tracks.clear()
         if self.artists_list.count() == 0:  # this happens when the panel is reshown
             return                          # after another panel was shown
-        if self.albums_list.count() == 0: # this happens during screen buildup
-            return                        # when only the first combobox is filled
+        if self.albums_list.count() == 0:   # this happens during screen buildup
+            return                          # when only the first combobox is filled
         ## if not self.c_album:    # this happens when the first combobox is filled
             ## return              # but the second hasn't been filled yet
         if not self.albums_map[self.artist]:
@@ -937,6 +932,8 @@ class CompareTracks(qtw.QWidget):
         self.b_copy.setEnabled(not len(a_tracks))
 
     def copy_tracks(self):
+        """copy tracks of already related albums to the Albums database
+        """
         tracks = []
         for ix in range(self.clementine_tracks.topLevelItemCount()):
             tracks.append((ix + 1, self.clementine_tracks.topLevelItem(ix).text(0)))
@@ -946,22 +943,11 @@ class CompareTracks(qtw.QWidget):
                             self.albums_list.currentIndex())
 
     def unlink(self):
+        """remove "Clementine recording" from album
+        """
         dmla.unlink_album(self.a_album)
         self.refresh_screen(self.artists_list.currentIndex(),
                             self.albums_list.currentIndex())
-
-    def save_all(self):
-        """save changes (additions) to Albums database
-        """
-        ## data = []
-        ## for i in range(self.albums_artists.topLevelItemCount()):
-            ## item = self.albums_artists.topLevelItem(i)
-            ## data.append((int(item.text(2)), item.text(0), item.text(1)))
-        ## update_artists(data)
-        ## self._parent.artist_map = self.artist_map
-        ## self._parent.artist_map.update({x: '' for x, y in self.artist_map.items()
-                                        ## if not y})
-        ## self.refresh_screen()
 
     def help(self):
         """explain intended workflow
