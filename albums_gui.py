@@ -612,7 +612,7 @@ class Select(qtw.QWidget):
             print('waaat')
         self.parent().do_detail()
 
-    def add_new_to_sel(self, *args, **kwargs):
+    def add_new_to_sel(self):
         """prefill selection in new album field(s)
         """
         self.parent().do_new(keep_sel=True)
@@ -940,7 +940,7 @@ class EditDetails(qtw.QWidget):
                     btn.clicked.connect(self.parent().do_detail)
                     break
 
-    def submit(self, goback = False):
+    def submit(self, goback=False):
         """neem de waarden van de invulvelden over en geef ze door aan de database
         """
         def replace_details(caption, value):
@@ -995,7 +995,7 @@ class EditDetails(qtw.QWidget):
                         self.add_another()
                     else:
                         qtw.QMessageBox.information(self, 'Albums',
-                            'Details updated')
+                                                    'Details updated')
             else:
                 qtw.QMessageBox.information(self, 'Albums',
                                             'Something went wrong, please try again')
@@ -1016,8 +1016,8 @@ class EditDetails(qtw.QWidget):
     def add_another(self):
         """Show message with possibility to continue adding items
         """
-        message = qtw.QMessageBox(qtw.QMessageBox.Information, 'Albums',
-            "Album added", buttons=qtw.QMessageBox.Ok, parent=self)
+        message = qtw.QMessageBox(qtw.QMessageBox.Information, 'Albums', "Album "
+                                  "added", buttons=qtw.QMessageBox.Ok, parent=self)
         message.setDefaultButton(qtw.QMessageBox.Ok)
         message.setEscapeButton(qtw.QMessageBox.Ok)
         next = message.addButton('&Add Another', qtw.QMessageBox.AcceptRole)
@@ -1312,8 +1312,8 @@ class EditRecordings(qtw.QWidget):
                 if ok:
                     qtw.QMessageBox.information(self, 'Albums', 'Recordings updated')
                 else:
-                    qtw.QMessageBox.information(self, 'Albums',
-                                            'Something went wrong, please try again')
+                    qtw.QMessageBox.information(self, 'Albums', 'Something '
+                                                'went wrong, please try again')
             # eigenlijk zou je hierna de data opnieuw moeten ophalen en het scherm opnieuw
             # opbouwen - wat nu alleen gebeurt als je naar het detailscherm gaat
         else:
@@ -1376,6 +1376,8 @@ class Artists(qtw.QWidget):
         self.setLayout(vbox)
 
     def filter(self):
+        """callback for Filter button
+        """
         filter = self.ask_filter.text()
         if filter:
             self.parent().artists = dmla.list_artists(filter)
@@ -1482,7 +1484,7 @@ class MainFrame(qtw.QMainWindow):
     """Het idee hierachter is om bij elke schermwijziging
     het centralwidget opnieuw in te stellen
     """
-    def __init__(self, parent=None):
+    def __init__(self):
         self.app = qtw.QApplication(sys.argv)
         super().__init__()
         self.move(300, 50)
@@ -1593,4 +1595,4 @@ class MainFrame(qtw.QMainWindow):
         self.setCentralWidget(go)
 
 if __name__ == '__main__':
-    main = MainFrame(None)
+    main = MainFrame()
