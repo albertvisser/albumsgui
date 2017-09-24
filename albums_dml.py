@@ -214,7 +214,7 @@ def update_albums_by_artist(artist_id, changes):
     c_type = 'Clementine music player'
     artist = my.Act.objects.get(pk=artist_id)
     results = []
-    for id, name, year, tracks in changes:
+    for id, name, year, is_live, tracks in changes:
         if id:
             it = my.Album.objects.get(pk=id)
             changed = True
@@ -226,7 +226,8 @@ def update_albums_by_artist(artist_id, changes):
         else:
             it = my.Album()
             it.artist = artist
-            it.label = "(unknown)"
+            if not is_live:
+                it.label = "(unknown)"
             changed = True
         if changed:
             it.name = name
@@ -247,7 +248,7 @@ def update_albums_by_artist(artist_id, changes):
     return results
 
 
-def update_album_tracks(album_id, tracks):
+def update_album_tracknames(album_id, tracks):
     """store data from screen in database
     """
     it = my.Album.objects.get(pk=album_id)
@@ -262,7 +263,7 @@ def unlink_album(album_id):
     c_type = 'Clementine music player'
     it = my.Album.objects.get(pk=album_id)
     for item in it.opnames:
-        if item.type == ctype:
+        if item.type == c_type:
             it.opnames.remove(item)
             it.save()
             break

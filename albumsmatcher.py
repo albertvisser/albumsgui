@@ -69,7 +69,6 @@ def update_artists(artists_list):
     """
     highest_key = max([x.id for x in dmla.list_artists()])
     new_artists = [(0, x[1], x[2]) for x in artists_list if int(x[0]) > highest_key]
-    ## print(new_artists)
     dmla.update_artists(new_artists)
 
 
@@ -194,7 +193,6 @@ class CompareArtists(qtw.QWidget):
     def refresh_screen(self, artist=None):
         """update screen contents
         """
-        print(artist)
         self.modified = False
         self.artist_list_a, self.artist_list_c = read_artists()
         self.lookup = {' '.join((x, y)).strip(): z for x, y, z in self.artist_list_a}
@@ -627,7 +625,6 @@ class CompareAlbums(qtw.QWidget):
     def update_item(self, new_item, from_item):
         """remember changes and make them visible
         """
-        print(new_item)
         self.albums_albums.setCurrentItem(new_item)
         self.albums_albums.scrollToItem(new_item)
         self.albums_map[self.c_artist][from_item.text(0)] = (
@@ -651,7 +648,7 @@ class CompareAlbums(qtw.QWidget):
         dlg = NewAlbumDialog(self, albumname).exec_()
         if dlg != qtw.QDialog.Accepted:
             return
-        name, year = self.data
+        name, year, is_live = self.data
         if not item:
             result = self.clementine_albums.findItems(name,
                                                       core.Qt.MatchFixedString, 0)
@@ -673,10 +670,11 @@ class CompareAlbums(qtw.QWidget):
                 a_item = results[data.index(selected)]
         if not a_item:
             a_item = qtw.QTreeWidgetItem([name, year, '0'])
+            a_item.setData(0, core.Qt.UserRole, is_live)
             self.albums_albums.addTopLevelItem(a_item)
             tracklist = dmlc.list_tracks(dmlc.DB, self.c_artist, item.text(0))
             self.tracks[(name, year, '0')] = [(x['track'], x['title'])
-                                              for x in tracklist]
+                                              for x in tracklist if x['track'] > -1]
         self.update_item(a_item, item)
 
     def save_all(self):
@@ -686,8 +684,9 @@ class CompareAlbums(qtw.QWidget):
         for i in range(self.albums_albums.topLevelItemCount()):
             item = self.albums_albums.topLevelItem(i)
             name, year, id = item.text(0), item.text(1), item.text(2)
+            is_live = item.data(0, core.Qt.UserRole)
             tracks = [] if id != '0' else self.tracks[(name, year, id)]
-            data.append((int(id), name, year, tracks))
+            data.append((int(id), name, year, is_live, tracks))
         with wait_cursor(self._parent):
             albums = dmla.update_albums_by_artist(self.a_artist, data)
         albums_map_lookup = {build_album_name(x): x.id for x in albums}
@@ -753,6 +752,12 @@ class NewAlbumDialog(qtw.QDialog):
         self.last_name.setMaximumWidth(100)
         gbox.addWidget(self.last_name, 1, 1)
         hbox = qtw.QHBoxLayout()
+        self.is_concert = qtw.QCheckBox('Concertregistratie', self)
+        hbox.addStretch()
+        hbox.addWidget(self.is_concert)
+        hbox.addStretch()
+        gbox.addLayout(hbox, 2, 0, 1, 2)
+        hbox = qtw.QHBoxLayout()
         hbox.addStretch()
         btn = qtw.QPushButton('&Cancel', self)
         btn.clicked.connect(self.reject)
@@ -762,7 +767,7 @@ class NewAlbumDialog(qtw.QDialog):
         btn.setDefault(True)
         hbox.addWidget(btn)
         hbox.addStretch()
-        gbox.addLayout(hbox, 2, 0, 1, 2)
+        gbox.addLayout(hbox, 3, 0, 1, 2)
         self.setLayout(gbox)
         self.last_name.setFocus()
 
@@ -771,11 +776,12 @@ class NewAlbumDialog(qtw.QDialog):
         """
         name = self.first_name.text()
         year = self.last_name.text()
+        is_live = self.is_concert.isChecked()
         if not name:
             qtw.QMessageBox.information(self, 'AlbumsMatcher', "Enter at least the"
                                         " name or press `Cancel`")
             return
-        self.parent().data = (name, year)
+        self.parent().data = (name, year, is_live)
         self.accept()
 
 
@@ -938,7 +944,7 @@ class CompareTracks(qtw.QWidget):
         for ix in range(self.clementine_tracks.topLevelItemCount()):
             tracks.append((ix + 1, self.clementine_tracks.topLevelItem(ix).text(0)))
         with wait_cursor(self._parent):
-            dmla.update_album_tracks(self.a_album, tracks)
+            dmla.update_album_tracknames(self.a_album, tracks)
         self.refresh_screen(self.artists_list.currentIndex(),
                             self.albums_list.currentIndex())
 
@@ -1033,7 +1039,6 @@ class MainFrame(qtw.QMainWindow):
     def page_changed(self):
         """pagina aanpassen nadat een andere gekozen is
         """
-        ## print('changing page from', self.current, 'to', self.nb.currentIndex())
         if self.current >= 0:
             if self.not_again:
                 self.not_again = False
