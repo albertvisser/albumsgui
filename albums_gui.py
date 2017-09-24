@@ -1148,7 +1148,7 @@ class EditTracks(qtw.QWidget):
         vbar.setMaximum(vbar.maximum() + 68)
         vbar.setValue(vbar.maximum())
 
-    def submit(self):
+    def submit(self, skip_confirm=False):
         """neem de waarden van de invulvelden over en geef ze door aan de database
         """
         tracks = []
@@ -1171,11 +1171,12 @@ class EditTracks(qtw.QWidget):
 
         if tracks:
             ok = dmla.update_album_tracks(self.parent().album.id, tracks)
-            if ok:
-                qtw.QMessageBox.information(self, 'Albums', 'Tracks updated')
-            else:
-                qtw.QMessageBox.information(self, 'Albums',
-                                            'Something went wrong, please try again')
+            if not skip_confirm:
+                if ok:
+                    qtw.QMessageBox.information(self, 'Albums', 'Tracks updated')
+                else:
+                    qtw.QMessageBox.information(self, 'Albums', 'Something'
+                                                ' went wrong, please try again')
             # eigenlijk zou je hierna de data opnieuw moeten ophalen en het scherm opnieuw
             # opbouwen - wat nu alleen gebeurt als je naar het detailscherm gaat
         else:
@@ -1188,7 +1189,7 @@ class EditTracks(qtw.QWidget):
     def submit_and_back(self):
         """return to details screen after completion
         """
-        self.submit()
+        self.submit(skip_confirm=True)
         self.parent().do_detail()
 
     def exit(self):
@@ -1285,7 +1286,7 @@ class EditRecordings(qtw.QWidget):
         vbar.setMaximum(vbar.maximum() + 36)
         vbar.setValue(vbar.maximum())
 
-    def submit(self, skip=False):
+    def submit(self, skip_confirm=False):
         """neem de waarden van de invulvelden over en geef ze door aan de database
         """
         recordings = []
@@ -1308,7 +1309,7 @@ class EditRecordings(qtw.QWidget):
 
         if recordings:
             ok = dmla.update_album_recordings(self.parent().album.id, recordings)
-            if not skip:
+            if not skip_confirm:
                 if ok:
                     qtw.QMessageBox.information(self, 'Albums', 'Recordings updated')
                 else:
@@ -1317,7 +1318,7 @@ class EditRecordings(qtw.QWidget):
             # eigenlijk zou je hierna de data opnieuw moeten ophalen en het scherm opnieuw
             # opbouwen - wat nu alleen gebeurt als je naar het detailscherm gaat
         else:
-            if not skip:
+            if not skip_confirm:
                 qtw.QMessageBox.information(self, 'Albums', 'Nothing changed')
 
         if self.first_time:
@@ -1327,7 +1328,7 @@ class EditRecordings(qtw.QWidget):
     def submit_and_back(self):
         """Return to details screen after completion
         """
-        self.submit(skip=True)
+        self.submit(skip_confirm=True)
         self.parent().do_detail()
 
     def exit(self):
