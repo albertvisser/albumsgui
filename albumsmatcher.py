@@ -20,6 +20,12 @@ logging.basicConfig(filename='/tmp/albumscatcher.log', level=logging.DEBUG,
 log = logging.info
 
 
+def build_artist_name(first, last):
+    name = ', '.join((last, first)) if first else last
+    ## return ', '.join((first, last)).strip(',').strip()
+    return name
+
+
 def build_album_name(album):
     """combine album name and release year
     first try as if it's an Album album, otherwise treat as tree item
@@ -240,9 +246,17 @@ class CompareArtists(qtw.QWidget):
         item = self.clementine_artists.currentItem()
         if not item:
             return
+        self.artist_buffer = item
         search = item.text(0)
-        if not self._parent.current_data:       # remember first handled item for
-            self._parent.current_data = search  # currency communication over panels
+        self._parent.current_data = search
+        if self.artist_map[item.text(0)]:
+            ok = qtw.QMessageBox.question(self, self.appname, 'Artist already has a '
+                                          'match - do you want to reassign?',
+                                          qtw.QMessageBox.Yes | qtw.QMessageBox.No,
+                                          qtw.QMessageBox.No)
+            if ok == qtw.QMessageBox.No:
+                return
+            self.artist_map[item.text(0)] = ''
         try:
             found = self.lookup[search]
         except KeyError:
@@ -258,17 +272,27 @@ class CompareArtists(qtw.QWidget):
         if found:
             ## fname, lname = self.finda[found]
             ## name = ', '.join((lname, fname)) if fname else lname
-            a_item = self.albums_artists.findItems(found, core.Qt.MatchFixedString,
-                                                   2)[0]
-            ## self.albums_artists.setCurrentItem(a_item)
-            ## self.albums_artists.scrollToItem(a_item)
-            ## self.artist_map[search] = found
-            ## item.setText(1, 'X')
-            ## self.select_next()
-            self.update_item(a_item, item)
-        else:
-            self.artist_buffer = item
-            self.add_artist()
+            find = self.albums_artists.findItems(found, core.Qt.MatchFixedString, 2)
+            if len(find) == 1:
+                a_item = find[0]
+            else:
+                results = []
+                for a_item in find: # only keep unmatched artists
+                    if a_item.text(2) in self.artist_map.values():
+                        break
+                    results.append(a_item)
+                    artists.append(build_artist_name(a_item.text(0), a_item.text(1)))
+                a_item = None
+                selected, ok = qtw.QInputDialog.getItem(self, self.appname,
+                                                        'Select Artist', artists,
+                                                        editable=False)
+                if ok:
+                    a_item = results[artists.index[selected]]
+            if a_item:
+                self.update_item(a_item, item)
+                return
+
+        self.add_artist()
 
     def update_item(self, new_item, from_item):
         """remember changes and make them visible
@@ -309,8 +333,7 @@ class CompareArtists(qtw.QWidget):
 
         a_item = None
         results = self.albums_artists.findItems(lname, core.Qt.MatchFixedString, 1)
-        data = [', '.join((x.text(1), x.text(0))).strip().strip(',')
-                for x in results]
+        data = [build_artist_name(x.text(1), x.text(0)) for x in results]
         if results:
             selected, ok = qtw.QInputDialog.getItem(self, self.appname,
                                                     'Select Artist', data,
@@ -321,11 +344,6 @@ class CompareArtists(qtw.QWidget):
             self.max_artist += 1
             a_item = qtw.QTreeWidgetItem([fname, lname, str(self.max_artist)])
             self.albums_artists.addTopLevelItem(a_item)
-        ## self.albums_artists.setCurrentItem(a_item)
-        ## self.albums_artists.scrollToItem(a_item)
-        ## self.artist_map[from_item.text(0)] = new_item.text(2)
-        ## item.setText(1, 'X')
-        ## self.select_next()
         self.update_item(a_item, item)
 
     def save_all(self):
@@ -426,6 +444,9 @@ class CompareAlbums(qtw.QWidget):
         hbox.addWidget(qtw.QLabel('Selecteer een uitvoerende:', self))
         self.artist_list = qtw.QComboBox(self)
         self.artist_list.currentIndexChanged.connect(self.get_albums)
+        ## self.last_handled = None
+        self.albums_to_save = collections.defaultdict(list)
+        self.albums_to_update = collections.defaultdict(list)
         hbox.addWidget(self.artist_list)
         hbox.addStretch()
         vbox.addLayout(hbox)
@@ -527,17 +548,26 @@ class CompareAlbums(qtw.QWidget):
         """get lists of albums for the selected artist
         and show them in the treewidgets
         """
-        if not self._parent.check_oldpage(1):
-            return
+        ## if not (self.last_handled is None or
+                ## self.artist_list.currentIndex() == self.last_handled):
+            ## print('last_handled is None or not selected')
+            ## if not self._parent.check_oldpage(1):
+                ## print('not getting albums')
+                ## self.artist_list.setCurrentIndex(self.last_handled)
+                ## return
         if self.artist_list.count() == 0:   # this happens when the panel is reshown
             return                          # after another panel was shown
         self.c_artist = self.artist_list.currentText()
+        ## self.last_handled = self.artist_list.currentIndex()
         # remember first handled item for currency communication over panels
         self._parent.current_data = self.c_artist
         self.a_artist = self.artist_map[self.c_artist]
         log("c_artist '%s', a_artist '%s'", self.c_artist, self.a_artist)
         a_albums, c_albums = read_artist_albums(self.a_artist, self.c_artist)
         log("c_albums '%s', a_albums '%s'", c_albums, a_albums)
+        for name, year, id, *rest in self.albums_to_save[self.c_artist]:
+            a_albums.append((name, year, str(id)))
+        log("na toevoegen evt, extra albums: a_albums '%s'", a_albums)
         self.clementine_albums.clear()
         for item in c_albums:
             new = qtw.QTreeWidgetItem([item])
@@ -618,6 +648,8 @@ class CompareAlbums(qtw.QWidget):
                 a_item = self.albums_albums.findItems(
                     str(album_list[albums.index(selected)][1]),
                     core.Qt.MatchFixedString, 2)[0]
+                self.albums_to_update[self.c_artist].append((a_item.text(0),
+                    a_item.text(1), int(a_item.text(2)), False, []))
                 self.update_item(a_item, item)
                 return
         self.add_album()
@@ -628,7 +660,7 @@ class CompareAlbums(qtw.QWidget):
         self.albums_albums.setCurrentItem(new_item)
         self.albums_albums.scrollToItem(new_item)
         self.albums_map[self.c_artist][from_item.text(0)] = (
-            build_album_name(new_item), new_item.text(2))
+            build_album_name(new_item), int(new_item.text(2)))
         ## log('self.albums_map: %s', self.albums_map)
         from_item.setText(1, 'X')
         self.modified = True
@@ -670,34 +702,55 @@ class CompareAlbums(qtw.QWidget):
                 a_item = results[data.index(selected)]
         if not a_item:
             a_item = qtw.QTreeWidgetItem([name, year, '0'])
-            a_item.setData(0, core.Qt.UserRole, is_live)
+            ## a_item.setData(0, core.Qt.UserRole, is_live)
             self.albums_albums.addTopLevelItem(a_item)
             tracklist = dmlc.list_tracks(dmlc.DB, self.c_artist, item.text(0))
-            self.tracks[(name, year, '0')] = [(x['track'], x['title'])
-                                              for x in tracklist if x['track'] > -1]
+            ## self.tracks[(name, year, '0')] = [(x['track'], x['title'])
+                                              ## for x in tracklist if x['track'] > -1]
+            self.albums_to_save[self.c_artist].append((name, year, 'X', is_live,
+               [(x['track'], x['title']) for x in tracklist if x['track'] > -1]))
         self.update_item(a_item, item)
 
     def save_all(self):
         """save changes (additions) to Albums database
         """
         data = []
-        for i in range(self.albums_albums.topLevelItemCount()):
-            item = self.albums_albums.topLevelItem(i)
-            name, year, id = item.text(0), item.text(1), item.text(2)
-            is_live = item.data(0, core.Qt.UserRole)
-            tracks = [] if id != '0' else self.tracks[(name, year, id)]
-            data.append((int(id), name, year, is_live, tracks))
+        for key, albums in self.albums_to_update.items():
+            self.albums_to_save[key] += albums
         with wait_cursor(self._parent):
-            albums = dmla.update_albums_by_artist(self.a_artist, data)
-        albums_map_lookup = {build_album_name(x): x.id for x in albums}
-        for c_name, value in self.albums_map[self.c_artist].items():
-            a_name, id = value
-            test = albums_map_lookup[a_name]
-            if id != test:
-                self.albums_map[self.c_artist][c_name] = (a_name, test)
+            for artist, albumdata in self.albums_to_save.items():
+                if not albumdata:
+                    continue
+                artistid = self.artist_map[artist]
+                data = []
+                for name, year, key, is_live, tracks in albumdata:
+                    if key == 'X':
+                        key = 0
+                    data.append((key, name, year, is_live, tracks))
+                albums = dmla.update_albums_by_artist(artistid, data)
+                ## print(albums)
+                albums_map_lookup = {build_album_name(x): x.id for x in albums}
+                for c_name, value in self.albums_map[artist].items():
+                    ## print('c_name:', c_name)
+                    a_name, id = value
+                    ## print('a_name, id:', a_name, id)
+                    try:
+                        test = albums_map_lookup[a_name]
+                    except KeyError:
+                        continue
+                    ## print('test:', test)
+                    ## print(c_name, a_name, id, test)
+                    if id != test:
+                        ## print("set self.albums_map['{}']['{}]' to ('{}','{}')'".format(
+                            ## artist, c_name, a_name, test))
+                        self.albums_map[artist][c_name] = (a_name, test)
+        self.albums_to_save.clear()
+        self.albums_to_update.clear()
+        ## print(self.albums_map)
         self._parent.albums_map = self.albums_map
         self._parent.albums_map.update({x: {} for x, y in self.albums_map.items()
                                         if not y})
+        ## self.last_handled = None
         self.refresh_screen(self.artist_list.currentIndex())
 
     def help(self):
