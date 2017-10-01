@@ -1,12 +1,12 @@
 """PyQT version of albums webapp
 """
 import sys
-
-
 import PyQt5.QtWidgets as qtw
 import PyQt5.QtGui as gui
 import PyQt5.QtCore as core
 import albums_dml as dmla
+import albumsmatcher
+
 # these should actually also be in the Albums database
 TYPETXT = {'studio': 'album', 'live': 'concert'}
 SELTXT = {'studio': ['Niet zoeken, alles tonen',
@@ -172,13 +172,15 @@ def button_strip(parent, *buttons):
     return hbox
 
 
-def exitbutton(parent, callback):
+def exitbutton(parent, callback, extrawidget=None):
     """create exit button that activates callback
     since it's always the same one, maybe passing it in is not necessary?
     it was originally intended to just close the current screen
     """
     hbox = qtw.QHBoxLayout()
     hbox.addStretch()
+    if extrawidget:
+        hbox.addWidget(extrawidget)
     btn = qtw.QPushButton("E&xit", parent)
     btn.clicked.connect(callback)
     hbox.addWidget(btn)
@@ -338,7 +340,9 @@ class Start(qtw.QWidget):
         gbox.addLayout(newline(self), row, 0, 1, 3)
 
         row += 1
-        gbox.addLayout(exitbutton(self, self.exit), row, 0, 1, 3)
+        btn = qtw.QPushButton('&Import Data', self)
+        btn.clicked.connect(self.parent().start_import_tool)
+        gbox.addLayout(exitbutton(self, self.exit, btn), row, 0, 1, 3)
 
         self.setLayout(gbox)
 
@@ -1594,6 +1598,12 @@ class MainFrame(qtw.QMainWindow):
         go.create_widgets()
         go.refresh_screen()
         self.setCentralWidget(go)
+
+    def start_import_tool(self):
+        """get albums from music library
+        """
+        albumsmatcher.MainFrame(app=self.app)
+
 
 if __name__ == '__main__':
     main = MainFrame()

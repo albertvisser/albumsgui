@@ -21,6 +21,8 @@ log = logging.info
 
 
 def build_artist_name(first, last):
+    """Build full artist name
+    """
     name = ', '.join((last, first)) if first else last
     ## return ', '.join((first, last)).strip(',').strip()
     return name
@@ -273,16 +275,16 @@ class CompareArtists(qtw.QWidget):
             for item in test:
                 index = self.clementine_artists.indexFromItem(item)
                 if forward and index.row() > current.row():
-                        break
+                    break
                 elif not forward and index.row() < current.row():
-                        break
+                    break
                 item = None
         else:
             item = None
         if item:
             self.clementine_artists.setCurrentItem(item)
             self.clementine_artists.setCurrentIndex(
-                    self.clementine_artists.indexFromItem(item))
+                self.clementine_artists.indexFromItem(item))
         else:
             qtw.QMessageBox.information(self, self._parent.title,
                                         'No more unmatched items this way')
@@ -326,11 +328,12 @@ class CompareArtists(qtw.QWidget):
             if len(find) == 1:
                 a_item = find[0]
             else:
-                #TODO: is het wel mogelijk dat je hier een selectiedialoog krijgt?
+                # TODO: is het wel mogelijk dat je hier een selectiedialoog krijgt?
+                artists = []
                 results = []
-                for a_item in find: # only keep unmatched artists
+                for a_item in find:  # only keep unmatched artists
                     if a_item.text(2) in self.artist_map.values():
-                        break
+                        continue
                     results.append(a_item)
                     artists.append(build_artist_name(a_item.text(0), a_item.text(1)))
                 a_item = None
@@ -338,7 +341,7 @@ class CompareArtists(qtw.QWidget):
                                                         'Select Artist', artists,
                                                         editable=False)
                 if ok:
-                    a_item = results[artists.index[selected]]
+                    a_item = results[artists.index(selected)]
             if a_item:
                 self.update_item(a_item, item)
                 return
@@ -384,7 +387,7 @@ class CompareArtists(qtw.QWidget):
 
         a_item = None
         results = self.albums_artists.findItems(lname, core.Qt.MatchFixedString, 1)
-        data = [build_artist_name(x.text(1), x.text(0)) for x in results]
+        data = [build_artist_name(x.text(0), x.text(1)) for x in results]
         # TODO: waarom dialoog als je ook in de resultaten de first name al kunt checken?
         if results:
             selected, ok = qtw.QInputDialog.getItem(self, self.appname,
@@ -617,13 +620,6 @@ class CompareAlbums(qtw.QWidget):
         """get lists of albums for the selected artist
         and show them in the treewidgets
         """
-        ## if not (self.last_handled is None or
-                ## self.artist_list.currentIndex() == self.last_handled):
-            ## print('last_handled is None or not selected')
-            ## if not self._parent.check_oldpage(1):
-                ## print('not getting albums')
-                ## self.artist_list.setCurrentIndex(self.last_handled)
-                ## return
         if self.artist_list.count() == 0:   # this happens when the panel is reshown
             return                          # after another panel was shown
         self.c_artist = self.artist_list.currentText()
@@ -717,8 +713,8 @@ class CompareAlbums(qtw.QWidget):
                 a_item = self.albums_albums.findItems(
                     str(album_list[albums.index(selected)][1]),
                     core.Qt.MatchFixedString, 2)[0]
-                self.albums_to_update[self.c_artist].append((a_item.text(0),
-                    a_item.text(1), int(a_item.text(2)), False, []))
+                self.albums_to_update[self.c_artist].append(
+                    (a_item.text(0), a_item.text(1), int(a_item.text(2)), False, []))
                 self.update_item(a_item, item)
                 return
         self.add_album()
@@ -771,13 +767,11 @@ class CompareAlbums(qtw.QWidget):
                 a_item = results[data.index(selected)]
         if not a_item:
             a_item = qtw.QTreeWidgetItem([name, year, '0'])
-            ## a_item.setData(0, core.Qt.UserRole, is_live)
             self.albums_albums.addTopLevelItem(a_item)
             tracklist = dmlc.list_tracks(dmlc.DB, self.c_artist, item.text(0))
-            ## self.tracks[(name, year, '0')] = [(x['track'], x['title'])
-                                              ## for x in tracklist if x['track'] > -1]
-            self.albums_to_save[self.c_artist].append((name, year, 'X', is_live,
-               [(x['track'], x['title']) for x in tracklist if x['track'] > -1]))
+            self.albums_to_save[self.c_artist].append(
+                (name, year, 'X', is_live,
+                 [(x['track'], x['title']) for x in tracklist if x['track'] > -1]))
         self.update_item(a_item, item)
 
     def save_all(self):
@@ -797,25 +791,17 @@ class CompareAlbums(qtw.QWidget):
                         key = 0
                     data.append((key, name, year, is_live, tracks))
                 albums = dmla.update_albums_by_artist(artistid, data)
-                ## print(albums)
                 albums_map_lookup = {build_album_name(x): x.id for x in albums}
                 for c_name, value in self.albums_map[artist].items():
-                    ## print('c_name:', c_name)
                     a_name, id = value
-                    ## print('a_name, id:', a_name, id)
                     try:
                         test = albums_map_lookup[a_name]
                     except KeyError:
                         continue
-                    ## print('test:', test)
-                    ## print(c_name, a_name, id, test)
                     if id != test:
-                        ## print("set self.albums_map['{}']['{}]' to ('{}','{}')'".format(
-                            ## artist, c_name, a_name, test))
                         self.albums_map[artist][c_name] = (a_name, test)
         self.albums_to_save.clear()
         self.albums_to_update.clear()
-        ## print(self.albums_map)
         self._parent.albums_map = self.albums_map
         self._parent.albums_map.update({x: {} for x, y in self.albums_map.items()
                                         if not y})
@@ -1048,7 +1034,6 @@ class CompareTracks(qtw.QWidget):
             qtw.QMessageBox.information(self, self._parent.title,
                                         "No (matched) albums for this artist")
             return
-        print("self.albums_map[self.artist]:", self.albums_map[self.artist])
         try:
             self.a_album = self.albums_map[self.artist][self.c_album][1]
         except KeyError:
@@ -1079,30 +1064,14 @@ class CompareTracks(qtw.QWidget):
     def unlink(self):
         """remove "Clementine recording" from album
         """
-        # TODO: clear entry in self.albums_map[artist]
-        ## c_artist = self.artists_list.currentText()
-        ## print('c_artist', c_artist)
-        ## print('self.artist', self.artist)
-        ## c_album = self.albums_list.currentText()
-        ## print('c_album:', c_album)
-        ## print('self.c_album:', self.c_album)
-        ## album = self.albums_map[c_artist][c_album]
-        ## print('album:', album)
-        ## album_id = album[1]
         album_id = self.albums_map[self.artist][self.c_album][1]
-        ## album[1] = ''
-        ## print('album, album_id:', album, album_id)
-        ## self.albums_map[c_artist][c_album] = album
-        ## self.albums_map[c_artist].pop(c_album)
+        # clear entry in self.albums_map[artist]
         self.albums_map[self.artist].pop(self.c_album)
-        still_present = False
-        ## print('albums map:', self.albums_map[c_artist])
-        ## for item, value in self.albums_map[c_artist].items():
         # remove Albums recording only if no more references to the album exist
-        for item, value in self.albums_map[self.artist].items():
-            if value[1] == album_id:
+        still_present = False
+        for item in self.albums_map[self.artist].values():
+            if item[1] == album_id:
                 still_present = True
-        ## print('still present:', still_present)
         if not still_present:
             dmla.unlink_album(self.a_album)
         self.refresh_screen(self.artists_list.currentIndex(),
@@ -1133,8 +1102,11 @@ class MainFrame(qtw.QMainWindow):
     het centralwidget opnieuw in te stellen
     Voor deze applicatie is een TabWidget misschien beter op z'n plaats?
     """
-    def __init__(self, parent=None):
-        self.app = qtw.QApplication(sys.argv)
+    def __init__(self, parent=None, app=None):
+        if app:
+            self.app = app
+        else:
+            self.app = qtw.QApplication(sys.argv)
         self.title = "AlbumsMatcher"
         super().__init__()
         self.setWindowTitle(self.title)
@@ -1187,7 +1159,8 @@ class MainFrame(qtw.QMainWindow):
         self.nb.setCurrentIndex(0)
         self.show()
         ## self.nb.currentWidget().setFocus()
-        sys.exit(self.app.exec_())
+        if not app:
+            sys.exit(self.app.exec_())
 
     def page_changed(self):
         """pagina aanpassen nadat een andere gekozen is
