@@ -120,9 +120,13 @@ def update_album_details(album_id, albumdata):
                                         name=albumdata['titel'])
     for name, value in albumdata['details']:
         if name == 'Label/jaar:':
+            print(value)
             test = value.split(', ')
+            print(test)
             if len(test) == 2:
-                album.label, album.release_year = test
+                album.label = test[0]
+                if test[1]:
+                    album.release_year = int(test[1])
             else:
                 try:
                     album.release_year = int(test[0])
@@ -137,6 +141,7 @@ def update_album_details(album_id, albumdata):
         elif name == 'Tevens met:':
             album.additional = value
     ok = True   # hoe detecteer ik dat er iets foutgaat? Exception?
+    print(album.id, album.artist, album.name, album.label, album.release_year)
     album.save()
     updated = album
     return updated, ok
@@ -262,7 +267,7 @@ def unlink_album(album_id):
     """
     c_type = 'Clementine music player'
     it = my.Album.objects.get(pk=album_id)
-    for item in it.opnames:
+    for item in it.opnames.all():
         if item.type == c_type:
             it.opnames.remove(item)
             it.save()
