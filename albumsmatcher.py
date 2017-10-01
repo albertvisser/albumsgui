@@ -276,6 +276,7 @@ class CompareArtists(qtw.QWidget):
             if len(find) == 1:
                 a_item = find[0]
             else:
+                #TODO: is het wel mogelijk dat je hier een selectiedialoog krijgt?
                 results = []
                 for a_item in find: # only keep unmatched artists
                     if a_item.text(2) in self.artist_map.values():
@@ -334,6 +335,7 @@ class CompareArtists(qtw.QWidget):
         a_item = None
         results = self.albums_artists.findItems(lname, core.Qt.MatchFixedString, 1)
         data = [build_artist_name(x.text(1), x.text(0)) for x in results]
+        # TODO: waarom dialoog als je ook in de resultaten de first name al kunt checken?
         if results:
             selected, ok = qtw.QInputDialog.getItem(self, self.appname,
                                                     'Select Artist', data,
@@ -540,7 +542,12 @@ class CompareAlbums(qtw.QWidget):
             try:
                 self.artist_list.setCurrentIndex(artist)
             except TypeError:
-                indx = clementine_artists.index(artist)
+                try:
+                    indx = clementine_artists.index(artist)
+                except ValueError:
+                    qtw.QMessageBox.information(self, self._parent.title, "This "
+                                                "artist has not been matched yet")
+                    return
                 self.artist_list.setCurrentIndex(indx)
         self.focus_albums()
 
@@ -942,7 +949,12 @@ class CompareTracks(qtw.QWidget):
             try:
                 self.artists_list.setCurrentIndex(artist)
             except TypeError:
-                indx = clementine_artists.index(artist)
+                try:
+                    indx = clementine_artists.index(artist)
+                except ValueError:
+                    qtw.QMessageBox.information(self, self._parent.title, "This "
+                                                "artist has not been matched yet")
+                    return
                 self.artists_list.setCurrentIndex(indx)
         if album:
             self.albums_list.setCurrentIndex(album)
@@ -1004,6 +1016,8 @@ class CompareTracks(qtw.QWidget):
     def unlink(self):
         """remove "Clementine recording" from album
         """
+        # TODO: clear entry in self.albums_map[artist]
+        # do below action only if no more references to the album exist
         dmla.unlink_album(self.a_album)
         self.refresh_screen(self.artists_list.currentIndex(),
                             self.albums_list.currentIndex())
