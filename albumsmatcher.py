@@ -147,6 +147,16 @@ class CompareArtists(qtw.QWidget):
 
         b_help = qtw.QPushButton('&Help', self)
         b_help.clicked.connect(self.help)
+        b_next = qtw.QPushButton(self)
+        b_next.setIcon(gui.QIcon('icons/go-bottom.png'))
+        b_next.setIconSize(core.QSize(12, 12))
+        b_next.setToolTip('Go to next unmatched artist')
+        b_next.clicked.connect(self.focus_next)
+        b_prev = qtw.QPushButton(self)
+        b_prev.setIcon(gui.QIcon('icons/go-top.png'))
+        b_prev.setIconSize(core.QSize(12, 12))
+        b_prev.setToolTip('Go to previous unmatched artist')
+        b_prev.clicked.connect(self.focus_prev)
         b_find = qtw.QPushButton('&Check Artist', self)
         b_find.clicked.connect(self.find_artist)
         ## b_copy = qtw.QPushButton('&Copy Selected', self)
@@ -163,6 +173,8 @@ class CompareArtists(qtw.QWidget):
         hbox = qtw.QHBoxLayout()
         hbox.addStretch()
         hbox.addWidget(b_help)
+        hbox.addWidget(b_next)
+        hbox.addWidget(b_prev)
         hbox.addWidget(b_find)
         ## hbox.addWidget(b_copy)
         hbox.addStretch()
@@ -188,7 +200,9 @@ class CompareArtists(qtw.QWidget):
             ('Help', self.help, ['F1', 'Ctrl+H']),
             ('Focus', self.clementine_artists.setFocus, ['Ctrl+L']),
             ('Find', self.find_artist, ['Ctrl+Return', 'Ctrl+F']),
-            ('Add', self.add_artist, ['Ctrl+A', 'Ctrl++']),
+            ('Next', self.focus_next, ['Ctrl+N']),
+            ('Prev', self.focus_prev, ['Ctrl+P']),
+            ## ('Add', self.add_artist, ['Ctrl+A', 'Ctrl++']),
             ('Save', self.save_all, ['Ctrl+S']))
         for text, callback, keys in actions:
             act = qtw.QAction(text, self)
@@ -236,6 +250,42 @@ class CompareArtists(qtw.QWidget):
         else:
             item = self.clementine_albums.topLevelItem(0)
         self.clementine_artists.setCurrentItem(item)
+
+    def focus_next(self):
+        """select next unhandled artist in left-hand side list
+        """
+        self.focus_item()
+
+    def focus_prev(self):
+        """select previous unhandled artist in left-hand side list
+        """
+        self.focus_item(forward=False)
+
+    def focus_item(self, forward=True):
+        """select unhandled artist in left-hand side list
+        """
+        self.clementine_artists.setFocus()
+        current = self.clementine_artists.currentIndex()
+        test = self.clementine_artists.findItems('', core.Qt.MatchFixedString, 1)
+        if test:
+            if not forward:
+                test = reversed(test)
+            for item in test:
+                index = self.clementine_artists.indexFromItem(item)
+                if forward and index.row() > current.row():
+                        break
+                elif not forward and index.row() < current.row():
+                        break
+                item = None
+        else:
+            item = None
+        if item:
+            self.clementine_artists.setCurrentItem(item)
+            self.clementine_artists.setCurrentIndex(
+                    self.clementine_artists.indexFromItem(item))
+        else:
+            qtw.QMessageBox.information(self, self._parent.title,
+                                        'No more unmatched items this way')
 
     def find_artist(self):
         """search artist in other list
@@ -473,6 +523,18 @@ class CompareAlbums(qtw.QWidget):
         b_find = qtw.QPushButton('&Check Album', self)
         b_find.clicked.connect(self.find_album)
         hbox2.addWidget(b_help)
+        b_next = qtw.QPushButton(self)
+        b_next.setIcon(gui.QIcon('icons/go-bottom.png'))
+        b_next.setIconSize(core.QSize(12, 12))
+        b_next.setToolTip('Select next artist in list')
+        b_next.clicked.connect(self.next_artist)
+        hbox2.addWidget(b_next)
+        b_prev = qtw.QPushButton(self)
+        b_prev.setIcon(gui.QIcon('icons/go-top.png'))
+        b_prev.setIconSize(core.QSize(12, 12))
+        b_prev.setToolTip('Select previous artist in list')
+        b_prev.clicked.connect(self.prev_artist)
+        hbox2.addWidget(b_prev)
         hbox2.addWidget(b_find)
         hbox2.addStretch()
         vbox2.addLayout(hbox2)
