@@ -1048,6 +1048,7 @@ class CompareTracks(qtw.QWidget):
             qtw.QMessageBox.information(self, self._parent.title,
                                         "No (matched) albums for this artist")
             return
+        print("self.albums_map[self.artist]:", self.albums_map[self.artist])
         try:
             self.a_album = self.albums_map[self.artist][self.c_album][1]
         except KeyError:
@@ -1079,8 +1080,31 @@ class CompareTracks(qtw.QWidget):
         """remove "Clementine recording" from album
         """
         # TODO: clear entry in self.albums_map[artist]
-        # do below action only if no more references to the album exist
-        dmla.unlink_album(self.a_album)
+        ## c_artist = self.artists_list.currentText()
+        ## print('c_artist', c_artist)
+        ## print('self.artist', self.artist)
+        ## c_album = self.albums_list.currentText()
+        ## print('c_album:', c_album)
+        ## print('self.c_album:', self.c_album)
+        ## album = self.albums_map[c_artist][c_album]
+        ## print('album:', album)
+        ## album_id = album[1]
+        album_id = self.albums_map[self.artist][self.c_album][1]
+        ## album[1] = ''
+        ## print('album, album_id:', album, album_id)
+        ## self.albums_map[c_artist][c_album] = album
+        ## self.albums_map[c_artist].pop(c_album)
+        self.albums_map[self.artist].pop(self.c_album)
+        still_present = False
+        ## print('albums map:', self.albums_map[c_artist])
+        ## for item, value in self.albums_map[c_artist].items():
+        # remove Albums recording only if no more references to the album exist
+        for item, value in self.albums_map[self.artist].items():
+            if value[1] == album_id:
+                still_present = True
+        ## print('still present:', still_present)
+        if not still_present:
+            dmla.unlink_album(self.a_album)
         self.refresh_screen(self.artists_list.currentIndex(),
                             self.albums_list.currentIndex())
 
