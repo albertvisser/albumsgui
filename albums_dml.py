@@ -120,9 +120,7 @@ def update_album_details(album_id, albumdata):
                                         name=albumdata['titel'])
     for name, value in albumdata['details']:
         if name == 'Label/jaar:':
-            print(value)
             test = value.split(', ')
-            print(test)
             if len(test) == 2:
                 album.label = test[0]
                 if test[1]:
@@ -141,7 +139,6 @@ def update_album_details(album_id, albumdata):
         elif name == 'Tevens met:':
             album.additional = value
     ok = True   # hoe detecteer ik dat er iets foutgaat? Exception?
-    print(album.id, album.artist, album.name, album.label, album.release_year)
     album.save()
     updated = album
     return updated, ok
@@ -224,7 +221,7 @@ def update_albums_by_artist(artist_id, changes):
             it = my.Album.objects.get(pk=id)
             changed = True
             if name == it.name and year == it.release_year:
-                for item in it.opnames:
+                for item in it.opnames.all():
                     if item.type == c_type:
                         changed = False
                         break
@@ -257,8 +254,13 @@ def update_album_tracknames(album_id, tracks):
     """store data from screen in database
     """
     it = my.Album.objects.get(pk=album_id)
+    oldtracks = {x.name: x for x in it.tracks.objects.all()}
     for num, title in tracks:
-        it.tracks.add(my.Song.objects.create(volgnr=num, name=title))
+        if title in oldtracks:
+            oldtracks[title].volgnr = num
+            oldtracks[title].save()
+        else:
+            it.tracks.add(my.Song.objects.create(volgnr=num, name=title))
     it.save()
 
 
