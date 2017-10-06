@@ -75,6 +75,39 @@ def restore_artists():
         conn.commit()
 
 
+def read_tracks_to_correct(inlist):
+    """correct entries created with albumsmatcher stage 1: get tracks
+    """
+    outstuff = []
+    for album_id in inlist:
+        data =  execute_query(
+            DB, "select muziek_song.id, volgnr, name from muziek_song inner join "
+            "muziek_album_tracks on muziek_song.id = muziek_album_tracks.song_id "
+            "where muziek_album_tracks.album_id = {} order by muziek_song.id".format(
+            album_id))
+        for item in data:
+            outstuff.append((album_id, item['id'], item['volgnr'], item['name']))
+    with open('fawlty_tracks', 'w') as _out:
+        for item in outstuff:
+            print(item, file=_out)
+
+def update_corrected_tracks():
+    """correct entries created with albumsmatcher stage 1: get tracks
+    """
+    with open('wright_tracks') as _in:
+        data = _in.readlines()
+    with sqlite3.connect(DB) as conn:
+        cur = conn.cursor()
+        for line in data:
+            _, trackid, volgnr, _ = line.split(', ', 3)
+            cur.execute("update muziek_song set volgnr = ? where id = ?",
+                (volgnr, trackid))
+        conn.commit()
+
+
+
 if __name__ == "__main__":
     ## main()
-    restore_artists()
+    ## restore_artists()
+    ## read_tracks_to_correct((755,))
+    update_corrected_tracks()
