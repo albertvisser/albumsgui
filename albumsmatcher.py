@@ -140,6 +140,7 @@ class CompareArtists(qtw.QWidget):
         tree.setHeaderLabels(['First Name', 'Last Name', 'Id'])
         tree.setMouseTracking(True)
         tree.itemEntered.connect(self.popuptext)
+        tree.currentItemChanged.connect(self.check_deletable)
         self.albums_artists = tree
 
         b_help = qtw.QPushButton('&Help', self)
@@ -161,6 +162,9 @@ class CompareArtists(qtw.QWidget):
 
         ## b_add = qtw.QPushButton('&New Artist', self)
         ## b_add.clicked.connect(self.add_artist)
+        self.delete_button = qtw.QPushButton('&Delete', self)
+        self.delete_button.clicked.connect(self.delete_artist)
+        self.delete_button.setEnabled(False)
         b_save = qtw.QPushButton('&Save All', self)
         b_save.clicked.connect(self.save_all)
 
@@ -183,6 +187,7 @@ class CompareArtists(qtw.QWidget):
         hbox = qtw.QHBoxLayout()
         hbox.addStretch()
         ## hbox.addWidget(b_add)
+        hbox.addWidget(self.delete_button)
         hbox.addWidget(b_save)
         hbox.addStretch()
         vbox.addLayout(hbox)
@@ -200,7 +205,7 @@ class CompareArtists(qtw.QWidget):
             ('Go', self.select_and_go, ['Ctrl+Shift+Return']),
             ('Next', self.focus_next, ['Ctrl+N']),
             ('Prev', self.focus_prev, ['Ctrl+P']),
-            ## ('Add', self.add_artist, ['Ctrl+A', 'Ctrl++']),
+            ('Delete', self.delete_artist, ['Ctrl+D', 'Del']),
             ('Save', self.save_all, ['Ctrl+S']))
         for text, callback, keys in actions:
             act = qtw.QAction(text, self)
@@ -212,6 +217,8 @@ class CompareArtists(qtw.QWidget):
         """update screen contents
         """
         self.modified = False
+        self.new_artists = []
+        self.new_matches = {}
         self.artist_list_a, self.artist_list_c = read_artists()
         self.lookup = {' '.join((x, y)).strip(): z for x, y, z in self.artist_list_a}
         self.finda = {z: (x, y) for x, y, z in self.artist_list_a}
@@ -294,6 +301,15 @@ class CompareArtists(qtw.QWidget):
         elif colno == 0:
             item.setToolTip(colno, item.text(colno))
 
+    def check_deletable(self):
+        """if selected (right-hand side) artist is not yet saved, activate
+        delete button
+        """
+        item = self.albums_artists.currentItem()
+        self.delete_button.setEnabled(False)
+        if item in self.new_artists:
+            self.delete_button.setEnabled(True)
+
     def select_and_go(self):
         """Go to tab 2 and select artist
         """
@@ -303,7 +319,7 @@ class CompareArtists(qtw.QWidget):
             return
         search = item.text(0)
         if not self.artist_map[search]:
-            qtw.QMessageBox.information(self.self.appname, "Not possible - "
+            qtw.QMessageBox.information(self, self.appname, "Not possible - "
                                         "artist hasn't been matched yet")
             return
         self._parent.current_data = search
@@ -372,6 +388,7 @@ class CompareArtists(qtw.QWidget):
         self.albums_artists.setCurrentItem(new_item)
         self.albums_artists.scrollToItem(new_item)
         self.artist_map[from_item.text(0)] = new_item.text(2)
+        self.new_matches[new_item.text(2)] = from_item.text(0)
         from_item.setText(1, 'X')
         self.modified = True
         next = self.clementine_artists.itemBelow(
@@ -416,7 +433,35 @@ class CompareArtists(qtw.QWidget):
             self.max_artist += 1
             a_item = qtw.QTreeWidgetItem([fname, lname, str(self.max_artist)])
             self.albums_artists.addTopLevelItem(a_item)
+            self.new_artists.append(a_item)
         self.update_item(a_item, item)
+
+    def delete_artist(self):
+        item = self.albums_artists.currentItem()
+        if item is None:
+            return
+        name = build_artist_name(item.text(0), item.text(1))
+        ok = qtw.QMessageBox.question(self, self.appname,
+                                      'Ok to delete artist `{}`?'.format(name),
+                                      qtw.QMessageBox.Ok | qtw.QMessageBox.Cancel,
+                                      qtw.QMessageBox.Ok)
+        if ok != qtw.QMessageBox.Ok:
+            return
+        ix = self.albums_artists.currentIndex().row()
+        self.albums_artists.takeTopLevelItem(ix)
+        self.new_artists.remove(item)
+        a_itemkey = item.text(2)
+        try:
+            name = self.new_matches.pop(a_itemkey)
+        except KeyError:
+            name = ''
+        if name and self.artist_map[name] == a_itemkey:
+            self.artist_map[name] = ''
+            results = self.clementine_artists.findItems(name,
+                                                        core.Qt.MatchFixedString,
+                                                        0)
+            results[0].setText(1, '')
+        self.modified = bool(self.new_matches)
 
     def save_all(self):
         """save changes (additions) to Albums database
