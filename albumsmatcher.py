@@ -96,7 +96,8 @@ def read_albums_tracks(id, artist_name, album_name):
     """get lists of tracks for albums
     """
     list_a = [x.name for x in dmla.list_tracks(id)]
-    list_c = [x['title'] for x in dmlc.list_tracks(DB_C, artist_name, album_name)]
+    list_c = [x['title'] for x in dmlc.list_tracks(DB_C, artist_name, album_name)
+              if x['track'] != -1]
     return list_a, list_c
 
 
@@ -1134,6 +1135,8 @@ class CompareTracks(qtw.QWidget):
             new = qtw.QTreeWidgetItem([item])
             self.clementine_tracks.addTopLevelItem(new)
         reimport_possible = False
+        if c_tracks and not a_tracks:
+            reimport_possible = True
         for ix, item in enumerate(a_tracks):
             try:
                 if not (item.startswith(c_tracks[ix][0])

@@ -254,11 +254,12 @@ def update_album_tracknames(album_id, tracks):
     """store data from screen in database
     """
     it = my.Album.objects.get(pk=album_id)
-    oldtracks = {x.name: x for x in it.tracks.objects.all()}
+    oldtracks = {x.name: x for x in it.tracks.all()}
     for num, title in tracks:
         if title in oldtracks:
-            oldtracks[title].volgnr = num
-            oldtracks[title].save()
+            if num != oldtracks[title].volgnr:
+                oldtracks[title].volgnr = num
+                oldtracks[title].save()
         else:
             it.tracks.add(my.Song.objects.create(volgnr=num, name=title))
     it.save()
