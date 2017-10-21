@@ -35,7 +35,8 @@ def list_tracks(db, album_id):
     """produce list of tracks for album
     """
     return execute_query(
-        db, "select volgnr, name, written_by, credits from muziek_song inner join "
+        db, "select muziek_song.id, volgnr, name, written_by, credits "
+        "from muziek_song inner join "
         "muziek_album_tracks on muziek_song.id = muziek_album_tracks.song_id "
         "where muziek_album_tracks.album_id = {} order by volgnr".format(album_id))
 
@@ -43,10 +44,20 @@ def list_tracks(db, album_id):
 def main():
     """simple test: print data
     """
-    with open("test_albums_output", "w") as _out:
-        print(list_artists(DB), file=_out)
-        print(list_albums(DB, 1), file=_out)
-        print(list_tracks(DB, 1), file=_out)
+    with sqlite3.connect(DB) as conn:
+        cur = conn.cursor()
+        cur.execute('delete from muziek_song where id = 10644;')
+        cur.execute('delete from muziek_song where id = 10645;')
+        cur.execute('delete from muziek_song where id = 10646;')
+        ## cur.execute('update muziek_song set name = "Anthrax" where id = 1697;')
+        ## cur.execute('update muziek_song set volgnr = 6 where id = 4100;')
+        conn.commit()
+    with open("/tmp/tracks", "w") as _out:
+        ## print(list_artists(DB), file=_out)
+        ## for item in list_albums(DB, 110):
+            ## print(item, file=_out)
+        for item in list_tracks(DB, 458):
+            print(item, file=_out)
 
 
 def restore_artists():
@@ -87,27 +98,30 @@ def read_tracks_to_correct(inlist):
             album_id))
         for item in data:
             outstuff.append((album_id, item['id'], item['volgnr'], item['name']))
-    with open('fawlty_tracks', 'w') as _out:
+    with open('/tmp/tracks', 'w') as _out:
         for item in outstuff:
             print(item, file=_out)
 
 def update_corrected_tracks():
-    """correct entries created with albumsmatcher stage 1: get tracks
+    """correct entries created with albumsmatcher stage 2: write them back
     """
-    with open('wright_tracks') as _in:
+    with open('/tmp/tracks') as _in:
         data = _in.readlines()
     with sqlite3.connect(DB) as conn:
         cur = conn.cursor()
         for line in data:
-            _, trackid, volgnr, _ = line.split(', ', 3)
-            cur.execute("update muziek_song set volgnr = ? where id = ?",
-                (volgnr, trackid))
+            _, trackid, volgnr, name = line.strip()[1:-1].split(', ', 3)
+            name = name[1:-1]
+            ## cur.execute("update muziek_song set volgnr = ? where id = ?",
+                ## (volgnr, trackid))
+            cur.execute("update muziek_song set name = ? where id = ?",
+                (name, trackid))
         conn.commit()
 
 
 
 if __name__ == "__main__":
-    ## main()
+    main()
     ## restore_artists()
-    ## read_tracks_to_correct((755,))
-    update_corrected_tracks()
+    ## update_corrected_tracks()
+    ## read_tracks_to_correct((457,))

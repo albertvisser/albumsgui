@@ -26,7 +26,7 @@ def list_artists(db):
 
 def list_albums(db, artist_name):
     "produce list of albums for artist"
-    return retrieve(db, "select distinct album from songs where artist = ? "
+    return retrieve(db, "select distinct album, year from songs where artist = ? "
                     "and unavailable = '0';", (artist_name,))
 
 

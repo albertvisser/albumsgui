@@ -195,7 +195,7 @@ def update_album_recordings(album_id, recordings):
 def update_artists(changes):
     """store data from screen in database
     """
-    ok = True
+    results = []
     for id, first_name, last_name in changes:
         if id:
             it = my.Act.objects.get(pk=id)
@@ -204,7 +204,8 @@ def update_artists(changes):
         it.first_name = first_name
         it.last_name = last_name
         it.save()
-    return ok
+        results.append(it)
+    return results
 
 
 def update_albums_by_artist(artist_id, changes):
@@ -254,12 +255,13 @@ def update_album_tracknames(album_id, tracks):
     """store data from screen in database
     """
     it = my.Album.objects.get(pk=album_id)
-    oldtracks = {x.name: x for x in it.tracks.all()}
+    oldtracks = {x.name.upper(): x for x in it.tracks.all()}
     for num, title in tracks:
-        if title in oldtracks:
-            if num != oldtracks[title].volgnr:
-                oldtracks[title].volgnr = num
-                oldtracks[title].save()
+        title_u = title.upper()
+        if title_u in oldtracks:
+            if num != oldtracks[title_u].volgnr:
+                oldtracks[title_u].volgnr = num
+                oldtracks[title_u].save()
         else:
             it.tracks.add(my.Song.objects.create(volgnr=num, name=title))
     it.save()
