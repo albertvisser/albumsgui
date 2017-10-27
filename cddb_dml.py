@@ -4,7 +4,7 @@ import struct
 import collections
 import logging
 from banshee_settings import databases
-DB = databases['albums']
+DB = databases['cddb']
 logging.basicConfig(filename='/tmp/cddb.log', level=logging.DEBUG)
 Album = collections.namedtuple('Album', ['cddbid', 'title', 'jaar', 'genre'])
 
@@ -135,7 +135,6 @@ def test_readstr():
 def main():
     """simple test: print data
     """
-    DB = '/home/albert/projects/albumsgui/oude data/IN_CDDA_wa5.cdb'
     test = CDDBData(DB)
     if test.error:
         print(test.error)
