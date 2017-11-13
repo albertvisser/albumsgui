@@ -30,6 +30,28 @@ def list_albums(db, artist_name):
                     "and unavailable = '0';", (artist_name,))
 
 
+def list_album_covers(db, artist_name='', album_name='', all_tracks=False):
+    """produce list of album covers
+    """
+    query = 'select distinct artist, album, track, art_automatic, art_manual from songs'
+    cond, parms = [], []
+    if artist_name:
+        cond.append('artist = ?')
+        parms.append(artist_name)
+    if album_name:
+        cond.append('album = ?')
+        parms.append(album_name)
+    if all_tracks:
+        query = query.replace('distinct ', '')
+    else:
+        query = query.replace('track, ', '')
+    if cond:
+        query += ' where ' + ' and '.join(cond)
+    if not album_name and not artist_name:
+        query += ' order by artist, album'
+    return retrieve(db, query, parms)
+
+
 def list_tracks(db, artist_name, album_name):
     "produce list of tracks for album"
     return retrieve(
@@ -50,6 +72,9 @@ def main():
         pprint.pprint(album_list, stream=_out)
         album = album_list[0]['album']
         pprint.pprint(list_tracks(db, artist, album), stream=_out)
+        pprint.pprint(list_album_covers(db, artist, ''), stream=_out)
+        pprint.pprint(list_album_covers(db, '', album, True), stream=_out)
+        pprint.pprint(list_album_covers(db, artist, album), stream=_out)
 
 
 if __name__ == "__main__":

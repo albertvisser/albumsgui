@@ -1,6 +1,7 @@
 """dml for Banshee database
 """
 import sqlite3
+import pprint
 from contextlib import closing
 from banshee_settings import databases
 DB = databases['banshee']
@@ -32,6 +33,23 @@ def list_albums(db, artist_id):
         db, "select AlbumID, Title from corealbums where ArtistID = {}".format(artist_id))
 
 
+def list_album_covers(db, artist_id=0, album_id=0):
+    """produce list of album covers
+    """
+    query = 'select t1.Name, t2.Title, t2.ArtworkID from coreartists as t1 ' \
+            'inner join corealbums as t2 on t1.ArtistID = t2.ArtistID'
+    cond = []
+    if album_id:
+        cond.append('t2.AlbumID = {}'.format(album_id))
+    if artist_id:
+        cond.append('t1.ArtistID = {}'.format(artist_id))
+    if cond:
+        query += ' where ' + ' and '.join(cond)
+    if not album_id and not artist_id:
+        query += ' order by t1.Name, t2.Title'
+    return execute_query(db, query)
+
+
 def list_tracks(db, album_id):
     """produce list of tracks for album
     """
@@ -44,10 +62,13 @@ def main():
     """simple test: print data
     """
     db = DB
-    with open("test_banshee_output", "w") as _out:
-        print(list_artists(db), file=_out)
-        print(list_albums(db, 19), file=_out)
-        print(list_tracks(db, 182), file=_out)
+    with open("/tmp/test_banshee_output", "w") as _out:
+        pprint.pprint(list_artists(db), stream=_out)
+        pprint.pprint(list_albums(db, 19), stream=_out)
+        pprint.pprint(list_tracks(db, 182), stream=_out)
+        pprint.pprint(list_album_covers(db, 19), stream=_out)
+        pprint.pprint(list_album_covers(db, 0, 182), stream=_out)
+        pprint.pprint(list_album_covers(db, 19, 182), stream=_out)
 
 if __name__ == "__main__":
     main()
