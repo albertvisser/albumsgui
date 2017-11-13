@@ -4,7 +4,7 @@ import struct
 import collections
 import logging
 from banshee_settings import databases
-DB = databases['cddb']
+DB = databases['CDDB']
 logging.basicConfig(filename='/tmp/cddb.log', level=logging.DEBUG)
 Album = collections.namedtuple('Album', ['cddbid', 'title', 'jaar', 'genre'])
 
