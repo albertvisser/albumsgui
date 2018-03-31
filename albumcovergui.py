@@ -32,7 +32,6 @@ class MainWidget(qtw.QWidget):
         hbox.addStretch()
         hbox.addWidget(qtw.QLabel('Database: ', self))
         self.ask_db = qtw.QComboBox(self)
-        ## self.ask_db.setMinimumWidth(260)
         self.ask_db.addItems(self.dbnames)
         self.ask_db.currentIndexChanged.connect(self.change_db)
         hbox.addWidget(self.ask_db)
@@ -59,10 +58,7 @@ class MainWidget(qtw.QWidget):
 
         hbox = qtw.QHBoxLayout()
         hbox.addStretch()
-        ## pic = gui.QPixmap(INIT_PIC)
-        ## pic = gui.QPixmap('SciTEIco.png')
         self.lbl = qtw.QLabel(self)
-        ## self.lbl.setPixmap(pic)
         self.lbl.setMinimumWidth(500)
         self.lbl.setMinimumHeight(500)
         self.lbl.setText("\n".join((
