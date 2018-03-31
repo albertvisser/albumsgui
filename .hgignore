@@ -4,3 +4,9 @@ oude data*
 cddb*
 CDDB*
 *.pyc
+*csv
+*txt
+*bak
+albumsmatcher*json
+*log
+*lst
