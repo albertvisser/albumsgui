@@ -157,7 +157,8 @@ class MainWidget(qtw.QWidget):
             self.tracknames = [x["Title"] for x in data]
             self.trackids = [x["TrackNumber"] for x in data]
         elif self.dbname == 'clementine':
-            data = dmlc.list_tracks(self.db, self.artist, self.album_ids[index - 1])
+            data = dmlc.list_tracks_for_album(self.db, self.artist,
+                                              self.album_ids[index - 1])
             self.trackids = self.tracknames = [x["title"] for x in data]
         elif self.dbname == 'CDDB':
             data = self.db.list_tracks(self.album_ids[index - 1])
