@@ -109,9 +109,20 @@ def read_albums_tracks(id, artist_name, album_name):
     """get lists of tracks for albums
     """
     list_a = [x.name for x in dmla.list_tracks(id)]
-    list_c = [x['title'] for x in dmlc.list_tracks(DB_C, artist_name, album_name)
+    list_c = [x['title'] for x in dmlc.list_tracks_for_album(DB_C, artist_name,
+                                                             album_name)
               if x['track'] != -1]
     return list_a, list_c
+
+
+def popuptext(item, colno):
+    """show complete text of description if moused over
+    """
+    if item.text(2):
+        if colno == 1:
+            item.setToolTip(colno, item.text(colno))
+    elif colno == 0:
+        item.setToolTip(colno, item.text(colno))
 
 
 @contextlib.contextmanager
@@ -139,7 +150,7 @@ class CompareArtists(qtw.QWidget):
         tree.setColumnWidth(1, 50)
         tree.setHeaderLabels(['Artist', 'Match'])
         tree.setMouseTracking(True)
-        tree.itemEntered.connect(self.popuptext)
+        tree.itemEntered.connect(popuptext)
         tree.itemDoubleClicked.connect(self.select_and_go)
         self.clementine_artists = tree
 
@@ -152,7 +163,7 @@ class CompareArtists(qtw.QWidget):
         hdr.setSectionResizeMode(1, qtw.QHeaderView.Stretch)
         tree.setHeaderLabels(['First Name', 'Last Name', 'Id'])
         tree.setMouseTracking(True)
-        tree.itemEntered.connect(self.popuptext)
+        tree.itemEntered.connect(popuptext)
         tree.currentItemChanged.connect(self.check_deletable)
         self.albums_artists = tree
 
@@ -251,6 +262,8 @@ class CompareArtists(qtw.QWidget):
         self.focus_artist(artist)
 
     def set_modified(self, value):
+        """set flag and enable/disable button if appropriate
+        """
         self.modified = value
         self.save_button.setEnabled(value)
 
@@ -309,15 +322,6 @@ class CompareArtists(qtw.QWidget):
             qtw.QMessageBox.information(self, self._parent.title,
                                         'No more unmatched items this way')
 
-    def popuptext(self, item, colno):
-        """show complete text of description if moused over
-        """
-        if item.text(2):
-            if colno == 1:
-                item.setToolTip(colno, item.text(colno))
-        elif colno == 0:
-            item.setToolTip(colno, item.text(colno))
-
     def check_deletable(self):
         """if selected (right-hand side) artist is not yet saved, activate
         delete button
@@ -375,10 +379,6 @@ class CompareArtists(qtw.QWidget):
                     found = False
         if found:
             find = self.albums_artists.findItems(found, core.Qt.MatchFixedString, 2)
-            ## if len(find) == 1:
-                ## a_item = find[0]
-            ## else:
-                ## # TODO: is het wel mogelijk dat je hier een selectiedialoog krijgt?
             artists = []
             results = []
             for a_item in find:  # only keep unmatched artists
@@ -392,7 +392,6 @@ class CompareArtists(qtw.QWidget):
                                                     editable=False)
             if ok:
                 a_item = results[artists.index(selected)]
-            ## if a_item:
                 self.update_item(a_item, item)
                 return
 
@@ -407,10 +406,10 @@ class CompareArtists(qtw.QWidget):
         self.new_matches[new_item.text(2)] = from_item.text(0)
         from_item.setText(1, 'X')
         self.set_modified(True)
-        next = self.clementine_artists.itemBelow(
+        nxt = self.clementine_artists.itemBelow(
             self.clementine_artists.currentItem())
-        if next:
-            self.clementine_artists.setCurrentItem(next)
+        if nxt:
+            self.clementine_artists.setCurrentItem(nxt)
 
     def copy_artist(self):
         """copy the selected artists's name
@@ -453,6 +452,8 @@ class CompareArtists(qtw.QWidget):
         self.update_item(a_item, item)
 
     def delete_artist(self):
+        """remove artist data from view
+        """
         item = self.albums_artists.currentItem()
         if item is None:
             return
@@ -610,7 +611,7 @@ class CompareAlbums(qtw.QWidget):
         hdr.setSectionResizeMode(0, qtw.QHeaderView.Stretch)
         tree.setHeaderLabels(['Album Name in Clementine', 'Match'])
         tree.setMouseTracking(True)
-        tree.itemEntered.connect(self.popuptext)
+        tree.itemEntered.connect(popuptext)
         self.clementine_albums = tree
         vbox2.addWidget(self.clementine_albums)
         hbox2 = qtw.QHBoxLayout()
@@ -634,7 +635,7 @@ class CompareAlbums(qtw.QWidget):
         hdr.setSectionResizeMode(0, qtw.QHeaderView.Stretch)
         tree.setHeaderLabels(['Album Name in Albums', 'Year', 'Id'])
         tree.setMouseTracking(True)
-        tree.itemEntered.connect(self.popuptext)
+        tree.itemEntered.connect(popuptext)
         self.albums_albums = tree
         vbox2.addWidget(self.albums_albums)
         hbox2 = qtw.QHBoxLayout()
@@ -696,10 +697,14 @@ class CompareAlbums(qtw.QWidget):
         self.update_navigation_buttons()
 
     def set_modified(self, value):
+        """set flag and enable/disable button where appropriate
+        """
         self.modified = value
         self.save_button.setEnabled(value)
 
     def update_navigation_buttons(self):
+        """enable/disable buttons where appropriate
+        """
         test = self.artist_list.currentIndex()  # .row()
         self.prev_artist_button.setEnabled(True)
         self.next_artist_button.setEnabled(True)
@@ -768,12 +773,6 @@ class CompareAlbums(qtw.QWidget):
             self.artist_list.setCurrentIndex(test)
             self.update_navigation_buttons()
 
-    def popuptext(self, item, colno):
-        """show complete text of description if moused over
-        """
-        if colno == 0:
-            item.setToolTip(colno, item.text(colno))
-
     def find_album(self):
         """search album in other list
 
@@ -817,10 +816,11 @@ class CompareAlbums(qtw.QWidget):
                     a_year = a_item.text(1)
                     if c_year != a_year:
                         ok = qtw.QMessageBox.question(
-                            self, self.appname, "Clementine year ({}) differs from "
-                             "Albums year ({}), replace?".format(c_year, a_year),
-                             qtw.QMessageBox.Yes | qtw.QMessageBox.No,
-                             qtw.QMessageBox.Yes)
+                            self, self.appname,
+                            "Clementine year ({}) differs from Albums year ({}), "
+                            "replace?".format(c_year, a_year),
+                            qtw.QMessageBox.Yes | qtw.QMessageBox.No,
+                            qtw.QMessageBox.Yes)
                         if ok == qtw.QMessageBox.Yes:
                             a_item.setText(1, c_year)
 
@@ -840,10 +840,10 @@ class CompareAlbums(qtw.QWidget):
         ## log('self.albums_map: %s', self.albums_map)
         from_item.setText(1, 'X')
         self.set_modified(True)
-        next = self.clementine_albums.itemBelow(
+        nxt = self.clementine_albums.itemBelow(
             self.clementine_albums.currentItem())
-        if next:
-            self.clementine_albums.setCurrentItem(next)
+        if nxt:
+            self.clementine_albums.setCurrentItem(nxt)
 
     def add_album(self):
         """if present, enter the copied album's name into name field
@@ -880,7 +880,8 @@ class CompareAlbums(qtw.QWidget):
         if not a_item:
             a_item = qtw.QTreeWidgetItem([name, year, '0'])
             self.albums_albums.addTopLevelItem(a_item)
-            tracklist = dmlc.list_tracks(dmlc.DB, self.c_artist, item.text(0))
+            tracklist = dmlc.list_tracks_for_album(dmlc.DB, self.c_artist,
+                                                   item.text(0))
             num = itertools.count(1)
             self.albums_to_save[self.c_artist].append(
                 (name, year, 'X', is_live,
@@ -1071,7 +1072,7 @@ class CompareTracks(qtw.QWidget):
         tree.setColumnCount(1)
         tree.setHeaderLabels(['Track Name in Clementine'])
         tree.setMouseTracking(True)
-        tree.itemEntered.connect(self.popuptext)
+        tree.itemEntered.connect(popuptext)
         self.clementine_tracks = tree
         vbox2.addWidget(self.clementine_tracks)
         hbox2 = qtw.QHBoxLayout()
@@ -1091,7 +1092,7 @@ class CompareTracks(qtw.QWidget):
         tree.setColumnCount(1)
         tree.setHeaderLabels(['Track Name in Albums'])
         tree.setMouseTracking(True)
-        tree.itemEntered.connect(self.popuptext)
+        tree.itemEntered.connect(popuptext)
         self.albums_tracks = tree
         vbox2.addWidget(self.albums_tracks)
         hbox2 = qtw.QHBoxLayout()
@@ -1168,6 +1169,8 @@ class CompareTracks(qtw.QWidget):
         self.update_navigation_buttons()
 
     def update_navigation_buttons(self):
+        """enable/disable buttons where appropriate
+        """
         test = self.artists_list.currentIndex()  # .row()
         self.prev_artist_button.setEnabled(True)
         self.next_artist_button.setEnabled(True)
@@ -1224,12 +1227,6 @@ class CompareTracks(qtw.QWidget):
                 except IndexError:
                     reimport_possible = True
         self.b_copy.setEnabled(reimport_possible)
-
-    def popuptext(self, item, colno):
-        """show complete text of description if moused over
-        """
-        if colno == 0:
-            item.setToolTip(colno, item.text(colno))
 
     def next_artist(self):
         """select next artist in dropdown
@@ -1293,6 +1290,8 @@ class CompareTracks(qtw.QWidget):
                             self.albums_list.currentIndex(), modifyoff=False)
 
     def save_all(self):
+        """save changes (additions) to Albums database
+        """
         self._parent.albums_map = self.albums_map
         self._parent.albums_map.update({x: {} for x, y in self.albums_map.items()
                                         if not y})
