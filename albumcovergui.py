@@ -61,12 +61,11 @@ class MainWidget(qtw.QWidget):
         self.lbl = qtw.QLabel(self)
         self.lbl.setMinimumWidth(500)
         self.lbl.setMinimumHeight(500)
-        self.lbl.setText("\n".join((
-                         "Kies een uitvoerende uit de bovenste lijst",
-                         "",
-                         "Daarna een album uit de lijst daaronder",
-                         "",
-                         "De cover wordt dan in dit venster getoond.")))
+        self.lbl.setText("\n".join(("Kies een uitvoerende uit de bovenste lijst",
+                                    "",
+                                    "Daarna een album uit de lijst daaronder",
+                                    "",
+                                    "De cover wordt dan in dit venster getoond.")))
         hbox.addWidget(self.lbl)
         hbox.addStretch()
         vbox.addLayout(hbox)
@@ -103,21 +102,6 @@ class MainWidget(qtw.QWidget):
         self.ask_artist.clear()
         self.ask_artist.addItems([''] + self.artist_names)
         self.ask_album.clear()
-        ## album_name = self.album_name
-        ## if self.artist_name:
-            ## try:
-                ## ix = self.artist_names.index(self.artist_name)
-            ## except IndexError:
-                ## pass
-            ## else:
-                ## self.ask_artist.setCurrentIndex(ix + 1)
-        ## if album_name:
-            ## try:
-                ## ix = self.album_names.index(self.album_name)
-            ## except IndexError:
-                ## pass
-            ## else:
-                ## self.ask_album.setCurrentIndex(ix + 1)
         self.initializing = False
 
     def get_artist(self, index):
@@ -140,7 +124,6 @@ class MainWidget(qtw.QWidget):
         self.ask_album.clear()
         self.ask_album.addItems([''] + self.album_names)
         self.initializing = False
-        ## self.tracks_list.clear()
 
     def get_album(self, index):
         """get the selected album's ID and put up the cover
@@ -166,7 +149,7 @@ class MainWidget(qtw.QWidget):
                     break
         elif self.dbname == 'clementine':
             data = dmlc.list_album_covers(self.db, self.artist,
-                self.album_ids[index - 1])
+                                          self.album_ids[index - 1])
             print(data)
             auto, manu = data[0]['art_automatic'], data[0]['art_manual']
             fname = manu or auto
@@ -184,7 +167,6 @@ class MainWidget(qtw.QWidget):
     def exit(self):
         """shutdown application
         """
-        ## qtw.QMessageBox.information(self, "Exiting...", "Thank you for calling")
         self.close()
 
 

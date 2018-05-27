@@ -198,13 +198,13 @@ def update_artists(changes):
     results = []
     for id, first_name, last_name in changes:
         if id:
-            it = my.Act.objects.get(pk=id)
+            item = my.Act.objects.get(pk=id)
         else:
-            it = my.Act.objects.create()
-        it.first_name = first_name
-        it.last_name = last_name
-        it.save()
-        results.append(it)
+            item = my.Act.objects.create()
+        item.first_name = first_name
+        item.last_name = last_name
+        item.save()
+        results.append(item)
     return results
 
 
@@ -219,43 +219,43 @@ def update_albums_by_artist(artist_id, changes):
     results = []
     for id, name, year, is_live, tracks in changes:
         if id:
-            it = my.Album.objects.get(pk=id)
+            item = my.Album.objects.get(pk=id)
             changed = True
-            if name == it.name and year == it.release_year:
-                for item in it.opnames.all():
-                    if item.type == c_type:
+            if name == item.name and year == item.release_year:
+                for opn in item.opnames.all():
+                    if opn.type == c_type:
                         changed = False
                         break
         else:
-            it = my.Album()
-            it.artist = artist
+            item = my.Album()
+            item.artist = artist
             if not is_live:
-                it.label = "(unknown)"
+                item.label = "(unknown)"
             changed = True
         if changed:
-            it.name = name
+            item.name = name
             if year:
-                it.release_year = int(year)
-            it.save()
+                item.release_year = int(year)
+            item.save()
             found = False
-            for opn in it.opnames.all():
+            for opn in item.opnames.all():
                 if opn.type == c_type:
                     found = True
                     break
             if not found:
-                it.opnames.add(my.Opname.objects.create(type=c_type))
+                item.opnames.add(my.Opname.objects.create(type=c_type))
             for num, title in tracks:
-                it.tracks.add(my.Song.objects.create(volgnr=num, name=title))
-            it.save()
-        results.append(it)
+                item.tracks.add(my.Song.objects.create(volgnr=num, name=title))
+            item.save()
+        results.append(item)
     return results
 
 
 def update_album_tracknames(album_id, tracks):
     """store data from screen in database
     """
-    it = my.Album.objects.get(pk=album_id)
-    oldtracks = {x.name.upper(): x for x in it.tracks.all()}
+    item = my.Album.objects.get(pk=album_id)
+    oldtracks = {x.name.upper(): x for x in item.tracks.all()}
     for num, title in tracks:
         title_u = title.upper()
         if title_u in oldtracks:
@@ -263,19 +263,19 @@ def update_album_tracknames(album_id, tracks):
                 oldtracks[title_u].volgnr = num
                 oldtracks[title_u].save()
         else:
-            it.tracks.add(my.Song.objects.create(volgnr=num, name=title))
-    it.save()
+            item.tracks.add(my.Song.objects.create(volgnr=num, name=title))
+    item.save()
 
 
 def unlink_album(album_id):
     """remove Clementine indicator
     """
     c_type = 'Clementine music player'
-    it = my.Album.objects.get(pk=album_id)
-    for item in it.opnames.all():
-        if item.type == c_type:
-            it.opnames.remove(item)
-            it.save()
+    item = my.Album.objects.get(pk=album_id)
+    for opn in item.opnames.all():
+        if opn.type == c_type:
+            item.opnames.remove(opn)
+            item.save()
             break
 
 
@@ -291,5 +291,5 @@ if __name__ == '__main__':
     ## test = list_albums_by_search('live', 2, 'Rotterdam', 'Niet sorteren')
     with open('results', 'w') as _out:
         print(len(test), file=_out)
-        for item in test:
-            print(item, file=_out)
+        for x in test:
+            print(x, file=_out)
