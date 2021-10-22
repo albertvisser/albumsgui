@@ -968,7 +968,7 @@ class EditDetails(qtw.QWidget):
                     self.parent().albumdata['artist'] = self.parent().artists[ix]
                     self.parent().artist = self.parent().albumdata['artist']
                     is_changed = True
-            elif caption == 'Albumtitel:':
+            elif caption in ('Albumtitel:', 'Locatie/datum:'):
                 test = win.text()
                 if test != self.parent().albumdata['titel']:
                     self.parent().albumdata['titel'] = test
