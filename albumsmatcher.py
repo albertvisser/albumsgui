@@ -674,8 +674,12 @@ class CompareAlbums(qtw.QWidget):
         self.artist_map = self._parent.artist_map
         self.albums_map = collections.defaultdict(dict)
         self.albums_map.update(self._parent.albums_map)
-        self.c_artists = [x['artist'] for x in dmlc.list_artists(DB_C)
-                          if self._parent.artist_map[x['artist']]]
+        if self._parent.artist_map:
+            self.c_artists = [x['artist'] for x in dmlc.list_artists(DB_C)
+                              if self._parent.artist_map[x['artist']]]
+        else:
+            qtw.QMessageBox.information(self, self._parent.title, "Please match artists first")
+            return
         self.artist_list.clear()
         self.artist_list.addItems(self.c_artists)
         for ix in range(self.clementine_albums.topLevelItemCount()):
@@ -1139,8 +1143,13 @@ class CompareTracks(qtw.QWidget):
         self.artist_map = self._parent.artist_map
         self.albums_map = collections.defaultdict(dict)
         self.albums_map.update(self._parent.albums_map)
-        self.c_artists = [x['artist'] for x in dmlc.list_artists(DB_C)
-                          if self._parent.artist_map[x['artist']]]
+        if self._parent.artist_map:
+            self.c_artists = [x['artist'] for x in dmlc.list_artists(DB_C)
+                              if self._parent.artist_map[x['artist']]]
+        else:
+            qtw.QMessageBox.information(self, self._parent.title, "Please match artists and albums"
+                                        " first")
+            return
         self.artists_list.clear()
         self.artists_list.addItems(self.c_artists)
         if artist:
