@@ -23,6 +23,7 @@ class MainWidget(qtw.QWidget):
         super().__init__()
         self.dbnames = sorted([x for x in config.databases], key=lambda x: x.lower())
         self.dbnames.append('covers')
+        self.dbname = ''
         self.album_name = self.artist_name = ''
         self.show_covers = False
         self.initializing = True
@@ -104,6 +105,7 @@ class MainWidget(qtw.QWidget):
     def change_db(self, index):
         """prepare for querying the correct database
         """
+        self.old_dbname = self.dbname
         self.dbname = self.dbnames[index]
         if self.dbname == 'covers':
             self.dbname = 'clementine'
@@ -127,19 +129,21 @@ class MainWidget(qtw.QWidget):
             self.db = dmld.CDDBData(self.db)
             self.artist_ids = self.artist_names = sorted(self.db.list_artists())
         self.initializing = True
-        # TODO: when switching from clementine to covers or back, don't clear out selectors
-        # and just show the other thing
-        self.ask_artist.clear()
-        self.ask_artist.addItems([''] + self.artist_names)
-        self.ask_album.clear()
+        if self.dbname != self.old_dbname:
+            self.ask_artist.clear()
+            self.ask_artist.addItems([''] + self.artist_names)
+            self.ask_album.clear()
         if self.show_covers:
             self.tracks_list.setVisible(False)
             self.lbl.setVisible(True)
+            self.lbl.clear()
         else:
             self.tracks_list.setVisible(True)
             self.lbl.setVisible(False)
             self.tracks_list.clear()
         self.initializing = False
+        if self.dbname == self.old_dbname:
+            self.get_album(self.ask_album.currentIndex())
 
     def get_artist(self, index):
         """get the selected artist's ID and build a list of albums
