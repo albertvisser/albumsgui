@@ -1,6 +1,6 @@
 """albumsmatcher.py - data overhalen van Clementine naar Albums
 """
-# TODO: small buttons in een gezamenlijke functie laten definiëren
+# TODO: small buttons in een gezamenlijke functie laten definiëren - zijn dat die up/down etc?
 import os.path
 import sys
 import collections
@@ -23,7 +23,7 @@ F_NEXT = os.path.join(HERE, 'icons/go-bottom.png')
 F_PREV = os.path.join(HERE, 'icons/go-top.png')
 F_DOWN = os.path.join(HERE, 'icons/go-down.png')
 F_UP = os.path.join(HERE, 'icons/go-up.png')
-logging.basicConfig(filename='/tmp/albumscatcher.log', level=logging.DEBUG,
+logging.basicConfig(filename='/tmp/albumsmatcher.log', level=logging.DEBUG,
                     format='%(asctime)s %(funcName)s %(message)s')
 log = logging.info
 
@@ -678,8 +678,7 @@ class CompareAlbums(qtw.QWidget):
             self.c_artists = [x['artist'] for x in dmlc.list_artists(DB_C)
                               if self._parent.artist_map[x['artist']]]
         else:
-            qtw.QMessageBox.information(self, self._parent.title, "Please match artists first")
-            return
+            return "Please match some artists first"
         self.artist_list.clear()
         self.artist_list.addItems(self.c_artists)
         for ix in range(self.clementine_albums.topLevelItemCount()):
@@ -699,6 +698,7 @@ class CompareAlbums(qtw.QWidget):
                     return
                 self.artist_list.setCurrentIndex(indx)
         self.update_navigation_buttons()
+        return ''
 
     def set_modified(self, value):
         """set flag and enable/disable button where appropriate
@@ -1147,9 +1147,7 @@ class CompareTracks(qtw.QWidget):
             self.c_artists = [x['artist'] for x in dmlc.list_artists(DB_C)
                               if self._parent.artist_map[x['artist']]]
         else:
-            qtw.QMessageBox.information(self, self._parent.title, "Please match artists and albums"
-                                        " first")
-            return
+            return "Please match some artists and albums first"
         self.artists_list.clear()
         self.artists_list.addItems(self.c_artists)
         if artist:
@@ -1165,6 +1163,7 @@ class CompareTracks(qtw.QWidget):
                 self.artists_list.setCurrentIndex(indx)
         if album:
             self.albums_list.setCurrentIndex(album)
+        return ''
 
     def get_albums(self):
         """get list of matched albums for the selected artist
@@ -1412,7 +1411,13 @@ class MainFrame(qtw.QMainWindow):
             go.first_time = False
             go.create_widgets()
             go.create_actions()
-        go.refresh_screen(self.current_data)
+        msg = go.refresh_screen(self.current_data)
+        if msg:
+            qtw.QMessageBox.information(self, self.title, msg)
+            self.current = 0
+            self.nb.setCurrentIndex(self.current)
+            go.refresh_screen(self.current_data)
+
 
     def check_oldpage(self, pageno):
         "check if page can be left"
