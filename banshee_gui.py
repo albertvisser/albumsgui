@@ -12,6 +12,8 @@ if 'banshee' in config.databases:
     import banshee_dml as dmlb
 if 'clementine' in config.databases:
     import clementine_dml as dmlc
+if 'strawberry' in config.databases:
+    import strawberry_dml as dmls
 if 'CDDB' in config.databases:
     import cddb_dml as dmld
 
@@ -108,7 +110,7 @@ class MainWidget(qtw.QWidget):
         self.old_dbname = self.dbname
         self.dbname = self.dbnames[index]
         if self.dbname == 'covers':
-            self.dbname = 'clementine'
+            self.dbname = 'strawberry'
             self.show_covers = True
         else:
             self.show_covers = False
@@ -124,6 +126,9 @@ class MainWidget(qtw.QWidget):
             self.artist_ids = [x["ArtistID"] for x in data]
         elif self.dbname == 'clementine':
             data = dmlc.list_artists(self.db)
+            self.artist_ids = self.artist_names = [x["artist"] for x in data]
+        elif self.dbname == 'strawberry':
+            data = dmls.list_artists(self.db)
             self.artist_ids = self.artist_names = [x["artist"] for x in data]
         elif self.dbname == 'CDDB':
             self.db = dmld.CDDBData(self.db)
@@ -163,6 +168,10 @@ class MainWidget(qtw.QWidget):
         elif self.dbname == 'clementine':
             self.artist = self.artist_ids[index - 1]
             data = dmlc.list_albums(self.db, self.artist)
+            self.album_ids = self.album_names = [x["album"] for x in data]
+        elif self.dbname == 'strawberry':
+            self.artist = self.artist_ids[index - 1]
+            data = dmls.list_albums(self.db, self.artist)
             self.album_ids = self.album_names = [x["album"] for x in data]
         elif self.dbname == 'CDDB':
             self.artist = self.artist_ids[index - 1]
@@ -212,6 +221,23 @@ class MainWidget(qtw.QWidget):
                 data = dmlc.list_tracks_for_album(self.db, self.artist,
                                                   self.album_ids[index - 1])
                 self.trackids = self.tracknames = [x["title"] for x in data]
+        elif self.dbname == 'strawberry':
+            if self.show_covers:
+                data = dmls.list_album_covers(self.db, self.artist,
+                                              self.album_ids[index - 1])
+                auto, manu = data[0]['art_automatic'], data[0]['art_manual']
+                fname = (manu or auto).replace('file:', '')
+                if fname == '(embedded)':
+                    text = 'Picture is embedded'
+                elif fname:
+                    fname = fname.replace('///', '/').replace('%20', ' ')
+                    test = pic.load(fname)
+                    if test:
+                        pic = pic.scaled(500,500)
+            else:
+                data = dmls.list_tracks_for_album(self.db, self.artist,
+                                                  self.album_ids[index - 1])
+                self.trackids = self.tracknames = [x["title"] for x in data]
         elif self.dbname == 'CDDB':
             data = self.db.list_tracks(self.album_ids[index - 1])
             self.trackids, self.tracknames = [], []
@@ -224,7 +250,7 @@ class MainWidget(qtw.QWidget):
             elif test:
                 self.lbl.setPixmap(pic)
             else:
-                self.lbl.setText('Picture could not be loaded')
+                self.lbl.setText(f'Picture {fname} could not be loaded')
         else:
             self.tracks_list.clear()
             self.tracks_list.addItems(self.tracknames)
