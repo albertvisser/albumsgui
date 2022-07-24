@@ -75,7 +75,6 @@ class CDDBData:
                 cddbdata = cddb.read()
             except IOError:
                 return "Error reading file"
-        # TODO: check if all data is read
 
         test = struct.unpack('4B', cddbdata[:4])
         if test[1] == 0xF0 and test[2] == 0xEF and test[3] == 0xBE:
