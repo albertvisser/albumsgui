@@ -1,0 +1,15 @@
+[testdir]
+unittests
+
+[testscripts]
+
+[testees]
+main = apps/albums_gui.py 
+matcher = apps/albumsmatcher.py
+smallgui = apps/banshee_gui.py
+banshee = apps/banshee_dml.py
+cddb = apps/cddb_dml.py
+django = apps/albums_dml.py 
+# apps/albums_dml_sql.py 
+clementine = apps/clementine_dml.py 
+strawberry = apps/strawberry_dml.py 
