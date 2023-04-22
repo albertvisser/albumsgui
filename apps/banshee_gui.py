@@ -5,17 +5,17 @@ import os.path
 import PyQt5.QtWidgets as qtw
 import PyQt5.QtGui as gui
 ## import PyQt5.QtCore as core
-import banshee_settings as config
+import .banshee_settings as config
 if 'albums' in config.databases:
-    import albums_dml_sql as dmla
+    import .albums_dml_sql as dmla
 if 'banshee' in config.databases:
-    import banshee_dml as dmlb
+    import .banshee_dml as dmlb
 if 'clementine' in config.databases:
-    import clementine_dml as dmlc
+    import .clementine_dml as dmlc
 if 'strawberry' in config.databases:
-    import strawberry_dml as dmls
+    import .strawberry_dml as dmls
 if 'CDDB' in config.databases:
-    import cddb_dml as dmld
+    import .cddb_dml as dmld
 
 
 class MainWidget(qtw.QWidget):

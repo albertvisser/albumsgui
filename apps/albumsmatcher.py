@@ -1,6 +1,5 @@
 """albumsmatcher.py - data overhalen van Clementine naar Albums
 """
-# TODO: small buttons in een gezamenlijke functie laten definiëren - zijn dat die up/down etc?
 import os.path
 import sys
 import collections
@@ -12,9 +11,9 @@ import itertools
 import PyQt5.QtWidgets as qtw
 import PyQt5.QtGui as gui
 import PyQt5.QtCore as core
-import albums_dml as dmla
-import clementine_dml as dmlc
-from banshee_settings import databases
+import apps.albums_dml as dmla
+import apps.clementine_dml as dmlc
+from .banshee_settings import databases
 DB_A = databases['albums']
 DB_C = databases['clementine']
 HERE = os.path.abspath(os.path.dirname(__file__))

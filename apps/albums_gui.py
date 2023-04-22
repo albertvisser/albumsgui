@@ -4,29 +4,52 @@ import sys
 import PyQt5.QtWidgets as qtw
 import PyQt5.QtGui as gui
 import PyQt5.QtCore as core
-import albums_dml as dmla
-import albumsmatcher
-
-# these should actually also be in the Albums database
+import apps.albums_dml as dmla
+import apps.albumsmatcher
+"""
+s_keuzes = (("alles", "1. Niet zoeken, alles tonen"),
+            ("artiest", "2. Uitvoerende: ", "dflt"),
+            ("titel", "3. Tekst in Titel"),
+            ("producer", "4. Tekst in Producer"),
+            ("credits", "5. Tekst in Credits"),
+            ("bezetting", "6. Tekst in Bezetting"))
+s_sorts = (("artiest", "Uitvoerende"),
+           ("titel", "Titel"),
+           ("jaar", "Jaar", "dflt"),
+           ("geen", "Niets"))
+l_keuzes = (("alles", "1. Niet zoeken, alles tonen"),
+            ("artiest", "2. Uitvoerende: ", "dflt"),
+            ("locatie", "3. Tekst in Locatie"),
+            ("datum", "4. Tekst in Datum"),
+            ("bezetting", "5. Tekst in Bezetting"))
+l_sorts = (("artiest", "Uitvoerende"),
+           ("locatie", "Locatie/datum", "dflt"),
+           ("geen", "Niets"))
+"""
+# these should actually also be in the Albums database - or at least importable from dmla
 TYPETXT = {'studio': 'album', 'live': 'concert'}
-SELTXT = {'studio': ['Niet zoeken, alles tonen',
-                     'Zoek op Uitvoerende',
-                     'Zoek op tekst in titel',
-                     'Zoek op tekst in producer',
-                     'Zoek op tekst in credits',
-                     'Zoek op tekst in bezetting'],
-          'live': ['Niet zoeken, alles tonen',
-                   'Zoek op Uitvoerende',
-                   'Zoek op tekst in locatie',
-                   'Zoek op tekst in datum',
-                   'Zoek op tekst in bezetting']}
-SELCOL = {'studio': ['', 'artist', 'titel', 'producer', 'credits', 'bezetting'],
-          'live': ['', 'artist', 'locatie', 'datum', 'bezetting']}
+# SELTXT = {'studio': ['Niet zoeken, alles tonen',
+#                      'Zoek op Uitvoerende',
+#                      'Zoek op tekst in titel',
+#                      'Zoek op tekst in producer',
+#                      'Zoek op tekst in credits',
+#                      'Zoek op tekst in bezetting'],
+#           'live': ['Niet zoeken, alles tonen',
+#                    'Zoek op Uitvoerende',
+#                    'Zoek op tekst in locatie',
+#                    'Zoek op tekst in datum',
+#                    'Zoek op tekst in bezetting']}
+SELTXT = {'studio': [dmla.s_keuzes[0][1][3:]] + [f'Zoek op {x[1][3:]}' for x in dmla.s_keuzes[1:],
+          'live': [dmla.l_keuzes[0][1][3:]] + [f'Zoek op {x[1][3:]}' for x in dmla.l_keuzes[1:]}
+# SELCOL = {'studio': ['', 'artist', 'titel', 'producer', 'credits', 'bezetting'],
+#           'live': ['', 'artist', 'locatie', 'datum', 'bezetting']}
+SELCOL = {'studio': [[''] + [x[0] for x in dmla.s_keuzes[1:]]],
+          'live': [[''] + [x[0] for x in dmla.l_keuzes[1:]]]}
 SORTTXT = {'studio': ['Niet sorteren', 'Uitvoerende', 'Titel', 'Jaar'],
            'live': ['Niet sorteren', 'Uitvoerende', 'Locatie', 'Datum']}
 SORTCOL = {'studio': ['', 'artist', 'titel', 'jaar'],
            'live': ['', 'artist', 'locatie', 'datum']}
-RECTYPES = ('Cassette',
+RECTYPES = ('Cassette',       # dmla.my.o_soort
             'CD: Enkel',
             'CD: Dubbel',
             'Vinyl: 1LP',
@@ -40,152 +63,124 @@ RECTYPES = ('Cassette',
             'Clementine music player')
 
 
-def get_artist_list():
-    """get artist data from the database
+class MainFrame(qtw.QMainWindow):
+    """Het idee hierachter is om bij elke schermwijziging
+    het centralwidget opnieuw in te stellen
     """
-    return [x for x in dmla.list_artists()]
+    def __init__(self):
+        self.app = qtw.QApplication(sys.argv)
+        super().__init__()
+        self.move(300, 50)
+        ## self.resize(400, 600)
+        self.artist = None
+        self.album = None
+        self.albumtype = ''
+        self.searchtype = 1
+        self.search_arg = ''
+        self.sorttype = ''
+        self.old_seltype = 0
+        self.albumdata = {}
+        self.end = False
+        self.albums = []
+        self.windows = []
+        self.show()
+        self.do_start()
+        sys.exit(self.app.exec_())
 
+    def get_all_artists(self):
+        """refresh list of artist convenience variables
+        """
+        self.all_artists = get_artist_list()
+        self.artists = self.all_artists
+        self.artist_names = [x.get_name() for x in self.artists]
+        self.artist_ids = [x.id for x in self.artists]
 
-def get_albums_by_artist(albumtype, search_for, sort_on):
-    """get the selected artist's ID and build a list of albums
-    """
-    return [x for x in dmla.list_albums_by_artist(albumtype, search_for, sort_on)]
+    def do_start(self):
+        """show initial sceen
+        """
+        self.artist_filter = ''
+        self.get_all_artists()
+        go = Start(self)
+        self.windows.append(go)
+        go.create_widgets()
+        go.refresh_screen()
+        self.setCentralWidget(go)
 
+    def do_select(self):
+        """show selection screen
+        """
+        if self.albumtype == 'artist':
+            go = Artists(self)
+        else:
+            if self.searchtype == 1:
+                self.albums = get_albums_by_artist(self.albumtype, self.artist.id,
+                                                   self.sorttype)
+            else:
+                self.albums = get_albums_by_text(self.albumtype, self.searchtype,
+                                                 self.search_arg, self.sorttype)
+            go = Select(self)
+        self.windows.append(go)
+        go.create_widgets()
+        go.refresh_screen()
+        self.setCentralWidget(go)
 
-def get_albums_by_text(albumtype, search_type, search_for, sort_on):
-    """get the selected artist's ID and build a list of albums
-    """
-    if albumtype == 'studio':
-        search_type = {0: '*', 2: 'name', 3: 'produced_by', 4: 'credits',
-                       5: 'bezetting'}[search_type]
-    elif albumtype == 'live':
-        search_type = {0: '*', 2: 'name', 3: 'name', 4: 'produced_by',
-                       5: 'bezetting'}[search_type]
-    return [x for x in dmla.list_albums_by_search(albumtype, search_type,
-                                                  search_for, sort_on)]
+    def do_new(self, keep_sel=False):
+        """show screen for adding a new album or artist
+        """
+        if self.albumtype == 'artist':
+            if NewArtistDialog(self).exec_() == qtw.QDialog.Accepted:
+                self.get_all_artists()
+                self.do_select()
+        else:
+            self.albumdata = get_album(0, self.albumtype)
+            self.do_edit_alg(new=True, keep_sel=keep_sel)
 
+    def do_detail(self):
+        """show albums details
+        """
+        if self.albumtype == 'artist':
+            go = Artists(self)
+        else:
+            self.albumdata = get_album(self.album.id, self.albumtype)
+            go = Detail(self)
+        self.windows.append(go)
+        go.create_widgets()
+        go.refresh_screen()
+        self.setCentralWidget(go)
 
-def get_album(album_id, albumtype):
-    """get the selected album's data
-    """
-    result = {'titel': '',
-              'artist': '',
-              'artistid': '',
-              'details': [('Label/jaar:', ''),
-                          ('Produced by:', ''),
-                          ('Credits:', ''),
-                          ('Bezetting:', ''),
-                          ('Tevens met:', '')],
-              'tracks': {},
-              'opnames': []}
-    if album_id:
-        album = dmla.list_album_details(album_id)
-        result['titel'] = album.name
-        result['artist'] = album.artist
-        result['artist_name'] = album.artist.get_name()
-        text = album.label
-        if album.release_year:
-            if text:
-                text += ', '
-            text += str(album.release_year)
-        result['details'] = [('Label/jaar:', text),
-                             ('Produced by:', album.produced_by),
-                             ('Credits:', album.credits),
-                             ('Bezetting:', album.bezetting),
-                             ('Tevens met:', album.additional)]
-        if album:
-            result['tracks'] = {x.volgnr: (x.name, x.written_by, x.credits)
-                                for x in dmla.list_tracks(album_id)}
-            result['opnames'] = [(x.type, x.oms) for x in
-                                 dmla.list_recordings(album_id)]
-    if albumtype == 'live':
-        result['details'].pop(0)
-    return result
+    def do_edit_alg(self, new=False, keep_sel=False):
+        """edit album details
+        """
+        go = EditDetails(self)
+        self.windows.append(go)
+        go.create_widgets()
+        if new:
+            go.new_data(keep_sel)
+        go.refresh_screen()
+        self.setCentralWidget(go)
 
+    def do_edit_trk(self):
+        """edit track list
+        """
+        go = EditTracks(self)
+        self.windows.append(go)
+        go.create_widgets()
+        go.refresh_screen()
+        self.setCentralWidget(go)
 
-def build_heading(win, readonly=False):
-    """Generate heading text for screen
-    """
-    if not win.parent().albumdata['artist'] or not win.parent().albumdata['titel']:
-        text = 'Opvoeren nieuw {}'.format(TYPETXT[win.parent().albumtype])
-    else:
-        wintext = win.heading.text()
-        newtext = ''
-        for text in ('tracks', 'opnames'):
-            if wintext == text:
-                newtext = ': {}'.format(wintext)
-                break
-            elif wintext.endswith(text):
-                newtext = ': {}'.format(text)
-                break
-        text = 'G' if readonly else 'Wijzigen g'
-        text = '{}egevens van {} {} - {} {}'.format(
-            text, TYPETXT[win.parent().albumtype], win.parent().albumdata['artist'],
-            win.parent().albumdata['titel'], newtext)
-    return text
+    def do_edit_rec(self):
+        """edit recordings list
+        """
+        go = EditRecordings(self)
+        self.windows.append(go)
+        go.create_widgets()
+        go.refresh_screen()
+        self.setCentralWidget(go)
 
-
-def newline(parent):
-    """create a horizontal line in the GUI
-    """
-    hbox = qtw.QHBoxLayout()
-    frm = qtw.QFrame(parent)
-    frm.setFrameShape(qtw.QFrame.HLine)
-    hbox.addWidget(frm)
-    return hbox
-
-
-def button_strip(parent, *buttons):
-    """create a strip containing buttons for the supplied actions
-    """
-    hbox = qtw.QHBoxLayout()
-    hbox.addStretch()
-    if 'Cancel' in buttons:
-        btn = qtw.QPushButton("Afbreken", parent)
-        btn.clicked.connect(parent.parent().do_detail)
-        hbox.addWidget(btn)
-    if 'Go' in buttons:
-        btn = qtw.QPushButton("Uitvoeren", parent)
-        btn.clicked.connect(parent.submit)
-        hbox.addWidget(btn)
-    if 'GoBack' in buttons:
-        btn = qtw.QPushButton("Uitvoeren en terug", parent)
-        btn.clicked.connect(parent.submit_and_back)
-        hbox.addWidget(btn)
-    if 'Edit' in buttons:
-        btn = qtw.QPushButton("Wijzigingen doorvoeren", parent)
-        btn.clicked.connect(parent.submit)
-        hbox.addWidget(btn)
-    if 'New' in buttons:
-        btn = qtw.QPushButton("Nieuwe opvoeren", parent)
-        btn.clicked.connect(parent.new)
-        hbox.addWidget(btn)
-    if 'Select' in buttons:
-        btn = qtw.QPushButton("Terug naar Selectie", parent)
-        btn.clicked.connect(parent.parent().do_select)
-        hbox.addWidget(btn)
-    if 'Start' in buttons:
-        btn = qtw.QPushButton("Terug naar Startscherm", parent)
-        btn.clicked.connect(parent.parent().do_start)
-        hbox.addWidget(btn)
-    hbox.addStretch()
-    return hbox
-
-
-def exitbutton(parent, callback, extrawidget=None):
-    """create exit button that activates callback
-    since it's always the same one, maybe passing it in is not necessary?
-    it was originally intended to just close the current screen
-    """
-    hbox = qtw.QHBoxLayout()
-    hbox.addStretch()
-    if extrawidget:
-        hbox.addWidget(extrawidget)
-    btn = qtw.QPushButton("E&xit", parent)
-    btn.clicked.connect(callback)
-    hbox.addWidget(btn)
-    hbox.addStretch()
-    return hbox
+    def start_import_tool(self):
+        """get albums from music library
+        """
+        albumsmatcher.MainFrame(app=self.app)
 
 
 class Start(qtw.QWidget):
@@ -1485,125 +1480,149 @@ class NewArtistDialog(qtw.QDialog):
         self.accept()
 
 
-class MainFrame(qtw.QMainWindow):
-    """Het idee hierachter is om bij elke schermwijziging
-    het centralwidget opnieuw in te stellen
+def get_artist_list():
+    """get artist data from the database
     """
-    def __init__(self):
-        self.app = qtw.QApplication(sys.argv)
-        super().__init__()
-        self.move(300, 50)
-        ## self.resize(400, 600)
-        self.artist = None
-        self.album = None
-        self.albumtype = ''
-        self.searchtype = 1
-        self.search_arg = ''
-        self.sorttype = ''
-        self.old_seltype = 0
-        self.albumdata = {}
-        self.end = False
-        self.albums = []
-        self.windows = []
-        self.show()
-        self.do_start()
-        sys.exit(self.app.exec_())
-
-    def get_all_artists(self):
-        """refresh list of artist convenience variables
-        """
-        self.all_artists = get_artist_list()
-        self.artists = self.all_artists
-        self.artist_names = [x.get_name() for x in self.artists]
-        self.artist_ids = [x.id for x in self.artists]
-
-    def do_start(self):
-        """show initial sceen
-        """
-        self.artist_filter = ''
-        self.get_all_artists()
-        go = Start(self)
-        self.windows.append(go)
-        go.create_widgets()
-        go.refresh_screen()
-        self.setCentralWidget(go)
-
-    def do_select(self):
-        """show selection screen
-        """
-        if self.albumtype == 'artist':
-            go = Artists(self)
-        else:
-            if self.searchtype == 1:
-                self.albums = get_albums_by_artist(self.albumtype, self.artist.id,
-                                                   self.sorttype)
-            else:
-                self.albums = get_albums_by_text(self.albumtype, self.searchtype,
-                                                 self.search_arg, self.sorttype)
-            go = Select(self)
-        self.windows.append(go)
-        go.create_widgets()
-        go.refresh_screen()
-        self.setCentralWidget(go)
-
-    def do_new(self, keep_sel=False):
-        """show screen for adding a new album or artist
-        """
-        if self.albumtype == 'artist':
-            if NewArtistDialog(self).exec_() == qtw.QDialog.Accepted:
-                self.get_all_artists()
-                self.do_select()
-        else:
-            self.albumdata = get_album(0, self.albumtype)
-            self.do_edit_alg(new=True, keep_sel=keep_sel)
-
-    def do_detail(self):
-        """show albums details
-        """
-        if self.albumtype == 'artist':
-            go = Artists(self)
-        else:
-            self.albumdata = get_album(self.album.id, self.albumtype)
-            go = Detail(self)
-        self.windows.append(go)
-        go.create_widgets()
-        go.refresh_screen()
-        self.setCentralWidget(go)
-
-    def do_edit_alg(self, new=False, keep_sel=False):
-        """edit album details
-        """
-        go = EditDetails(self)
-        self.windows.append(go)
-        go.create_widgets()
-        if new:
-            go.new_data(keep_sel)
-        go.refresh_screen()
-        self.setCentralWidget(go)
-
-    def do_edit_trk(self):
-        """edit track list
-        """
-        go = EditTracks(self)
-        self.windows.append(go)
-        go.create_widgets()
-        go.refresh_screen()
-        self.setCentralWidget(go)
-
-    def do_edit_rec(self):
-        """edit recordings list
-        """
-        go = EditRecordings(self)
-        self.windows.append(go)
-        go.create_widgets()
-        go.refresh_screen()
-        self.setCentralWidget(go)
-
-    def start_import_tool(self):
-        """get albums from music library
-        """
-        albumsmatcher.MainFrame(app=self.app)
+    return [x for x in dmla.list_artists()]
 
 
-if __name__ == '__main__':
-    main = MainFrame()
+def get_albums_by_artist(albumtype, search_for, sort_on):
+    """get the selected artist's ID and build a list of albums
+    """
+    return [x for x in dmla.list_albums_by_artist(albumtype, search_for, sort_on)]
+
+
+def get_albums_by_text(albumtype, search_type, search_for, sort_on):
+    """get the selected artist's ID and build a list of albums
+    """
+    if albumtype == 'studio':
+        search_type = {0: '*', 2: 'name', 3: 'produced_by', 4: 'credits',
+                       5: 'bezetting'}[search_type]
+    elif albumtype == 'live':
+        search_type = {0: '*', 2: 'name', 3: 'name', 4: 'produced_by',
+                       5: 'bezetting'}[search_type]
+    return [x for x in dmla.list_albums_by_search(albumtype, search_type,
+                                                  search_for, sort_on)]
+
+
+def get_album(album_id, albumtype):
+    """get the selected album's data
+    """
+    result = {'titel': '',
+              'artist': '',
+              'artistid': '',
+              'details': [('Label/jaar:', ''),
+                          ('Produced by:', ''),
+                          ('Credits:', ''),
+                          ('Bezetting:', ''),
+                          ('Tevens met:', '')],
+              'tracks': {},
+              'opnames': []}
+    if album_id:
+        album = dmla.list_album_details(album_id)
+        result['titel'] = album.name
+        result['artist'] = album.artist
+        result['artist_name'] = album.artist.get_name()
+        text = album.label
+        if album.release_year:
+            if text:
+                text += ', '
+            text += str(album.release_year)
+        result['details'] = [('Label/jaar:', text),
+                             ('Produced by:', album.produced_by),
+                             ('Credits:', album.credits),
+                             ('Bezetting:', album.bezetting),
+                             ('Tevens met:', album.additional)]
+        if album:
+            result['tracks'] = {x.volgnr: (x.name, x.written_by, x.credits)
+                                for x in dmla.list_tracks(album_id)}
+            result['opnames'] = [(x.type, x.oms) for x in
+                                 dmla.list_recordings(album_id)]
+    if albumtype == 'live':
+        result['details'].pop(0)
+    return result
+
+
+def build_heading(win, readonly=False):
+    """Generate heading text for screen
+    """
+    if not win.parent().albumdata['artist'] or not win.parent().albumdata['titel']:
+        text = 'Opvoeren nieuw {}'.format(TYPETXT[win.parent().albumtype])
+    else:
+        wintext = win.heading.text()
+        newtext = ''
+        for text in ('tracks', 'opnames'):
+            if wintext == text:
+                newtext = ': {}'.format(wintext)
+                break
+            elif wintext.endswith(text):
+                newtext = ': {}'.format(text)
+                break
+        text = 'G' if readonly else 'Wijzigen g'
+        text = '{}egevens van {} {} - {} {}'.format(
+            text, TYPETXT[win.parent().albumtype], win.parent().albumdata['artist'],
+            win.parent().albumdata['titel'], newtext)
+    return text
+
+
+def newline(parent):
+    """create a horizontal line in the GUI
+    """
+    hbox = qtw.QHBoxLayout()
+    frm = qtw.QFrame(parent)
+    frm.setFrameShape(qtw.QFrame.HLine)
+    hbox.addWidget(frm)
+    return hbox
+
+
+def button_strip(parent, *buttons):
+    """create a strip containing buttons for the supplied actions
+    """
+    hbox = qtw.QHBoxLayout()
+    hbox.addStretch()
+    if 'Cancel' in buttons:
+        btn = qtw.QPushButton("Afbreken", parent)
+        btn.clicked.connect(parent.parent().do_detail)
+        hbox.addWidget(btn)
+    if 'Go' in buttons:
+        btn = qtw.QPushButton("Uitvoeren", parent)
+        btn.clicked.connect(parent.submit)
+        hbox.addWidget(btn)
+    if 'GoBack' in buttons:
+        btn = qtw.QPushButton("Uitvoeren en terug", parent)
+        btn.clicked.connect(parent.submit_and_back)
+        hbox.addWidget(btn)
+    if 'Edit' in buttons:
+        btn = qtw.QPushButton("Wijzigingen doorvoeren", parent)
+        btn.clicked.connect(parent.submit)
+        hbox.addWidget(btn)
+    if 'New' in buttons:
+        btn = qtw.QPushButton("Nieuwe opvoeren", parent)
+        btn.clicked.connect(parent.new)
+        hbox.addWidget(btn)
+    if 'Select' in buttons:
+        btn = qtw.QPushButton("Terug naar Selectie", parent)
+        btn.clicked.connect(parent.parent().do_select)
+        hbox.addWidget(btn)
+    if 'Start' in buttons:
+        btn = qtw.QPushButton("Terug naar Startscherm", parent)
+        btn.clicked.connect(parent.parent().do_start)
+        hbox.addWidget(btn)
+    hbox.addStretch()
+    return hbox
+
+
+def exitbutton(parent, callback, extrawidget=None):
+    """create exit button that activates callback
+    since it's always the same one, maybe passing it in is not necessary?
+    it was originally intended to just close the current screen
+    """
+    hbox = qtw.QHBoxLayout()
+    hbox.addStretch()
+    if extrawidget:
+        hbox.addWidget(extrawidget)
+    btn = qtw.QPushButton("E&xit", parent)
+    btn.clicked.connect(callback)
+    hbox.addWidget(btn)
+    hbox.addStretch()
+    return hbox

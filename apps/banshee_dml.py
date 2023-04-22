@@ -3,7 +3,7 @@
 import sqlite3
 import pprint
 from contextlib import closing
-from banshee_settings import databases
+from .banshee_settings import databases
 DB = databases['banshee']
 
 

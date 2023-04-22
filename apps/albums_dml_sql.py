@@ -1,7 +1,7 @@
 """dml for reading Albums database from banshee_gui
 """
 import sqlite3
-from banshee_settings import databases
+from .banshee_settings import databases
 DB = databases['albums']
 
 

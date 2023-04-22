@@ -8,6 +8,7 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "albums.settings")
 django.setup()
 from django.db.models import Q
 import albums.muziek.models as my
+from albums.muziek.helpers import s_keuzes, s_sorts, l_keuzes, l_sorts
 
 
 def list_artists(sel=""):
