@@ -129,30 +129,3 @@ def test_readstr():
     print(readstr(data, 2))
     print(readstr(data, 3))
     print(readstr(data, 4))
-
-
-def main():
-    """simple test: print data
-    """
-    test = CDDBData(DB)
-    if test.error:
-        print(test.error)
-        return
-    with open('cddb_all_artists', 'w') as _o:
-        for item in test.artists.items():
-            print(item, file=_o)
-    with open('cddb_all_albums', 'w') as _o:
-        for item in test.albums.items():
-            print(item, file=_o)
-    with open('cddb_all_tracks', 'w') as _o:
-        for item in test.tracks.items():
-            print(item, file=_o)
-    artistlist = test.list_artists()
-    with open('cddb_artistlist', 'w') as _o:
-        print(artistlist, file=_o)
-    albumlist = test.list_albums(artistlist[10])
-    print(albumlist)
-    print(test.list_tracks(albumlist[0][0]))
-
-if __name__ == '__main__':
-    main()

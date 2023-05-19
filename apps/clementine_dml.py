@@ -65,27 +65,3 @@ def list_tracks_for_album(db, artist_name, album_name):
     return retrieve(
         db, "select rowid, track, title from songs where artist = ? and album = ? "
         "and unavailable = '0' order by disc, track;", (artist_name, album_name))
-
-
-def main():
-    """simple test: print data
-    """
-    db = DB
-    with open("/tmp/test_clementine_output", "w") as _out:
-        artist_list = list_artists(db)
-        pprint.pprint(artist_list, stream=_out)
-
-        artist = artist_list[92]['artist']  # 'Blind Faith'
-        album_list = list_albums(db, artist)
-        pprint.pprint(album_list, stream=_out)
-        pprint.pprint(list_album_covers(db, artist, ''), stream=_out)
-
-        album = album_list[9]['album']
-        pprint.pprint(list_album_covers(db, '', album, True), stream=_out)
-        pprint.pprint(list_album_covers(db, artist, album), stream=_out)
-
-        pprint.pprint(list_tracks_for_artist(db, artist))
-        pprint.pprint(list_tracks_for_album(db, artist, album), stream=_out)
-
-if __name__ == "__main__":
-    main()

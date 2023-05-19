@@ -1434,6 +1434,3 @@ class MainFrame(qtw.QMainWindow):
         if self.check_oldpage(self.current):
             ## save_appdata([self.artist_map, self.albums_map])
             self.close()
-
-if __name__ == '__main__':
-    MainFrame()

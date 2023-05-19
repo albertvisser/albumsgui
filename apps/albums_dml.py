@@ -278,19 +278,3 @@ def unlink_album(album_id):
             item.opnames.remove(opn)
             item.save()
             break
-
-
-if __name__ == '__main__':
-    test = list_artists()
-    ## test = list_albums(15)
-    ## test = list_albums_by_artist('studio', 15, 'Jaar')
-    ## test = list_albums_by_artist('studio', 15, 'Titel')
-    ## test = list_albums_by_artist('studio', 15, 'Niet sorteren')
-    ## test = list_albums_by_artist('live', 16, 'Locatie')
-    ## test = list_albums_by_artist('live', 16, 'Datum')
-    ## test = list_albums_by_artist('live', 16, 'Niet sorteren')
-    ## test = list_albums_by_search('live', 2, 'Rotterdam', 'Niet sorteren')
-    with open('results', 'w') as _out:
-        print(len(test), file=_out)
-        for x in test:
-            print(x, file=_out)

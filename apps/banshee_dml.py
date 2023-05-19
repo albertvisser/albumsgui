@@ -56,19 +56,3 @@ def list_tracks(db, album_id):
     return execute_query(
         db, "select TrackNumber, Title from coretracks where AlbumID = {} "
         "order by Disc, TrackNumber".format(album_id))
-
-
-def main():
-    """simple test: print data
-    """
-    db = DB
-    with open("/tmp/test_banshee_output", "w") as _out:
-        pprint.pprint(list_artists(db), stream=_out)
-        pprint.pprint(list_albums(db, 19), stream=_out)
-        pprint.pprint(list_tracks(db, 182), stream=_out)
-        pprint.pprint(list_album_covers(db, 19), stream=_out)
-        pprint.pprint(list_album_covers(db, 0, 182), stream=_out)
-        pprint.pprint(list_album_covers(db, 19, 182), stream=_out)
-
-if __name__ == "__main__":
-    main()
