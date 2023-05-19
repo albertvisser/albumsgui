@@ -21,6 +21,11 @@ if 'CDDB' in config.databases:
 class MainWidget(qtw.QWidget):
     """User Interface
     """
+    initial_tracks = ("", "Kies een uitvoerende uit de bovenste lijst",
+                      "", "Daarna een album uit de lijst daaronder",
+                      "", "De tracks worden dan in dit venster getoond.")
+    initial_cover_text = "\n".join(initial_tracks).replace("tracks", "cover").replace("worden",
+                                                                                      "wordt")
     def __init__(self):
         app = qtw.QApplication(sys.argv)
         super().__init__()
@@ -74,10 +79,6 @@ class MainWidget(qtw.QWidget):
         hbox.addStretch()
         self.tracks_list = qtw.QListWidget(self)
         self.tracks_list.setMinimumWidth(280)
-        self.tracks_list.addItems(("",
-                                   "Kies een uitvoerende uit de bovenste lijst", "",
-                                   "Daarna een album uit de lijst daaronder", "",
-                                   "De tracks worden dan in dit venster getoond."))
         self.initial_list = True
         hbox.addWidget(self.tracks_list)
         hbox.addStretch()
@@ -88,9 +89,6 @@ class MainWidget(qtw.QWidget):
         self.lbl = qtw.QLabel(self)
         self.lbl.setMinimumWidth(500)
         self.lbl.setMinimumHeight(500)
-        self.lbl.setText("\n".join(("Kies een uitvoerende uit de bovenste lijst", "",
-                                    "Daarna een album uit de lijst daaronder", "",
-                                    "De cover wordt dan in dit venster getoond.")))
         hbox.addWidget(self.lbl)
         hbox.addStretch()
         vbox.addLayout(hbox)
@@ -104,7 +102,7 @@ class MainWidget(qtw.QWidget):
         vbox.addLayout(hbox)
 
         self.setLayout(vbox)
-        self.ask_db.setCurrentIndex(1)
+        self.ask_db.setCurrentIndex(3)
         self.ask_artist.setFocus()
 
     def change_db(self, index):
@@ -144,14 +142,15 @@ class MainWidget(qtw.QWidget):
         if self.show_covers:
             self.tracks_list.setVisible(False)
             self.lbl.setVisible(True)
-            self.lbl.clear()
+            self.lbl.setText(self.initial_cover_text)
         else:
             self.tracks_list.setVisible(True)
             self.lbl.setVisible(False)
             self.tracks_list.clear()
-        self.initializing = False
+            self.tracks_list.addItems(self.initial_tracks)
         if self.dbname == self.old_dbname:
             self.get_album(self.ask_album.currentIndex())
+        self.initializing = False
 
     def get_artist(self, index):
         """get the selected artist's ID and build a list of albums
