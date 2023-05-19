@@ -22,7 +22,6 @@ class MainWidget(qtw.QWidget):
     """User Interface
     """
     def __init__(self):
-        app = qtw.QApplication(sys.argv)
         super().__init__()
         self.dbnames = sorted([x for x in config.databases], key=lambda x: x.lower())
         self.dbnames.append('covers')
@@ -34,8 +33,6 @@ class MainWidget(qtw.QWidget):
         self.tracks_list.setVisible(True)
         self.lbl.setVisible(False)
         self.initializing = False
-        self.show()
-        sys.exit(app.exec_())
 
     def create_widgets(self):
         """build screen elements
@@ -263,3 +260,12 @@ class MainWidget(qtw.QWidget):
         """
         qtw.QMessageBox.information(self, "Exiting...", "Thank you for calling")
         self.close()
+
+
+def main():
+    """start application
+    """
+    app = qtw.QApplication(sys.argv)
+    win = MainWidget()
+    win.show()
+    sys.exit(app.exec_())
