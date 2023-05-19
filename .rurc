@@ -2,6 +2,14 @@
 unittests
 
 [testscripts]
+main = test_albums_gui.py 
+matcher = test_albumsmatcher.py
+smallgui = test_banshee_gui.py
+banshee = test_banshee_dml.py
+cddb = test_cddb_dml.py
+django = test_albums_dml.py 
+# test_albums_dml_sql.py 
+clementine = test_clementine_dml.py 
 
 [testees]
 main = apps/albums_gui.py 
