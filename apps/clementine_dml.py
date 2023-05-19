@@ -3,7 +3,6 @@
 ## import os
 import pprint
 import sqlite3
-from contextlib import closing
 from .banshee_settings import databases
 DB = databases['clementine']
 
@@ -11,7 +10,7 @@ DB = databases['clementine']
 def retrieve(db, query, parms):
     "get data from database"
     result = []
-    with closing(sqlite3.connect(db)) as conn:
+    with sqlite3.connect(db) as conn:
         conn.row_factory = sqlite3.Row
         cur = conn.cursor()
         for row in cur.execute(query, parms):

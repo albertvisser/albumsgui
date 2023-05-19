@@ -2,7 +2,6 @@
 """
 import sqlite3
 import pprint
-from contextlib import closing
 from .banshee_settings import databases
 DB = databases['banshee']
 
@@ -11,7 +10,7 @@ def execute_query(db, query):
     """get data from database
     """
     result = []
-    with closing(sqlite3.connect(db)) as conn:
+    with sqlite3.connect(db) as conn:
         conn.row_factory = sqlite3.Row
         cur = conn.cursor()
         for row in cur.execute(query):
