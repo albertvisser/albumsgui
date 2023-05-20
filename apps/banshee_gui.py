@@ -30,7 +30,9 @@ class MainWidget(qtw.QWidget):
         app = qtw.QApplication(sys.argv)
         super().__init__()
         self.dbnames = sorted([x for x in config.databases], key=lambda x: x.lower())
-        self.dbnames.append('covers')
+        for name in ('clementine', 'strawberry'):
+            if name in self.dbnames:
+                self.dbnames.append(f'covers ({name})')
         self.dbname = ''
         self.album_name = self.artist_name = ''
         self.show_covers = False
@@ -106,8 +108,8 @@ class MainWidget(qtw.QWidget):
         """
         self.old_dbname = self.dbname
         self.dbname = self.dbnames[index]
-        if self.dbname == 'covers':
-            self.dbname = 'strawberry'
+        if self.dbname.startswith('covers'):
+            self.dbname = self.dbname.replace('covers (', '').replace(')', '')
             self.show_covers = True
         else:
             self.show_covers = False
