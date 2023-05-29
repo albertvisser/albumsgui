@@ -2,4 +2,5 @@
 """Starter for banshee GUI
 """
 import apps.banshee_gui
-apps.banshee_gui.MainWidget()
+gui = apps.banshee_gui.MainWidget()
+gui.go()
