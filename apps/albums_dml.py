@@ -11,6 +11,13 @@ import albums.muziek.models as my
 from albums.muziek.helpers import s_keuzes, s_sorts, l_keuzes, l_sorts
 
 
+def get_artists_lists():
+    "provide artist data for banshee_gui"
+    data = list_artists()
+    return ([x["id"] for x in data],
+            [' '.join((x["first_name"], x['last_name'])).lstrip() for x in data])
+
+
 def list_artists(sel=""):
     """produce list of artists
     """
@@ -22,6 +29,12 @@ def list_artists(sel=""):
                 'last_name')
     ## return [{'id': x.id, 'name': x.get_name()} for x in artist_list]
     return artist_list
+
+
+def get_albums_lists(artist_id):
+    "provide album data for banshee_gui"
+    data = list_albums(artist_id)
+    return ([x["id"] for x in data], [x["name"] for x in data])
 
 
 def list_albums(artist_id):
@@ -91,6 +104,13 @@ def list_album_details(album_id):
     """
     album = my.Album.objects.get(pk=album_id)
     return album
+
+
+def get_tracks_lists(artist_id, album_id):
+    "provide track data for banshee_gui"
+    # artist_id is voor API-compatibiliteit
+    data = list_tracks(album_id)
+    return [x["volgnr"] for x in data], [x["name"] for x in data]
 
 
 def list_tracks(album_id):
