@@ -58,6 +58,26 @@ def cdinfo(data, pos):
     return cd_id, data_start
 
 
+def get_artist_lists():
+    "provide artist data for banshee_gui"
+    data = sorted(CDDBData(DB).list_artists())
+    return data, data
+
+def get_albums_lists(artist):
+    "provide album data for banshee_gui"
+    data = CDDBData(DB).list_albums(artist)
+    return [x[0] for x in data], [x[1] for x in data]
+
+def get_track_lists(album):
+    "provide track data for banshee_gui"
+    data = CDDBData(DB).list_tracks(album)
+    trackids, tracknames = [], []
+    for x, y in enumerate(data):
+        trackids.append(x)
+        tracknames.append(y)
+    return trackids, tracknames
+
+
 class CDDBData:
     """Internal represeantation of a CDDB database file
     """
