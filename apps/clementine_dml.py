@@ -7,10 +7,10 @@ from .banshee_settings import databases
 DB = databases['clementine']
 
 
-def retrieve(db, query, parms):
+def retrieve(query, parms):
     "get data from database"
     result = []
-    with sqlite3.connect(db) as conn:
+    with sqlite3.connect(DB) as conn:
         conn.row_factory = sqlite3.Row
         cur = conn.cursor()
         for row in cur.execute(query, parms):
@@ -18,20 +18,24 @@ def retrieve(db, query, parms):
     return result
 
 
-def list_artists(db):
+def get_artists_lists():
     "produce list of artists"
-    return retrieve(db, "select distinct artist from songs "
-                    "where unavailable = '0' order by artist;", ())
+    data = [x["artist"] for x in retrieve("select distinct artist from songs "
+                                          "where unavailable = '0' order by artist;", ())]
+    return data, data
 
 
-def list_albums(db, artist_name):
+def get_albums_lists(artist_name):
     "produce list of albums for artist"
-    return retrieve(db, "select distinct album, year from songs where artist = ? "
-                    "and unavailable = '0';", (artist_name,))
+    data = [x["album"] for x in retrieve("select distinct album, year from songs where artist = ? "
+                                         "and unavailable = '0';", (artist_name,))]
+    return data, data
 
 
-def list_album_covers(db, artist_name='', album_name='', all_tracks=False):
+def get_album_cover(artist_name='', album_name='', all_tracks=False):
     """produce list of album covers
+    all_tracks biedt de mogelijkheid om de per track vastgelegde covers te bekijken,
+    voor nu gebruiken we alleen die van het eerste track
     """
     query = 'select distinct artist, album, track, art_automatic, art_manual from songs'
     cond, parms = [], []
@@ -49,18 +53,20 @@ def list_album_covers(db, artist_name='', album_name='', all_tracks=False):
         query += ' where ' + ' and '.join(cond)
     if not album_name and not artist_name:
         query += ' order by artist, album'
-    return retrieve(db, query, parms)
+    data = retrieve(query, parms)
+    return data[0]['art_manual'] or data[0]['art_automatic']
 
 
-def list_tracks_for_artist(db, artist_name):
+def list_tracks_for_artist(artist_name):
+    "produce list of tracks for artist"
+    data = retrieve("select rowid, album, disc, track, title, filename from songs where "
+                    "artist = ? order by album, disc, track;", (artist_name,))
+    return [x["album"] for x in data], [x["title"] for x in data]
+
+
+def get_tracks_lists(artist_name, album_name):
     "produce list of tracks for album"
-    return retrieve(
-        db, "select rowid, album, disc, track, title, filename from songs where "
-            "artist = ? order by album, disc, track;", (artist_name,))
-
-
-def list_tracks_for_album(db, artist_name, album_name):
-    "produce list of tracks for album"
-    return retrieve(
-        db, "select rowid, track, title from songs where artist = ? and album = ? "
-        "and unavailable = '0' order by disc, track;", (artist_name, album_name))
+    data = [x["title"] for x in retrieve("select rowid, track, title from songs"
+                                         " where artist = ? and album = ? and unavailable = '0'"
+                                         " order by disc, track;", (artist_name, album_name))]
+    return data, data

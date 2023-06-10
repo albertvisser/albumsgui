@@ -19,56 +19,81 @@ class MockConnection(testee.sqlite3.Connection):
 
 def test_retrieve(monkeypatch, capsys):
     def mock_connect(*args):
-        print("connecting to database identified by '{}'".format(args[0]))
+        print(f"connecting to database identified by '{args[0]}'")
         return MockConnection(*args)
+    monkeypatch.setattr(testee, 'DB', 'db')
     monkeypatch.setattr(testee.sqlite3, 'connect', mock_connect)
-    assert testee.retrieve('db', 'query', 'parms') == [{'x': 'a', 'y': 'b'}]
+    assert testee.retrieve('query', 'parms') == [{'x': 'a', 'y': 'b'}]
     assert capsys.readouterr().out == ("connecting to database identified by 'db'\n"
                                        'executing query parms\n')
 
 
-def mock_retrieve(db, query, parms):
-    return f'called retrieve with args `{db}`, `{query}`, {parms}'
 
-def test_list_artists(monkeypatch):
+def test_get_artists_lists(monkeypatch, capsys):
+    def mock_retrieve(query, parms):
+        print(f'called retrieve with args `{query}`, {parms}')
+        return [{'artist': 2}, {'artist': 1}]
     monkeypatch.setattr(testee, 'retrieve', mock_retrieve)
-    assert testee.list_artists('db') == (
-            "called retrieve with args `db`,"
-            " `select distinct artist from songs where unavailable = '0' order by artist;`, ()")
+    assert testee.get_artists_lists() == ([2, 1], [2, 1])
+    assert capsys.readouterr().out == ("called retrieve with args"
+            " `select distinct artist from songs where unavailable = '0' order by artist;`, ()\n")
 
 
-def test_list_albums(monkeypatch):
+def test_get_albums_lists(monkeypatch, capsys):
+    def mock_retrieve(query, parms):
+        print(f'called retrieve with args `{query}`, {parms}')
+        return [{'album': 2}, {'album': 1}]
     monkeypatch.setattr(testee, 'retrieve', mock_retrieve)
-    assert testee.list_albums('db', 'artist') == (
-            "called retrieve with args `db`,"
+    assert testee.get_albums_lists('artist') == ([2, 1], [2, 1])
+    assert capsys.readouterr().out == ("called retrieve with args"
             " `select distinct album, year from songs where artist = ? and unavailable = '0';`,"
-            " ('artist',)")
+            " ('artist',)\n")
 
 
-def test_list_album_covers(monkeypatch, capsys):
+def test_get_album_cover(monkeypatch, capsys):
+    def mock_retrieve(query, parms):
+        print(f'called retrieve with args `{query}`, {parms}')
+        return [{'art_manual': 'x', 'art_automatic': 'y'}]
+    def mock_retrieve_man_only(query, parms):
+        print(f'called retrieve with args `{query}`, {parms}')
+        return [{'art_manual': 'x', 'art_automatic': ''}]
+    def mock_retrieve_auto_only(query, parms):
+        print(f'called retrieve with args `{query}`, {parms}')
+        return [{'art_manual': '', 'art_automatic': 'y'}]
     monkeypatch.setattr(testee, 'retrieve', mock_retrieve)
-    assert testee.list_album_covers('db') == (
-            'called retrieve with args `db`,'
+    assert testee.get_album_cover() == 'x'
+    assert capsys.readouterr().out == ( 'called retrieve with args'
             ' `select distinct artist, album, art_automatic, art_manual from songs'
-            ' order by artist, album`, []')
-    assert testee.list_album_covers('db', 'artist', 'album', True) == (
-            'called retrieve with args `db`,'
+            ' order by artist, album`, []\n')
+    monkeypatch.setattr(testee, 'retrieve', mock_retrieve_man_only)
+    assert testee.get_album_cover('artist', 'album', True) == 'x'
+    assert capsys.readouterr().out == ( 'called retrieve with args'
             ' `select artist, album, track, art_automatic, art_manual from songs'
-            ' where artist = ? and album = ?`,'
-            " ['artist', 'album']")
+            " where artist = ? and album = ?`, ['artist', 'album']\n")
+    monkeypatch.setattr(testee, 'retrieve', mock_retrieve_auto_only)
+    assert testee.get_album_cover('artist', 'album', True) == 'y'
+    assert capsys.readouterr().out == ( 'called retrieve with args'
+            ' `select artist, album, track, art_automatic, art_manual from songs'
+            " where artist = ? and album = ?`, ['artist', 'album']\n")
 
 
-def test_list_tracks_for_artist(monkeypatch):
+def test_list_tracks_for_artist(monkeypatch, capsys):
+    def mock_retrieve(query, parms):
+        print(f'called retrieve with args `{query}`, {parms}')
+        return [{'album': 2, 'title': 'A'}, {'album': 1, 'title': 'B'}]
     monkeypatch.setattr(testee, 'retrieve', mock_retrieve)
-    assert testee.list_tracks_for_artist('db', 'artist') == (
-            "called retrieve with args `db`,"
+    assert testee.list_tracks_for_artist('artist') == ([2, 1], ['A', 'B'])
+    assert capsys.readouterr().out == ("called retrieve with args"
             " `select rowid, album, disc, track, title, filename from songs where "
-            "artist = ? order by album, disc, track;`, ('artist',)")
+            "artist = ? order by album, disc, track;`, ('artist',)\n")
 
 
-def test_list_tracks_for_album(monkeypatch):
+def test_get_tracks_lists(monkeypatch, capsys):
+    def mock_retrieve(query, parms):
+        print(f'called retrieve with args `{query}`, {parms}')
+        return [{'title': 'A'}, {'title': 'B'}]
     monkeypatch.setattr(testee, 'retrieve', mock_retrieve)
-    assert testee.list_tracks_for_album('db', 'artist', 'album') == (
-            "called retrieve with args `db`,"
+    assert testee.get_tracks_lists('artist', 'album') == (['A', 'B'], ['A', 'B'])
+    assert capsys.readouterr().out == ("called retrieve with args"
             " `select rowid, track, title from songs where artist = ? and album = ? "
-            "and unavailable = '0' order by disc, track;`, ('artist', 'album')")
+            "and unavailable = '0' order by disc, track;`, ('artist', 'album')\n")
