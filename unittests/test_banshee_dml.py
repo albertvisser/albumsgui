@@ -21,47 +21,58 @@ def test_execute_query(monkeypatch, capsys):
     def mock_connect(*args):
         print("connecting to database identified by '{}'".format(args[0]))
         return MockConnection(*args)
+    monkeypatch.setattr(testee, 'DB', 'db')
     monkeypatch.setattr(testee.sqlite3, 'connect', mock_connect)
     # assert testee.retrieve('db', 'query', 'parms') == [{'x': 'a', 'y': 'b'}]
-    assert testee.execute_query('db', 'query') == [{'x': 'a', 'y': 'b'}]
+    assert testee.execute_query('query', 'parms') == [{'x': 'a', 'y': 'b'}]
     assert capsys.readouterr().out == ("connecting to database identified by 'db'\n"
-                                       'executing query\n')
+                                       'executing query parms\n')
     # 'executing close\n')
 
 
-def mock_execute_query(db, query):
-    return f'called execute_query with args `{db}`, `{query}`'
-
-
-def test_list_artists(monkeypatch):
+def test_get_artists_lists(monkeypatch, capsys):
+    def mock_execute_query(query, parms):
+        print(f'called execute_query with args `{query}` `{parms}`')
+        return [{'ArtistID': 2, 'Name': 'A'}, {'ArtistID': 1, 'Name': 'B'}]
     monkeypatch.setattr(testee, 'execute_query', mock_execute_query)
-    assert testee.list_artists('db') == ("called execute_query with args `db`,"
-                                         " `select ArtistID, Name from coreartists order by Name;`")
+    assert testee.get_artists_lists() == ([2, 1], ['A', 'B'])
+    assert capsys.readouterr().out == ("called execute_query with args `select ArtistID, Name"
+                                       " from coreartists order by Name;` `()`\n")
 
 
-def test_list_albums(monkeypatch):
+def test_get_albums_lists(monkeypatch, capsys):
+    def mock_execute_query(query, parms):
+        print(f'called execute_query with args `{query}` `{parms}`')
+        return [{'AlbumID': 2, 'Title': 'A'}, {'AlbumID': 1, 'Title': 'B'}]
     monkeypatch.setattr(testee, 'execute_query', mock_execute_query)
-    assert testee.list_albums('db', 'artist') == ("called execute_query with args `db`,"
-                                                  " `select AlbumID, Title from corealbums"
-                                                  " where ArtistID = artist`")
+    assert testee.get_albums_lists('artist') == ([2, 1], ['A', 'B'])
+    assert capsys.readouterr().out == ("called execute_query with args `select AlbumID, Title"
+                                       " from corealbums where ArtistID = ?` `('artist',)`\n")
 
 
-def test_list_album_covers(monkeypatch):
+def test_get_album_cover(monkeypatch, capsys):
+    def mock_execute_query(query, parms):
+        print(f'called execute_query with args `{query}` `{parms}`')
+        return ['X', 'Y']
     monkeypatch.setattr(testee, 'execute_query', mock_execute_query)
-    assert testee.list_album_covers('db') == (
-            "called execute_query with args `db`,"
+    assert testee.get_album_cover() == 'X'
+    assert capsys.readouterr().out == ("called execute_query with args"
             ' `select t1.Name, t2.Title, t2.ArtworkID from coreartists as t1'
             ' inner join corealbums as t2 on t1.ArtistID = t2.ArtistID'
-            ' order by t1.Name, t2.Title`')
-    assert testee.list_album_covers('db', 'artist', 'album') == (
-            "called execute_query with args `db`,"
-            ' `select t1.Name, t2.Title, t2.ArtworkID from coreartists as t1'
-            ' inner join corealbums as t2 on t1.ArtistID = t2.ArtistID'
-            ' where t2.AlbumID = album and t1.ArtistID = artist`')
+            ' order by t1.Name, t2.Title` `()`\n')
+    assert testee.get_album_cover('artist', 'album') == 'X'
+    assert capsys.readouterr().out == ("called execute_query with args"
+            " `select t1.Name, t2.Title, t2.ArtworkID from coreartists as t1"
+            " inner join corealbums as t2 on t1.ArtistID = t2.ArtistID"
+            " where t2.AlbumID = ? and t1.ArtistID = ?` `('album', 'artist')`\n")
 
 
-def test_list_tracks(monkeypatch):
+def test_get_tracks_lists(monkeypatch, capsys):
+    def mock_execute_query(query, parms):
+        print(f'called execute_query with args `{query}` `{parms}`')
+        return [{'TrackNumber': 1, 'Title': 'A'}, {'TrackNumber': 2, 'Title': 'B'}]
     monkeypatch.setattr(testee, 'execute_query', mock_execute_query)
-    assert testee.list_tracks('db', 'album') == ("called execute_query with args `db`,"
-                                                 " `select TrackNumber, Title from coretracks"
-                                                 " where AlbumID = album order by Disc, TrackNumber`")
+    assert testee.get_tracks_lists('artist', 'album') == ([1, 2], ['A', 'B'])
+    assert capsys.readouterr().out == ("called execute_query with args"
+            " `select TrackNumber, Title from coretracks where AlbumID = ?"
+            " order by Disc, TrackNumber` `('album',)`\n")
