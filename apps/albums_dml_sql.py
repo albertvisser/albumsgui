@@ -9,7 +9,7 @@ def execute_query(db, query):
     """get data from database
     """
     result = []
-    with sqlite3.connect(db) as conn:
+    with sqlite3.connect(DB) as conn:
         conn.row_factory = sqlite3.Row
         cur = conn.cursor()
         for row in cur.execute(query):
@@ -39,18 +39,3 @@ def list_tracks(db, album_id):
         "from muziek_song inner join "
         "muziek_album_tracks on muziek_song.id = muziek_album_tracks.song_id "
         "where muziek_album_tracks.album_id = {} order by volgnr".format(album_id))
-
-
-def main():
-    """simple test: print data
-    """
-    with open("/tmp/tracks", "w") as _out:
-        print(list_artists(DB), file=_out)
-        for item in list_albums(DB, 110):
-            print(item, file=_out)
-        for item in list_tracks(DB, 458):
-            print(item, file=_out)
-
-
-if __name__ == "__main__":
-    main()
