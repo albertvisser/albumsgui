@@ -6,16 +6,22 @@ import PyQt5.QtWidgets as qtw
 import PyQt5.QtGui as gui
 ## import PyQt5.QtCore as core
 import apps.banshee_settings as config
+DML = {}
 if 'albums' in config.databases:
     import apps.albums_dml_sql as dmla
+    DML['albums'] = dmla
 if 'banshee' in config.databases:
     import apps.banshee_dml as dmlb
+    DML['banshee'] = dmlb
 if 'clementine' in config.databases:
     import apps.clementine_dml as dmlc
+    DML['clementine'] = dmlc
 if 'strawberry' in config.databases:
     import apps.strawberry_dml as dmls
+    DML['strawberry'] = dmls
 if 'CDDB' in config.databases:
     import apps.cddb_dml as dmld
+    DML['CDDB'] = dmld
 
 
 class MainWidget(qtw.QWidget):
@@ -118,44 +124,25 @@ class MainWidget(qtw.QWidget):
         else:
             self.show_covers = False
         self.db = config.databases[self.dbname]
-        self.artist_ids, self.artist_names = self.get_artist_lists(self.dbname)
+        self.artist_ids, self.artist_names = DML[self.dbname].get_artists_lists()
         self.initializing = True
         if self.dbname != self.old_dbname:
             self.ask_artist.clear()
             self.ask_artist.addItems(['-- choose artist --'] + self.artist_names)
             self.ask_album.clear()
             self.ask_album.addItems(['-- choose album --'])
-        if self.show_covers:
-            self.tracks_list.setVisible(False)
-            self.lbl.setVisible(True)
-            self.lbl.setText(self.initial_cover_text)
+            if self.show_covers:
+                self.tracks_list.setVisible(False)
+                self.lbl.setVisible(True)
+                self.lbl.setText(self.initial_cover_text)
+            else:
+                self.tracks_list.setVisible(True)
+                self.lbl.setVisible(False)
+                self.tracks_list.clear()
+                self.tracks_list.addItems(self.initial_tracks)
         else:
-            self.tracks_list.setVisible(True)
-            self.lbl.setVisible(False)
-            self.tracks_list.clear()
-            self.tracks_list.addItems(self.initial_tracks)
-        if self.dbname == self.old_dbname:
             self.get_album(self.ask_album.currentIndex())
         self.initializing = False
-
-    def get_artist_lists(self, dbname):
-        "actually get artist data depending on data backend"
-        if dbname == 'albums':
-            data = dmla.list_artists(self.db)
-            return ([x["id"] for x in data],
-                    [' '.join((x["first_name"], x['last_name'])).lstrip() for x in data])
-        if dbname == 'banshee':
-            data = dmlb.list_artists(self.db)
-            return ([x["ArtistID"] for x in data], [x["Name"] for x in data])
-        if dbname == 'clementine':
-            data = [x["artist"] for x in dmlc.list_artists(self.db)]
-        elif dbname == 'strawberry':
-            data = [x["artist"] for x in dmls.list_artists(self.db)]
-        elif dbname == 'CDDB':
-            data = sorted(dmld.CDDBData(self.db).list_artists())
-        else:
-            data = []
-        return data, data
 
     def get_artist(self, index):
         """get the selected artist's ID and build a list of albums
@@ -166,35 +153,16 @@ class MainWidget(qtw.QWidget):
             pass
         else:
             self.artist = self.artist_ids[index - 1]
-            self.album_ids, self.album_names = self.get_albums_lists(self.dbname)
+            self.album_ids, self.album_names = DML[self.dbname].get_albums_lists(self.artist)
         self.artist_name = self.ask_artist.itemText(self.ask_artist.currentIndex())
         self.initializing = True
         self.ask_album.clear()
-        self.ask_album.addItems([''] + self.album_names)
+        self.ask_album.addItems(['-- choose album --'] + self.album_names)
         self.initializing = False
         self.tracks_list.clear()
 
-    def get_albums_lists(self, dbname):
-        "actually get album data depending on data backend"
-        if dbname == 'albums':
-            data = dmla.list_albums(self.db, self.artist)
-            return ([x["id"] for x in data], [x["name"] for x in data])
-        if dbname == 'banshee':
-            data = dmlb.list_albums(self.db, self.artist)
-            return ([x["AlbumID"] for x in data], [x["Title"] for x in data])
-        if dbname == 'clementine':
-            data = [x["album"] for x in dmlc.list_albums(self.db, self.artist)]
-            return data, data
-        if dbname == 'strawberry':
-            data = [x["album"] for x in dmls.list_albums(self.db, self.artist)]
-            return data, data
-        if dbname == 'CDDB':
-            data = self.db.list_albums(self.artist)
-            return [x[0] for x in data], [x[1] for x in data]
-        return [], []
-
     def get_album(self, index):
-        """get the selected album's ID and build a list of tracks
+        """get the selected album's ID and build a list of tracks or the album cover
         """
         if self.initializing:
             return
@@ -204,59 +172,28 @@ class MainWidget(qtw.QWidget):
             self.tracks_list.clear()
             self.lbl.setText('')
         elif self.show_covers:  # (self.dbnames):
-            text, fname, pic = self.get_cover(self.dbname)
+            text = ''
+            fname = DML[self.dbname].get_album_cover(self.artist, self.album)
+            if fname == '(embedded)':
+                text = 'Picture is embedded'
+            elif fname:
+                pic = gui.QPixmap()
+                test = pic.load(fname.replace('///', '/').replace('%20', ' '))
+                if test:
+                    test = pic.scaled(500, 500)
+                else:
+                    text = f'Picture {fname} could not be loaded'
+            else:
+                text = "Feature not implemented"
             if text:
                 self.lbl.setText(text)
-            elif pic:
-                self.lbl.setPixmap(pic)
             else:
-                self.lbl.setText(f'Picture {fname} could not be loaded')
+                self.lbl.setPixmap(pic)
         else:
-            self.trackids, self.tracknames = self.get_track_lists(self.dbname)
+            self.trackids, self.tracknames = DML[self.dbname].get_tracks_lists(self.artist,
+                                                                               self.album)
             self.tracks_list.clear()
             self.tracks_list.addItems(self.tracknames)
-
-    def get_cover(self, dbname):
-        "actually get cover data depending on data backend"
-        text, fname, test = '', '', False
-        if dbname == 'banshee':
-            return "Feature still to be implemented", '', None
-        if dbname == 'clementine':
-            data = dmlc.list_album_covers(self.db, self.artist, self.album)
-        elif dbname == 'strawberry':
-            data = dmls.list_album_covers(self.db, self.artist, self.album)
-        fname = data[0]['art_manual'] or data[0]['art_automatic']
-        if fname == '(embedded)':
-            text = 'Picture is embedded'
-        elif fname:
-            pic = gui.QPixmap()
-            test = pic.load(fname.replace('///', '/').replace('%20', ' '))
-            if test:
-                test = pic.scaled(500, 500)
-        return text, fname, test
-
-    def get_track_lists(self, dbname):
-        "actually get track data depending on data backend"
-        if dbname == 'albums':
-            data = dmla.list_tracks(self.db, self.album)
-            return [x["volgnr"] for x in data], [x["name"] for x in data]
-        if dbname == 'banshee':
-            data = dmlb.list_tracks(self.db, self.album)
-            return [x["TrackNumber"] for x in data], [x["Title"] for x in data]
-        if dbname == 'clementine':
-            data = [x["title"] for x in dmlc.list_tracks_for_album(self.db, self.artist, self.album)]
-            return data, data
-        if dbname == 'strawberry':
-            data = [x["title"] for x in dmls.list_tracks_for_album(self.db, self.artist, self.album)]
-            return data, data
-        if dbname == 'CDDB':
-            data = self.db.list_tracks(self.album)
-            trackids, tracknames = [], []
-            for x, y in enumerate(data):
-                trackids.append(x)
-                tracknames.append(y)
-            return trackids, tracknames
-        return [], []
 
     def exit(self):
         """shutdown application
