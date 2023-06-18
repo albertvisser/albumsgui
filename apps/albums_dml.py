@@ -9,6 +9,7 @@ django.setup()
 from django.db.models import Q
 import albums.muziek.models as my
 from albums.muziek.helpers import s_keuzes, s_sorts, l_keuzes, l_sorts
+c_type = 'Clementine music player'
 
 
 def get_artists_lists():
@@ -137,8 +138,8 @@ def update_album_details(album_id, albumdata):
         if albumdata['titel'] != album.name:
             album.name = albumdata['titel']
     else:
-        album = my.Album.objects.create(artist=albumdata['artist'],
-                                        name=albumdata['titel'])
+        # album = my.Album.objects.create(artist=albumdata['artist'], name=albumdata['titel'])
+        album = my.Album(artist=albumdata['artist'], name=albumdata['titel'])
     for name, value in albumdata['details']:
         if name == 'Label/jaar:':
             test = value.split(', ')
@@ -146,6 +147,10 @@ def update_album_details(album_id, albumdata):
                 album.label = test[0]
                 if test[1]:
                     album.release_year = int(test[1])
+            # grensgeval vergeten? Kan dit (en de else) eigenlijk wel?
+            # elif test[0] == '':
+            #     album.label = ''
+            #     album.release_year = 0
             else:
                 try:
                     album.release_year = int(test[0])
@@ -179,6 +184,7 @@ def update_album_tracks(album_id, tracks):
                 changed = True
         else:
             trk = my.Song.objects.create(volgnr=ix)
+            # trk = my.Song(volgnr=ix)
             album.tracks.add(trk)
             new_track = True
         if changed or new_track:
@@ -194,7 +200,7 @@ def update_album_recordings(album_id, recordings):
     """
     ok = True   # hoe detecteer ik dat er iets foutgaat? Exception?
     album = my.Album.objects.get(pk=album_id)
-    old_recs = [x for x in album.opnames.all()]
+    old_recs = list(album.opnames.all())
     new_rec = changed = False
     for ix, item in recordings:
         if ix < len(old_recs):
@@ -204,6 +210,7 @@ def update_album_recordings(album_id, recordings):
                 changed = True
         else:
             rec = my.Opname.objects.create()
+            # rec = my.Opname()
             album.opnames.add(rec)
             new_rec = True
         if changed or new_rec:
@@ -221,7 +228,7 @@ def update_artists(changes):
         if id:
             item = my.Act.objects.get(pk=id)
         else:
-            item = my.Act.objects.create()
+            item = my.Act()
         item.first_name = first_name
         item.last_name = last_name
         item.save()
@@ -235,7 +242,6 @@ def update_albums_by_artist(artist_id, changes):
     also add "recorded in Clementine"
     when provided, also add tracks
     """
-    c_type = 'Clementine music player'
     artist = my.Act.objects.get(pk=artist_id)
     results = []
     for id, name, year, is_live, tracks in changes:
@@ -285,13 +291,13 @@ def update_album_tracknames(album_id, tracks):
                 oldtracks[title_u].save()
         else:
             item.tracks.add(my.Song.objects.create(volgnr=num, name=title))
+            # item.tracks.add(my.Song(volgnr=num, name=title))
     item.save()
 
 
 def unlink_album(album_id):
     """remove Clementine indicator
     """
-    c_type = 'Clementine music player'
     item = my.Album.objects.get(pk=album_id)
     for opn in item.opnames.all():
         if opn.type == c_type:

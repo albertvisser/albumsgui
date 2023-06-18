@@ -8,7 +8,7 @@ sys.path.append('/home/albert/projects/albums')
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "albums.settings")
 django.setup()
 # from django.db.models import Q
-import albums.muziek.models as my
+# import albums.muziek.models as my
 # from albums.muziek.helpers import s_keuzes, s_sorts, l_keuzes, l_sorts
 import apps.albums_dml as testee
 
@@ -25,9 +25,9 @@ def test_get_artists_lists(monkeypatch, capsys):
 
 @pytest.mark.django_db
 def test_list_artists():
-    artist = my.Act.objects.create(first_name='a', last_name='band')
-    artist2 = my.Act.objects.create(last_name='players')
-    artist3 = my.Act.objects.create(first_name='Andy', last_name='Bendy')
+    artist = testee.my.Act.objects.create(first_name='a', last_name='band')
+    artist2 = testee.my.Act.objects.create(last_name='players')
+    artist3 = testee.my.Act.objects.create(first_name='Andy', last_name='Bendy')
     assert list(testee.list_artists()) == [artist3, artist, artist2]
     assert list(testee.list_artists(sel="and")) == [artist3, artist]
 
@@ -43,9 +43,9 @@ def test_get_albums_lists(monkeypatch, capsys):
 
 @pytest.mark.django_db
 def test_list_albums():
-    artist = my.Act.objects.create(last_name='bladibla')
-    album1 = my.Album.objects.create(artist=artist, name='Number one')
-    album2 = my.Album.objects.create(artist=artist, name='Number two')
+    artist = testee.my.Act.objects.create(last_name='bladibla')
+    album1 = testee.my.Album.objects.create(artist=artist, name='Number one')
+    album2 = testee.my.Album.objects.create(artist=artist, name='Number two')
     assert testee.list_albums(artist.id) == [{'id': album1.id, 'name': 'Number one'},
                                              {'id': album2.id, 'name': 'Number two'}]
 
@@ -109,8 +109,8 @@ def test_list_albums_by_search(monkeypatch, capsys):
     monkeypatch.setattr(testee.django.db.models.query.QuerySet, 'filter', mock_filter)
     monkeypatch.setattr(testee.django.db.models.query.QuerySet, 'all', mock_all)
     monkeypatch.setattr(testee.django.db.models.query.QuerySet, 'order_by', mock_order_by)
-    artist = my.Act.objects.create(last_name='bladibla')
-    album = my.Album.objects.create(artist=artist, name='Number one', produced_by='xxx',
+    artist = testee.my.Act.objects.create(last_name='bladibla')
+    album = testee.my.Album.objects.create(artist=artist, name='Number one', produced_by='xxx',
                                     credits='yyy', bezetting='zzz')
     data = testee.list_albums_by_search('studio', 'name', 'x', 'Titel')
     assert isinstance(data, testee.django.db.models.query.QuerySet)
@@ -124,30 +124,29 @@ def test_list_albums_by_search(monkeypatch, capsys):
                                        "called filter() on queryset with args"
                                        " {'name__icontains': 'x'}\n"
                                        "called order_by() on queryset with args ('name',)\n")
-    # data = testee.list_albums_by_search('', 'produced_by', 'x', 'Uitvoerende')
-    # assert isinstance(data, testee.django.db.models.query.QuerySet)
-    # assert capsys.readouterr().out == ("called exclude() on queryset with args {'label': ''}\n"
-    #                                    "called filter() on queryset with args"
-    #                                    " {'name__icontains': 'x'}\n"
-    #                                    "called order_by() on queryset with args ('name',)\n")
-    # data = testee.list_albums_by_search('', 'credits', 'x', 'Jaar')
-    # assert isinstance(data, testee.django.db.models.query.QuerySet)
-    # assert capsys.readouterr().out == ("called exclude() on queryset with args {'label': ''}\n"
-    #                                    "called filter() on queryset with args"
-    #                                    " {'name__icontains': 'x'}\n"
-    #                                    "called order_by() on queryset with args ('name',)\n")
-    # data = testee.list_albums_by_search('', 'bezetting', 'x', 'Niet sorteren')
-    # assert isinstance(data, testee.django.db.models.query.QuerySet)
-    # assert capsys.readouterr().out == ("called exclude() on queryset with args {'label': ''}\n"
-    #                                    "called filter() on queryset with args"
-    #                                    " {'name__icontains': 'x'}\n"
-    #                                    "called order_by() on queryset with args ('name',)\n")
+    data = testee.list_albums_by_search('studio', 'produced_by', 'x', 'Uitvoerende')
+    assert isinstance(data, testee.django.db.models.query.QuerySet)
+    assert capsys.readouterr().out == ("called exclude() on queryset with args {'label': ''}\n"
+                                       "called filter() on queryset with args"
+                                       " {'produced_by__icontains': 'x'}\n"
+                                       "called order_by() on queryset with args ('artist',)\n")
+    data = testee.list_albums_by_search('studio', 'credits', 'x', 'Jaar')
+    assert isinstance(data, testee.django.db.models.query.QuerySet)
+    assert capsys.readouterr().out == ("called exclude() on queryset with args {'label': ''}\n"
+                                       "called filter() on queryset with args"
+                                       " {'credits__icontains': 'x'}\n"
+                                       "called order_by() on queryset with args ('release_year',)\n")
+    data = testee.list_albums_by_search('studio', 'bezetting', 'x', 'Niet sorteren')
+    assert isinstance(data, testee.django.db.models.query.QuerySet)
+    assert capsys.readouterr().out == ("called exclude() on queryset with args {'label': ''}\n"
+                                       "called filter() on queryset with args"
+                                       " {'bezetting__icontains': 'x'}\n")
 
 
 @pytest.mark.django_db
 def test_list_album_details():
-    artist = my.Act.objects.create(last_name='bladibla')
-    album = my.Album.objects.create(artist=artist, name='Number one')
+    artist = testee.my.Act.objects.create(last_name='bladibla')
+    album = testee.my.Album.objects.create(artist=artist, name='Number one')
     assert testee.list_album_details(album.id) == album
 
 
@@ -162,98 +161,193 @@ def test_get_tracks_lists(monkeypatch, capsys):
 
 @pytest.mark.django_db
 def test_list_tracks():
-    artist = my.Act.objects.create(last_name='bladibla')
-    album = my.Album.objects.create(artist=artist, name='Number one')
-    track1 = my.Song.objects.create(volgnr=2, name='track 1')
-    track2 = my.Song.objects.create(volgnr=1, name='track 2')
+    artist = testee.my.Act.objects.create(last_name='bladibla')
+    album = testee.my.Album.objects.create(artist=artist, name='Number one')
+    track1 = testee.my.Song.objects.create(volgnr=2, name='track 1')
+    track2 = testee.my.Song.objects.create(volgnr=1, name='track 2')
     album.tracks.add(track1, track2)
     assert list(testee.list_tracks(album.id)) == [track2, track1]
 
 
 @pytest.mark.django_db
 def test_list_recordings():
-    artist = my.Act.objects.create(last_name='bladibla')
-    album = my.Album.objects.create(artist=artist, name='Number one')
-    opname1 = my.Opname.objects.create(type='x', oms='opname 1')
-    opname2 = my.Opname.objects.create(type='y', oms='opname 2')
+    artist = testee.my.Act.objects.create(last_name='bladibla')
+    album = testee.my.Album.objects.create(artist=artist, name='Number one')
+    opname1 = testee.my.Opname.objects.create(type='x', oms='opname 1')
+    opname2 = testee.my.Opname.objects.create(type='y', oms='opname 2')
     album.opnames.add(opname1, opname2)
     assert list(testee.list_recordings(album.id)) == [opname1, opname2]
 
-def _test_update_album_details():
-    assert testee.update_album_details(album_id, albumdata)
-    # if album_id:
-    #     if albumdata['artist'] != album.artist:
-    #     if albumdata['titel'] != album.name:
-    # else:
-    # for name, value in albumdata['details']:
-    #     if name == 'Label/jaar:':
-    #         if len(test) == 2:
-    #             if test[1]:
-    #         else:
-    #             try:
-    #             except ValueError:
-    #     elif name == 'Produced by:':
-    #     elif name == 'Credits:':
-    #     elif name == 'Bezetting:':
-    #     elif name == 'Tevens met:':
-    return updated, ok
+
+@pytest.mark.django_db
+def test_update_album_details(monkeypatch, capsys):
+    artist1 = testee.my.Act.objects.create(last_name='bladibla')
+    artist2 = testee.my.Act.objects.create(last_name='gargl')
+    album1 = testee.my.Album.objects.create(artist=artist1, name='One', label='q', release_year=1)
+    album2 = testee.my.Album.objects.create(artist=artist1, name='Two', label='q', release_year=1)
+    album3 = testee.my.Album.objects.create(artist=artist1, name='Next', label='q', release_year=1)
+    albumdata = {'artist': artist1, 'titel': 'y', 'details': [('Label/jaar:', 'r')]}
+    data, ok = testee.update_album_details(album1.id, albumdata)
+    assert ok
+    assert testee.my.Album.objects.count() == 3
+    assert (data.artist, data.name, data.label, data.release_year) == (artist1, 'y', 'r', 1)
+    albumdata = {'artist': artist1, 'titel': 'Two', 'details': [('Label/jaar:', '2')]}
+    data, ok = testee.update_album_details(album2.id, albumdata)
+    assert ok
+    assert testee.my.Album.objects.count() == 3
+    assert (data.artist, data.name, data.label, data.release_year) == (artist1, 'Two', 'q', 2)
+    albumdata = {'artist': artist2, 'titel': 'y', 'details': [('Label/jaar:', '')]}
+    data, ok = testee.update_album_details(album3.id, albumdata)
+    assert ok
+    assert testee.my.Album.objects.count() == 3
+    # assert (data.artist, data.name, data.label, data.release_year) == (artist2, 'y', '', 0)
+    assert (data.artist, data.name, data.label, data.release_year) == (artist2, 'y', '', 1)
+
+    albumdata = {'artist': artist2, 'titel': 'y', 'details': [('Label/jaar:', "z, 9"),
+                                                              ('Produced by:', 'a'),
+                                                              ('Credits:', 'b'),
+                                                              ('Bezetting:', 'c'),
+                                                              ('Tevens met:', 'd')]}
+    data, ok = testee.update_album_details(0, albumdata)
+    assert ok
+    assert testee.my.Album.objects.count() == 4
+    assert isinstance(data, testee.my.Album)
+    assert (data.artist, data.name, data.label, data.release_year) == (artist2, 'y', 'z', 9)
+    assert (data.produced_by, data.credits, data.bezetting, data.additional) == ('a', 'b', 'c', 'd')
 
 
-def _test_update_album_tracks():
-    assert testee.update_album_tracks(album_id, tracks)
-    # for ix, item in tracks:
-    #     if ix in old_tracks:
-    #         if item != old_tracks[ix]:
-    #     else:
-    #     if changed or new_track:
-    return ok
+@pytest.mark.django_db
+def test_update_album_tracks():
+    myartist = testee.my.Act.objects.create(last_name='bladibla')
+    myalbum = testee.my.Album.objects.create(artist=myartist, name='x', label='q', release_year=1)
+    mytrack1 = testee.my.Song.objects.create(volgnr=5)
+    mytrack2 = testee.my.Song.objects.create(volgnr=1)
+    mytrack3 = testee.my.Song.objects.create(volgnr=2)
+    myalbum.tracks.add(mytrack1, mytrack2, mytrack3)
+    assert testee.update_album_tracks(myalbum.id, [(2, ('a', 'b', 'c')), (3, ('c', 'd', 'e'))])
+    data = list(myalbum.tracks.all())
+    assert len(data) == 4
+    assert isinstance(data[3], testee.my.Song)
+    assert (data[2].name, data[2].written_by, data[2].credits) == ('a', 'b', 'c')
+    assert (data[3].volgnr, data[3].name) == (3, 'c')
+    assert (data[3].written_by, data[3].credits) == ('d', 'e')
 
 
-def _test_update_album_recordings():
-    assert testee.update_album_recordings(album_id, recordings)
-    # for ix, item in recordings:
-    #     if ix < len(old_recs):
-    #         if item != old_item:
-    #     else:
-    #     if changed or new_rec:
-    return ok
+@pytest.mark.django_db
+def test_update_album_recordings():
+    myartist = testee.my.Act.objects.create(last_name='bladibla')
+    myalbum = testee.my.Album.objects.create(artist=myartist, name='x', label='q', release_year=1)
+    myopname1 = testee.my.Opname.objects.create(type='x', oms='q')
+    myopname2 = testee.my.Opname.objects.create(type='y', oms='r')
+    myopname3 = testee.my.Opname.objects.create(type='z', oms='s')
+    myalbum.opnames.add(myopname1, myopname2, myopname3)
+    assert testee.update_album_recordings(myalbum.id, [(2, ('a', 'b')), (3, ('c', 'd'))])
+    data = list(myalbum.opnames.all())
+    assert len(data) == 4
+    assert isinstance(data[3], testee.my.Opname)
+    assert (data[2].type, data[2].oms) == ('a', 'b')
+    assert (data[3].type, data[3].oms) == ('c', 'd')
 
 
-def _test_update_artists():
-    assert testee.update_artists(changes)
-    # for id, first_name, last_name in changes:
-    # if id:
-    # else:
-    return results
+@pytest.mark.django_db
+def test_update_artists():
+    artist = testee.my.Act.objects.create(last_name='bladibla')
+    data = testee.update_artists([(artist.id, 'x', 'y')])[0]
+    assert (data.first_name, data.last_name) == ('x', 'y')
+    assert testee.my.Act.objects.count() == 1
+    data = testee.update_artists([(0, 'a', 'b')])[0]
+    assert (data.first_name, data.last_name) == ('a', 'b')
+    assert testee.my.Act.objects.count() == 2
 
 
-def _test_update_albums_by_artist():
-    assert testee.update_albums_by_artist(artist_id, changes)
-    # for id, name, year, is_live, tracks in changes:
-    #     if id:
-    #         if name == item.name and year == item.release_year:
-    #             for opn in item.opnames.all():
-    #                 if opn.type == c_type:
-    #     else:
-    #         if not is_live:
-    #     if changed:
-    #         if year:
-    #         for opn in item.opnames.all():
-    #             if opn.type == c_type:
-    #         if not found:
-    #         for num, title in tracks:
-    return results
+@pytest.mark.django_db
+def test_update_albums_by_artist_no_changes(monkeypatch):
+    monkeypatch.setattr(testee, 'c_type', 'z')
+    artist = testee.my.Act.objects.create(last_name='bladibla')
+    album = testee.my.Album.objects.create(artist=artist, name='One', label='q', release_year=1)
+    opname = testee.my.Opname.objects.create(type='z', oms='s')
+    opname2 = testee.my.Opname.objects.create(type='x', oms='s')
+    album.opnames.add(opname, opname2)
+    changes = [(album.id, 'One', 1, False, [(1, 'track')])]
+    result = testee.update_albums_by_artist(artist.id, changes)
+    assert result == [album]
+    assert list(result[0].tracks.all()) == []
 
 
-def _test_update_album_tracknames():
-    testee.update_album_tracknames(album_id, tracks)
-    # for num, title in tracks:
-    #     if title_u in oldtracks:
-    #         if num != oldtracks[title_u].volgnr:
-    #     else:
+@pytest.mark.django_db
+def test_update_albums_by_artist_add_reg(monkeypatch):
+    monkeypatch.setattr(testee, 'c_type', 'z')
+    artist = testee.my.Act.objects.create(last_name='bladibla')
+    album = testee.my.Album.objects.create(artist=artist, name='One', label='q', release_year=1)
+    # opname = testee.my.Opname.objects.create(type='z', oms='s')
+    opname = testee.my.Opname.objects.create(type='x', oms='s')
+    album.opnames.add(opname)
+    changes = [(album.id, 'One', 1, False, [])]
+    # breakpoint()
+    result = testee.update_albums_by_artist(artist.id, changes)
+    assert result == [album]
+    assert list(result[0].tracks.all()) == []
+    data = list(result[0].opnames.all())
+    assert len(data) == 2
+    assert data[1].type == testee.c_type
 
 
-def _test_unlink_album():
-    testee.unlink_album(album_id)
-    # for opn in item.opnames.all():
-    #     if opn.type == c_type:
+@pytest.mark.django_db
+def test_update_albums_by_artist_changes(monkeypatch):
+    monkeypatch.setattr(testee, 'c_type', 'z')
+    artist = testee.my.Act.objects.create(last_name='bladibla')
+    album = testee.my.Album.objects.create(artist=artist, name='One', label='q', release_year=1)
+    opname = testee.my.Opname.objects.create(type='z', oms='s')
+    album.opnames.add(opname)
+    changes = [(album.id, 'Not One', 2, False, [])]
+    result = testee.update_albums_by_artist(artist.id, changes)
+    assert result == [album]
+    assert (result[0].name, result[0].label, result[0].release_year) == ('Not One', 'q', 2)
+    assert list(result[0].tracks.all()) == []
+    assert list(result[0].opnames.all()) == [opname]
+
+
+@pytest.mark.django_db
+def test_update_albums_by_artist_new_album(monkeypatch):
+    monkeypatch.setattr(testee, 'c_type', 'z')
+    artist = testee.my.Act.objects.create(last_name='bladibla')
+    changes = [(0, 'One', 1, False, [(1, 'track')])]
+    result = testee.update_albums_by_artist(artist.id, changes)
+    assert len(result) == 1
+    assert isinstance(result[0], testee.my.Album)
+    assert (result[0].name, result[0].label, result[0].release_year) == ('One', '(unknown)', 1)
+    data = list(result[0].tracks.all())
+    assert len(data) == 1
+    assert (data[0].volgnr, data[0].name) == (1, 'track')
+    data = list(result[0].opnames.all())
+    assert len(data) == 1
+    assert data[0].type == testee.c_type
+
+
+@pytest.mark.django_db
+def test_update_album_tracknames():
+    # but this routine shuffles track *numbers*, not names
+    artist = testee.my.Act.objects.create(last_name='bladibla')
+    album = testee.my.Album.objects.create(artist=artist, name='this')
+    track1 = testee.my.Song.objects.create(volgnr=2, name='One')
+    track2 = testee.my.Song.objects.create(volgnr=1, name='Two')
+    album.tracks.add(track1, track2)
+    testee.update_album_tracknames(album.id, ((0, 'One'), (1, 'Two'), (2, 'Three')))
+    data = list(album.tracks.all())
+    assert len(data) == 3
+    assert (data[0].volgnr, data[0].name) == (0, 'One')
+    assert (data[1].volgnr, data[1].name) == (1, 'Two')
+    assert (data[2].volgnr, data[2].name) == (2, 'Three')
+
+
+@pytest.mark.django_db
+def test_unlink_album(monkeypatch):
+    monkeypatch.setattr(testee, 'c_type', 'z')
+    artist = testee.my.Act.objects.create(last_name='bladibla')
+    album = testee.my.Album.objects.create(artist=artist, name='One', label='q', release_year=1)
+    opname = testee.my.Opname.objects.create(type='z', oms='s')
+    opname2 = testee.my.Opname.objects.create(type='x', oms='s')
+    album.opnames.add(opname, opname2)
+    assert album.opnames.count() == 2
+    testee.unlink_album(album.id)
+    assert album.opnames.count() == 1
