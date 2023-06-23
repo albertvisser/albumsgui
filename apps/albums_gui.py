@@ -39,8 +39,8 @@ TYPETXT = {'studio': 'album', 'live': 'concert'}
 #                    'Zoek op tekst in locatie',
 #                    'Zoek op tekst in datum',
 #                    'Zoek op tekst in bezetting']}
-SELTXT = {'studio': [dmla.s_keuzes[0][1][3:]] + [f'Zoek op {x[1][3:]}' for x in dmla.s_keuzes[1:],
-          'live': [dmla.l_keuzes[0][1][3:]] + [f'Zoek op {x[1][3:]}' for x in dmla.l_keuzes[1:]}
+SELTXT = {'studio': [dmla.s_keuzes[0][1][3:]] + [f'Zoek op {x[1][3:]}' for x in dmla.s_keuzes[1:]],
+          'live': [dmla.l_keuzes[0][1][3:]] + [f'Zoek op {x[1][3:]}' for x in dmla.l_keuzes[1:]]}
 # SELCOL = {'studio': ['', 'artist', 'titel', 'producer', 'credits', 'bezetting'],
 #           'live': ['', 'artist', 'locatie', 'datum', 'bezetting']}
 SELCOL = {'studio': [[''] + [x[0] for x in dmla.s_keuzes[1:]]],
@@ -1496,13 +1496,12 @@ def get_albums_by_text(albumtype, search_type, search_for, sort_on):
     """get the selected artist's ID and build a list of albums
     """
     if albumtype == 'studio':
-        search_type = {0: '*', 2: 'name', 3: 'produced_by', 4: 'credits',
+        search_on = {0: '*', 2: 'name', 3: 'produced_by', 4: 'credits',
                        5: 'bezetting'}[search_type]
     elif albumtype == 'live':
-        search_type = {0: '*', 2: 'name', 3: 'name', 4: 'produced_by',
+        search_on = {0: '*', 2: 'name', 3: 'name', 4: 'produced_by',
                        5: 'bezetting'}[search_type]
-    return [x for x in dmla.list_albums_by_search(albumtype, search_type,
-                                                  search_for, sort_on)]
+    return [x for x in dmla.list_albums_by_search(albumtype, search_on, search_for, sort_on)]
 
 
 def get_album(album_id, albumtype):
@@ -1510,7 +1509,8 @@ def get_album(album_id, albumtype):
     """
     result = {'titel': '',
               'artist': '',
-              'artistid': '',
+              # 'artistid': '',
+              'artist_name': '',
               'details': [('Label/jaar:', ''),
                           ('Produced by:', ''),
                           ('Credits:', ''),
@@ -1522,6 +1522,7 @@ def get_album(album_id, albumtype):
         album = dmla.list_album_details(album_id)
         result['titel'] = album.name
         result['artist'] = album.artist
+        # result['artistid'] = album.artist.id
         result['artist_name'] = album.artist.get_name()
         text = album.label
         if album.release_year:
