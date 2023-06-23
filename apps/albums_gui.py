@@ -1547,22 +1547,23 @@ def get_album(album_id, albumtype):
 def build_heading(win, readonly=False):
     """Generate heading text for screen
     """
-    if not win.parent().albumdata['artist'] or not win.parent().albumdata['titel']:
-        text = 'Opvoeren nieuw {}'.format(TYPETXT[win.parent().albumtype])
+    typetext = TYPETXT[win.parent().albumtype]
+    actname = win.parent().albumdata['artist']
+    album = win.parent().albumdata['titel']
+    if not actname or not album:
+        text = f'Opvoeren nieuw {typetext}'
     else:
         wintext = win.heading.text()
         newtext = ''
         for text in ('tracks', 'opnames'):
             if wintext == text:
-                newtext = ': {}'.format(wintext)
+                newtext = f': {wintext}'
                 break
             elif wintext.endswith(text):
-                newtext = ': {}'.format(text)
+                newtext = f': {text}'
                 break
         text = 'G' if readonly else 'Wijzigen g'
-        text = '{}egevens van {} {} - {} {}'.format(
-            text, TYPETXT[win.parent().albumtype], win.parent().albumdata['artist'],
-            win.parent().albumdata['titel'], newtext)
+        text = f'{text}egevens van {typetext} {actname} - {album}{newtext}'
     return text
 
 
