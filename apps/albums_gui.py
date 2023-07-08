@@ -69,7 +69,8 @@ class MainFrame(qtw.QMainWindow):
     """
     def __init__(self):
         self.app = qtw.QApplication(sys.argv)
-        super().__init__()
+        # super().__init__()
+        qtw.QMainWindow.__init__(self)  # met super() gaat de unittest mis
         self.move(300, 50)
         ## self.resize(400, 600)
         self.artist = None
@@ -85,6 +86,10 @@ class MainFrame(qtw.QMainWindow):
         self.windows = []
         self.show()
         self.do_start()
+        self.go()
+
+    def go(self):
+        "to make testing easier"
         sys.exit(self.app.exec_())
 
     def get_all_artists(self):
@@ -180,7 +185,7 @@ class MainFrame(qtw.QMainWindow):
     def start_import_tool(self):
         """get albums from music library
         """
-        albumsmatcher.MainFrame(app=self.app)
+        apps.albumsmatcher.MainFrame(app=self.app)
 
 
 class Start(qtw.QWidget):
@@ -344,32 +349,32 @@ class Start(qtw.QWidget):
     def refresh_screen(self):
         """bring screen up-to-date
         """
-        self.ask_studio_artist.addItems(self.parent().artist_names)
-        self.ask_live_artist.addItems(self.parent().artist_names)
-        if self.parent().albumtype == 'studio':
+        parent = self.parent()
+        self.ask_studio_artist.addItems(parent.artist_names)
+        self.ask_live_artist.addItems(parent.artist_names)
+        if parent.albumtype == 'studio':
             widgets = [self.ask_studio_search, self.ask_studio_artist,
                        self.studio_zoektekst, self.ask_studio_sort]
-        elif self.parent().albumtype == 'live':
+        elif parent.albumtype == 'live':
             widgets = [self.ask_live_search, self.ask_live_artist,
                        self.live_zoektekst, self.ask_live_sort]
         else:
             # set defaults
-            self.ask_studio_search.setCurrentIndex(self.parent().searchtype)
+            self.ask_studio_search.setCurrentIndex(parent.searchtype)
             self.ask_studio_sort.setCurrentIndex(3)
-            self.ask_live_search.setCurrentIndex(self.parent().searchtype)
+            self.ask_live_search.setCurrentIndex(parent.searchtype)
             self.ask_live_sort.setCurrentIndex(2)
             return
-        widgets[0].setCurrentIndex(self.parent().searchtype)
-        if self.parent().searchtype == 1:
-            if self.parent().artist:  # .id:
-                ## chosen = self.parent().ids.index(self.parent().artistid)
-                chosen = self.parent().artist_ids.index(self.parent().artist.id)
+        widgets[0].setCurrentIndex(parent.searchtype)
+        if parent.searchtype == 1:
+            if parent.artist:
+                chosen = parent.artistids.index(parent.artist.id)
                 widgets[1].setCurrentIndex(chosen + 1)
-        if self.parent().searchtype < 2:
+        if parent.searchtype < 2:
             widgets[2].clear()
         else:
-            widgets[2].setText(self.parent().search_arg)
-        widgets[3].setCurrentText(self.parent().sorttype)
+            widgets[2].setText(parent.search_arg)
+        widgets[3].setCurrentText(parent.sorttype)
 
     def select_album(self):
         "get selection type and argument for studio album"
