@@ -1,4 +1,4 @@
-# testen van de conditionele imports kan misschien door banshee_gui nyiet meteen te importeren
+# testen van de conditionele imports kan misschien door banshee_gui niet meteen te importeren
 # maar als onderdeel van een testfunctie nadat je een specifieke inhoud voor banshee_settings
 # hebt klaargezet
 # dat moet dan denkelijk in een ander testscript als de testmethodes voor MainWidget
