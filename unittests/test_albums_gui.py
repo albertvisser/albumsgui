@@ -148,15 +148,18 @@ def test_newline(monkeypatch, capsys):
                                        " <class 'unittests.mockqtwidgets.MockFrame'>\n")
 
 
-class MockParent:  # evt. vervangen door MockMainFrame (en die dan aanvullen)
-    def do_select(self):
-        ...
-    def do_start(self):
-        ...
-    def do_detail(self):
-        ...
 
 class MockHandler:
+    "mock van een subscherm, alleen omdat ik de aanroepen nodog heb"
+    # zit momenteel alleen in de twee navolgende functies
+    class MockParent:
+        "mock van het hoofdscherm, alleen omdat ik de methode aanroepen nodig heb"
+        def do_select(self):
+            ...
+        def do_start(self):
+            ...
+        def do_detail(self):
+            ...
     _parent = MockParent()
     def parent(self):
         return self._parent
@@ -244,12 +247,28 @@ def test_exitbutton(monkeypatch, capsys):
 
 class MockMainFrame:
     def __init__(self):
-        print('called MainFrame.__init__')
+        print('called Main.__init__')
         self.app = mockqtw.MockApplication()
     def go(self):
-        print('called MainFrame.go')
+        print('called Main.go')
     def do_start(self):
-        print('called MainFrame.do_start')
+        print('called Main.do_start')
+    def do_select(self):
+        print('called Main.do_select')
+    def do_new(self, **kwargs):
+        print(f'called Main.do_new with args', kwargs)
+    def do_detail(self):
+        print('called Main.do_detail')
+    def do_edit_alg(self, **kwargs):
+        print(f'called Main.do_edit_alg with args', kwargs)
+    def do_edit_trk(self):
+        print('called Main.edit_trk')
+    def do_edit_rec(self):
+        print('called Main.edit_rec')
+    def start_import_tool(self):
+        print('called Main.start_import_tool')
+    def close(self):
+        print('called Main.close')
 
 class MockStart:
     def __init__(self, parent):
@@ -334,8 +353,8 @@ def test_main_init(monkeypatch, capsys):
                                        'called QMainWindow.__init__\n'
                                        'called QMainWindow.move with args (300, 50)\n'
                                        'called QMainWindow.show\n'
-                                       'called MainFrame.do_start\n'
-                                       'called MainFrame.go\n')
+                                       'called Main.do_start\n'
+                                       'called Main.go\n')
     assert testobj.artist == None
     assert testobj.album == None
     assert testobj.albumtype == ''
@@ -351,7 +370,7 @@ def test_main_init(monkeypatch, capsys):
 def setup_main(monkeypatch, capsys):
     monkeypatch.setattr(testee.MainFrame, '__init__', MockMainFrame.__init__)
     testobj = testee.MainFrame()
-    assert capsys.readouterr().out == ('called MainFrame.__init__\n'
+    assert capsys.readouterr().out == ('called Main.__init__\n'
                                        'called QApplication.__init__\n')
     return testobj
 
@@ -585,31 +604,21 @@ def test_main_start_import_tool(monkeypatch, capsys):
     testobj.start_import_tool()
     assert capsys.readouterr().out == f"called AlbumsMatcher with args {{'app': {testobj.app}}}\n"
 
-class MockMain:  # evt. vervangen door MockMainFrame (en die dan aanvullen)
-    def do_start(self):
-        print('called Main.do_start')
-    def do_select(self):
-        print('called Main.do_select')
-    def do_new(self):
-        print('called Main.do_new')
-    def start_import_tool(self):
-        print('called Main.start_import_tool')
-    def close(self):
-        print('called Main.close')
 
 def setup_start(monkeypatch, capsys):
-    def mock_init(self):
+    # def mock_init(self):
+    def mock_init(self, parent):
         print('called QWidget.__init__')
-        self._parent = MockMain()
-    def mock_setLayout(self, arg):
-        print(f'called QWidget.setLayout with arg of type {type(arg)}')
-    def mock_parent(self):
-        return self._parent
+    def mock_setlayout(self, layout):
+        print(f'called QWidget.setLayout with arg of type {type(layout)}')
     monkeypatch.setattr(testee.qtw.QWidget, '__init__', mock_init)
-    monkeypatch.setattr(testee.qtw.QWidget, 'setLayout', mock_setLayout)
-    monkeypatch.setattr(testee.Start, 'parent', mock_parent)
-    testobj = testee.Start()    # wil ik hier niet juist MockStart?
-    assert capsys.readouterr().out == 'called QWidget.__init__\n'
+    monkeypatch.setattr(testee.qtw.QWidget, 'setLayout', mock_setlayout)
+    testparent = MockMainFrame()
+    testobj = testee.Start(testparent)
+    monkeypatch.setattr(testobj, 'parent', lambda *x: testparent)
+    assert capsys.readouterr().out == ('called Main.__init__\n'
+                                       'called QApplication.__init__\n'
+                                       'called QWidget.__init__\n')
     return testobj
 
 def test_start_create_widgets(monkeypatch, capsys, expected_output):
@@ -857,7 +866,7 @@ def test_start_new(monkeypatch, capsys):
     testobj = setup_start(monkeypatch, capsys)
     testobj._new('x')
     assert testobj.parent().albumtype == 'x'
-    assert capsys.readouterr().out == 'called Main.do_new\n'
+    assert capsys.readouterr().out == 'called Main.do_new with args {}\n'
 
 def test_start_view_artists(monkeypatch, capsys):
     testobj = setup_start(monkeypatch, capsys)
@@ -869,7 +878,7 @@ def test_start_new_artist(monkeypatch, capsys):
     testobj = setup_start(monkeypatch, capsys)
     testobj.new_artist()
     assert testobj.parent().albumtype == 'artist'
-    assert capsys.readouterr().out == 'called Main.do_new\n'
+    assert capsys.readouterr().out == 'called Main.do_new with args {}\n'
 
 def test_start_exit(monkeypatch, capsys):
     testobj = setup_start(monkeypatch, capsys)
@@ -877,31 +886,295 @@ def test_start_exit(monkeypatch, capsys):
     assert capsys.readouterr().out == 'called Main.close\n'
 
 
-class _TestSelect:
-    def test_create_widgets(self):
-        ...
+def setup_select(monkeypatch, capsys):
+    def mock_init(self, parent):
+        print('called QWidget.__init__')
+    def mock_setlayout(self, layout):
+        print(f'called QWidget.setLayout with arg of type {type(layout)}')
+    monkeypatch.setattr(testee.qtw.QWidget, '__init__', mock_init)
+    monkeypatch.setattr(testee.qtw.QWidget, 'setLayout', mock_setlayout)
+    testparent = MockMainFrame()
+    testobj = testee.Select(testparent)
+    monkeypatch.setattr(testobj, 'parent', lambda *x: testparent)
+    assert capsys.readouterr().out == ('called Main.__init__\n'
+                                       'called QApplication.__init__\n'
+                                       'called QWidget.__init__\n')
+    return testobj
 
-    def test_refresh_screen(self):
-        ...
+def test_select_create_widgets(monkeypatch, capsys, expected_output):
+    monkeypatch.setattr(testee.qtw, 'QVBoxLayout', mockqtw.MockVBox)
+    monkeypatch.setattr(testee.qtw, 'QHBoxLayout', mockqtw.MockHBox)
+    monkeypatch.setattr(testee.qtw, 'QComboBox', mockqtw.MockComboBox)
+    monkeypatch.setattr(testee.qtw, 'QLineEdit', mockqtw.MockLineEdit)
+    monkeypatch.setattr(testee.qtw, 'QPushButton', mockqtw.MockButton)
+    monkeypatch.setattr(testee.qtw, 'QLabel', mockqtw.MockLabel)
+    monkeypatch.setattr(testee.qtw, 'QFrame', mockqtw.MockFrame)
+    monkeypatch.setattr(testee.qtw, 'QScrollArea', mockqtw.MockScrollArea)
+    testobj = setup_select(monkeypatch, capsys)
+    testobj.parent().searchtype = 1                  # conditie 1: of niet 1
+    testobj.parent().albumtype = 'live'            # conditie 2: of niet
+    testobj.parent().artist_names= ['X', 'Y']                  # loop: of leeg
+    testobj.parent().albums = ['1', '2']                  # loop: of leeg
+    testobj.create_widgets()
+    bindings = {'other_search': testobj.other_search,
+                'other_artist': testobj.other_artist,
+                'other_albumtype': testobj.other_albumtype,
+                'todetail': testobj.todetail,
+                'add_new_to_sel': testobj.add_new_to_sel,
+                'do_start': testobj.parent().do_start,
+                'exit': testobj.exit,
+                'me': testobj}
+    assert capsys.readouterr().out == expected_output['select_1'].format(**bindings)
+    testobj = setup_select(monkeypatch, capsys)
+    testobj.parent().searchtype = 2
+    testobj.parent().albumtype = 'studio'
+    testobj.parent().albums = ['1']
+    testobj.create_widgets()
+    bindings = {'other_search': testobj.other_search,
+                'other_artist': testobj.other_artist,
+                'other_albumtype': testobj.other_albumtype,
+                'todetail': testobj.todetail,
+                'add_new_to_sel': testobj.add_new_to_sel,
+                'do_start': testobj.parent().do_start,
+                'exit': testobj.exit,
+                'me': testobj}
+    assert capsys.readouterr().out == expected_output['select_2'].format(**bindings)
+    testobj = setup_select(monkeypatch, capsys)
+    testobj.parent().searchtype = 3
+    testobj.parent().albumtype = 'studio'
+    testobj.parent().albums = []
+    testobj.create_widgets()
+    bindings = {'other_search': testobj.other_search,
+                'other_albumtype': testobj.other_albumtype,
+                'add_new_to_sel': testobj.add_new_to_sel,
+                'do_start': testobj.parent().do_start,
+                'exit': testobj.exit,
+                'me': testobj}
+    assert capsys.readouterr().out == expected_output['select_3'].format(**bindings)
+    testobj = setup_select(monkeypatch, capsys)
+    testobj.parent().searchtype = 4
+    testobj.parent().albumtype = 'studio'
+    testobj.parent().albums = []
+    testobj.create_widgets()
+    bindings = {'other_search': testobj.other_search,
+                'todetail': testobj.todetail,
+                'add_new_to_sel': testobj.add_new_to_sel,
+                'do_start': testobj.parent().do_start,
+                'exit': testobj.exit,
+                'me': testobj}
+    assert capsys.readouterr().out == expected_output['select_3'].format(**bindings)
 
-    def test_other_artist(self):
-        ...
+def test_select_refresh_screen(monkeypatch, capsys):
+    testobj = setup_select(monkeypatch, capsys)
+    testobj.heading = mockqtw.MockLabel()
+    testobj.change_type = mockqtw.MockLabel()
+    testobj.kiestekst = mockqtw.MockLabel()
+    testobj.add_new = mockqtw.MockLabel()
+    assert capsys.readouterr().out == ('called Label.__init__\ncalled Label.__init__\n'
+                                       'called Label.__init__\ncalled Label.__init__\n')
+    testobj.parent().searchtype = 0
+    testobj.parent().albumtype = 'studio'
+    testobj.parent().sorttype = 'x'
+    testobj.refresh_screen()
+    assert capsys.readouterr().out == ('called Label.setText with arg `Lijst studio albums'
+                                       ' - selectie: geen selectie gesorteerd op x`\n'
+                                       'called Label.setText with arg `concertopnamen`\n'
+                                       'called Label.setText with arg `Kies een album'
+                                       ' uit de lijst:`\n'
+                                       'called Label.setText with arg `voer een nieuw album'
+                                       ' op bij deze selectie`\n')
+    testobj.parent().searchtype = 1
+    testobj.parent().albumtype = 'studio'
+    testobj.parent().artist = types.SimpleNamespace(get_name=lambda *x: 'xxx')
+    testobj.parent().sorttype = 'x'
+    testobj.refresh_screen()
+    assert capsys.readouterr().out == ('called Label.setText with arg `Lijst studio albums'
+                                       ' - selectie: Artist = xxx gesorteerd op x`\n'
+                                       'called Label.setText with arg `concertopnamen`\n'
+                                       'called Label.setText with arg `Kies een album'
+                                       ' uit de lijst:`\n'
+                                       'called Label.setText with arg `voer een nieuw album'
+                                       ' op bij deze selectie`\n')
+    monkeypatch.setattr(testee, 'SELCOL', {'studio': ['', '', 'aaa', 'bbb', 'ccc']})
+    testobj.parent().searchtype = 2
+    testobj.parent().search_arg = 'qqq'
+    testobj.parent().albumtype = 'studio'
+    testobj.parent().sorttype = 'x'
+    testobj.refresh_screen()
+    assert capsys.readouterr().out == ('called Label.setText with arg `Lijst studio albums'
+                                       ' - selectie: aaa contains "qqq" gesorteerd op x`\n'
+                                       'called Label.setText with arg `concertopnamen`\n'
+                                       'called Label.setText with arg `Kies een album'
+                                       ' uit de lijst:`\n'
+                                       'called Label.setText with arg `voer een nieuw album'
+                                       ' op bij deze selectie`\n')
+    testobj.parent().searchtype = 3
+    testobj.parent().albumtype = 'studio'
+    testobj.parent().sorttype = 'x'
+    testobj.refresh_screen()
+    assert capsys.readouterr().out == ('called Label.setText with arg `Lijst studio albums'
+                                       ' - selectie: bbb contains "qqq" gesorteerd op x`\n'
+                                       'called Label.setText with arg `Kies een album'
+                                       ' uit de lijst:`\n'
+                                       'called Label.setText with arg `voer een nieuw album'
+                                       ' op bij deze selectie`\n')
+    monkeypatch.setattr(testee, 'SELCOL', {'live': ['', '', 'aaa', 'bbb', 'ccc']})
+    testobj.parent().searchtype = 4
+    testobj.parent().albumtype = 'live'
+    testobj.parent().sorttype = 'x'
+    testobj.refresh_screen()
+    assert capsys.readouterr().out == ('called Label.setText with arg `Lijst live concerten'
+                                       ' - selectie: ccc contains "qqq" gesorteerd op x`\n'
+                                       'called Label.setText with arg `studio albums`\n'
+                                       'called Label.setText with arg `Kies een concert'
+                                       ' uit de lijst:`\n'
+                                       'called Label.setText with arg `voer een nieuw concert'
+                                       ' op bij deze selectie`\n')
+    assert capsys.readouterr().out == ''
 
-    def test_other_search(self):
-        ...
+def test_select_other_artist(monkeypatch, capsys):
+    def mock_index(self):
+        print('called ComboBox.index')
+    def mock_index_2(self):
+        return 1
+    monkeypatch.setattr(mockqtw.MockComboBox, 'currentIndex', mock_index)
+    testobj = setup_select(monkeypatch, capsys)
+    testobj.ask_artist = mockqtw.MockComboBox()
+    assert capsys.readouterr().out == 'called ComboBox.__init__\n'
+    testobj.other_artist()
+    assert capsys.readouterr().out == 'called ComboBox.index\n'
+    monkeypatch.setattr(mockqtw.MockComboBox, 'currentIndex', mock_index_2)
+    testobj.parent().artist_ids = ['id1', 'id2']
+    testobj.parent().artists = ['xxx', 'yyy']
+    testobj.parent().searchtype = 1
+    testobj.other_artist()
+    assert testobj.parent().search_arg == 'id1'
+    assert testobj.parent().artist == 'xxx'
+    assert capsys.readouterr().out == 'called Main.do_select\n'
+    testobj.parent().artist_ids = ['id1', 'id2']
+    testobj.parent().artists = ['xxx', 'yyy']
+    testobj.parent().searchtype = 0
+    testobj.parent().artist = ''
+    testobj.other_artist()
+    assert testobj.parent().search_arg == 'id1'
+    assert testobj.parent().artist == ''
+    assert capsys.readouterr().out == 'called Main.do_select\n'
 
-    def test_other_albumtype(self):
-        ...
+def test_select_other_search(monkeypatch, capsys):
+    def mock_text(self):
+        print('called LineEdit.text')
+    def mock_text_2(self):
+        return 'xxx'
+    monkeypatch.setattr(mockqtw.MockLineEdit, 'text', mock_text)
+    testobj = setup_select(monkeypatch, capsys)
+    testobj.ask_zoekarg = mockqtw.MockLineEdit()
+    assert capsys.readouterr().out == 'called LineEdit.__init__\n'
+    testobj.other_search()
+    assert capsys.readouterr().out == 'called LineEdit.text\n'
+    monkeypatch.setattr(mockqtw.MockLineEdit, 'text', mock_text_2)
+    testobj.other_search()
+    assert testobj.parent().search_arg == 'xxx'
+    assert capsys.readouterr().out == 'called Main.do_select\n'
 
-    def test_todetail(self):
-        ...
+def test_select_other_albumtype(monkeypatch, capsys):
+    testobj = setup_select(monkeypatch, capsys)
+    testobj.parent().albumtype = 'studio'
+    testobj.parent().searchtype = 5
+    testobj.parent().old_seltype = 'old_value'
+    testobj.other_albumtype()
+    assert testobj.parent().albumtype == 'live'
+    assert testobj.parent().searchtype == 4
+    assert testobj.parent().old_seltype == 'old_value'
+    assert capsys.readouterr().out == 'called Main.do_select\n'
+    testobj.parent().albumtype = 'studio'
+    testobj.parent().searchtype = 2
+    testobj.parent().old_seltype = 'old_value'
+    testobj.other_albumtype()
+    assert testobj.parent().albumtype == 'live'
+    assert testobj.parent().searchtype == 'old_value'
+    assert testobj.parent().old_seltype == 'old_value'
+    assert capsys.readouterr().out == 'called Main.do_select\n'
+    testobj.parent().albumtype = 'studio'
+    testobj.parent().searchtype = 'new_value'
+    testobj.parent().old_seltype = 'old_value'
+    testobj.other_albumtype()
+    assert testobj.parent().albumtype == 'live'
+    assert testobj.parent().searchtype == 'new_value'
+    assert testobj.parent().old_seltype == 'old_value'
+    assert capsys.readouterr().out == 'called Main.do_select\n'
 
-    def test_add_new_to_sel(self):
-        ...
+    testobj.parent().albumtype = 'live'  # niet 'studio'
+    testobj.parent().searchtype = 4
+    testobj.parent().old_seltype = 'old_value'
+    testobj.other_albumtype()
+    assert testobj.parent().albumtype == 'studio'
+    assert testobj.parent().searchtype == 5
+    assert testobj.parent().old_seltype == 'old_value'
+    assert capsys.readouterr().out == 'called Main.do_select\n'
+    testobj.parent().albumtype = 'live'  # niet 'studio'
+    testobj.parent().searchtype = 2
+    testobj.parent().old_seltype = 'old_value'
+    testobj.other_albumtype()
+    assert testobj.parent().albumtype == 'studio'
+    assert testobj.parent().searchtype == 2
+    assert testobj.parent().old_seltype == 2
+    assert capsys.readouterr().out == 'called Main.do_select\n'
+    testobj.parent().albumtype = 'live'  # niet 'studio'
+    testobj.parent().searchtype = 3
+    testobj.parent().old_seltype = 'old_value'
+    testobj.other_albumtype()
+    assert testobj.parent().albumtype == 'studio'
+    assert testobj.parent().searchtype == 2
+    assert testobj.parent().old_seltype == 3
+    assert capsys.readouterr().out == 'called Main.do_select\n'
+    testobj.parent().albumtype = 'live'  # niet 'studio'
+    testobj.parent().searchtype = 'new_value'
+    testobj.parent().old_seltype = 'old_value'
+    testobj.other_albumtype()
+    assert testobj.parent().albumtype == 'studio'
+    assert testobj.parent().searchtype == 'new_value'
+    assert testobj.parent().old_seltype == 'old_value'
+    assert capsys.readouterr().out == 'called Main.do_select\n'
 
-    def test_exit(self):
-        ...
+def test_select_todetail(monkeypatch, capsys):
+    testobj = setup_select(monkeypatch, capsys)
+    testobj.parent().albums = ['xxx', 'yyy']
+    monkeypatch.setattr(testobj, 'sender', lambda *x: 'btn1')
+    testobj.go_buttons = ['btn1', 'btn2']
+    testobj.todetail()
+    assert testobj.parent().album == 'xxx'
+    assert capsys.readouterr().out == 'called Main.do_detail\n'
+    testobj.parent().album = ''
+    testobj.go_buttons = []
+    testobj.todetail()
+    assert not testobj.parent().album
+    assert capsys.readouterr().out == 'waaat\ncalled Main.do_detail\n'
 
+def test_select_add_new_to_sel(monkeypatch, capsys):
+    testobj = setup_select(monkeypatch, capsys)
+    testobj.add_new_to_sel()
+    assert capsys.readouterr().out == "called Main.do_new with args {'keep_sel': True}\n"
+
+def test_select_exit(monkeypatch, capsys):
+    testobj = setup_select(monkeypatch, capsys)
+    testobj.exit()
+    assert capsys.readouterr().out == 'called Main.close\n'
+
+
+def setup_detail(monkeypatch, capsys):
+    def mock_init(self, parent):
+        print('called QWidget.__init__')
+    def mock_setlayout(self, layout):
+        print(f'called QWidget.setLayout with arg of type {type(layout)}')
+    monkeypatch.setattr(testee.qtw.QWidget, '__init__', mock_init)
+    monkeypatch.setattr(testee.qtw.QWidget, 'setLayout', mock_setlayout)
+    testparent = MockMainFrame()
+    testobj = testee.Detail(testparent)
+    monkeypatch.setattr(testobj, 'parent', lambda *x: testparent)
+    assert capsys.readouterr().out == ('called Main.__init__\n'
+                                       'called QApplication.__init__\n'
+                                       'called QWidget.__init__\n')
+    return testobj
 
 class _TestDetail:
     def test_create_widgets(self):
@@ -925,6 +1198,21 @@ class _TestDetail:
     def test_exit(self):
         ...
 
+
+def setup_edit(monkeypatch, capsys):
+    def mock_init(self, parent):
+        print('called QWidget.__init__')
+    def mock_setlayout(self, layout):
+        print(f'called QWidget.setLayout with arg of type {type(layout)}')
+    monkeypatch.setattr(testee.qtw.QWidget, '__init__', mock_init)
+    monkeypatch.setattr(testee.qtw.QWidget, 'setLayout', mock_setlayout)
+    testparent = MockMainFrame()
+    testobj = testee.EditDetails(testparent)
+    monkeypatch.setattr(testobj, 'parent', lambda *x: testparent)
+    assert capsys.readouterr().out == ('called Main.__init__\n'
+                                       'called QApplication.__init__\n'
+                                       'called QWidget.__init__\n')
+    return testobj
 
 class _TestEditDetails:
     def test_create_widgets(self):
@@ -950,6 +1238,21 @@ class _TestEditDetails:
         ...
 
 
+def setup_edittracks(monkeypatch, capsys):
+    def mock_init(self, parent):
+        print('called QWidget.__init__')
+    def mock_setlayout(self, layout):
+        print(f'called QWidget.setLayout with arg of type {type(layout)}')
+    monkeypatch.setattr(testee.qtw.QWidget, '__init__', mock_init)
+    monkeypatch.setattr(testee.qtw.QWidget, 'setLayout', mock_setlayout)
+    testparent = MockMainFrame()
+    testobj = testee.EditTracks(testparent)
+    monkeypatch.setattr(testobj, 'parent', lambda *x: testparent)
+    assert capsys.readouterr().out == ('called Main.__init__\n'
+                                       'called QApplication.__init__\n'
+                                       'called QWidget.__init__\n')
+    return testobj
+
 class _TestEditTracks:
     def test_create_widgets(self):
         ...
@@ -972,6 +1275,21 @@ class _TestEditTracks:
     def test_exit(self):
         ...
 
+
+def setup_editrecs(monkeypatch, capsys):
+    def mock_init(self, parent):
+        print('called QWidget.__init__')
+    def mock_setlayout(self, layout):
+        print(f'called QWidget.setLayout with arg of type {type(layout)}')
+    monkeypatch.setattr(testee.qtw.QWidget, '__init__', mock_init)
+    monkeypatch.setattr(testee.qtw.QWidget, 'setLayout', mock_setlayout)
+    testparent = MockMainFrame()
+    testobj = testee.EditRecordings(testparent)
+    monkeypatch.setattr(testobj, 'parent', lambda *x: testparent)
+    assert capsys.readouterr().out == ('called Main.__init__\n'
+                                       'called QApplication.__init__\n'
+                                       'called QWidget.__init__\n')
+    return testobj
 
 class _TestEditRecordings:
     def test_create_widgets(self):
@@ -996,6 +1314,21 @@ class _TestEditRecordings:
         ...
 
 
+def setup_artists(monkeypatch, capsys):
+    def mock_init(self, parent):
+        print('called QWidget.__init__')
+    def mock_setlayout(self, layout):
+        print(f'called QWidget.setLayout with arg of type {type(layout)}')
+    monkeypatch.setattr(testee.qtw.QWidget, '__init__', mock_init)
+    monkeypatch.setattr(testee.qtw.QWidget, 'setLayout', mock_setlayout)
+    testparent = MockMainFrame()
+    testobj = testee.Artists(testparent)
+    monkeypatch.setattr(testobj, 'parent', lambda *x: testparent)
+    assert capsys.readouterr().out == ('called Main.__init__\n'
+                                       'called QApplication.__init__\n'
+                                       'called QWidget.__init__\n')
+    return testobj
+
 class _TestArtists:
     def test_create_widgets(self):
         ...
@@ -1018,6 +1351,17 @@ class _TestArtists:
     def test_exit(self):
         ...
 
+
+def setup_dialog(monkeypatch, capsys):
+    def mock_init(self, parent):
+        print('called QWidget.__init__')
+    def mock_setlayout(self, layout):
+        print(f'called QWidget.setLayout with arg of type {type(layout)}')
+    monkeypatch.setattr(testee.qtw.QWidget, '__init__', mock_init)
+    monkeypatch.setattr(testee.qtw.QWidget, 'setLayout', mock_setlayout)
+    testparent = MockMainFrame()
+    testobj = testee.NewArtistDialog()
+    return testobj
 
 class _TestNewArtistDialog:
     def test___init__(self, parent):

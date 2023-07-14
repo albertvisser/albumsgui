@@ -50,6 +50,8 @@ class MockHBox:
         print(f'called HBoxLayout.addLayout with arg of type {type(args[0])}')
     def addStretch(self, *args):
         print('called HBoxLayout.addStretch')
+    def addSpacing(self, *args):
+        print('called HBoxLayout.addSpacing')
 
 
 class MockGrid:
@@ -67,6 +69,8 @@ class MockFrame:
         print('called Frame.__init__')
     def setFrameShape(self, arg):
         print(f'called Frame.setFrameShape with arg `{arg}`')
+    def setLayout(self, arg):
+        print(f'called Frame.setLayout with arg of type `{type(arg)}`')
 
 
 class MockComboBox:
@@ -153,6 +157,8 @@ class MockButton:
     clicked = types.SimpleNamespace(connect=mock_connect)
     def __init__(self, *args):
         print('called PushButton.__init__ with args', args)
+    def setMaximumWidth(self, number):
+        print(f'called PushButton.setMaximumWidth to `{number}`')
 
 
 class MockPixmap:
@@ -165,6 +171,12 @@ class MockPixmap:
         print(f'called Pixmap.scaled to `{x}`, `{y}`')
         return 'ok'
 
+
 class MockMessageBox:
     def information(parent, caption, message):
         print(f'called QMessageBox.information with args `{caption}` `{message}`')
+
+
+class MockScrollArea:
+    def setWidget(self, arg):
+        print(f'called ScrollArea.setWidget with arg of type `{type(arg)}`')

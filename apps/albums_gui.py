@@ -6,43 +6,10 @@ import PyQt5.QtGui as gui
 import PyQt5.QtCore as core
 import apps.albums_dml as dmla
 import apps.albumsmatcher
-"""
-s_keuzes = (("alles", "1. Niet zoeken, alles tonen"),
-            ("artiest", "2. Uitvoerende: ", "dflt"),
-            ("titel", "3. Tekst in Titel"),
-            ("producer", "4. Tekst in Producer"),
-            ("credits", "5. Tekst in Credits"),
-            ("bezetting", "6. Tekst in Bezetting"))
-s_sorts = (("artiest", "Uitvoerende"),
-           ("titel", "Titel"),
-           ("jaar", "Jaar", "dflt"),
-           ("geen", "Niets"))
-l_keuzes = (("alles", "1. Niet zoeken, alles tonen"),
-            ("artiest", "2. Uitvoerende: ", "dflt"),
-            ("locatie", "3. Tekst in Locatie"),
-            ("datum", "4. Tekst in Datum"),
-            ("bezetting", "5. Tekst in Bezetting"))
-l_sorts = (("artiest", "Uitvoerende"),
-           ("locatie", "Locatie/datum", "dflt"),
-           ("geen", "Niets"))
-"""
-# these should actually also be in the Albums database - or at least importable from dmla
+
 TYPETXT = {'studio': 'album', 'live': 'concert'}
-# SELTXT = {'studio': ['Niet zoeken, alles tonen',
-#                      'Zoek op Uitvoerende',
-#                      'Zoek op tekst in titel',
-#                      'Zoek op tekst in producer',
-#                      'Zoek op tekst in credits',
-#                      'Zoek op tekst in bezetting'],
-#           'live': ['Niet zoeken, alles tonen',
-#                    'Zoek op Uitvoerende',
-#                    'Zoek op tekst in locatie',
-#                    'Zoek op tekst in datum',
-#                    'Zoek op tekst in bezetting']}
 SELTXT = {'studio': [dmla.s_keuzes[0][1][3:]] + [f'Zoek op {x[1][3:]}' for x in dmla.s_keuzes[1:]],
           'live': [dmla.l_keuzes[0][1][3:]] + [f'Zoek op {x[1][3:]}' for x in dmla.l_keuzes[1:]]}
-# SELCOL = {'studio': ['', 'artist', 'titel', 'producer', 'credits', 'bezetting'],
-#           'live': ['', 'artist', 'locatie', 'datum', 'bezetting']}
 SELCOL = {'studio': [[''] + [x[0] for x in dmla.s_keuzes[1:]]],
           'live': [[''] + [x[0] for x in dmla.l_keuzes[1:]]]}
 SORTTXT = {'studio': ['Niet sorteren', 'Uitvoerende', 'Titel', 'Jaar'],
@@ -50,6 +17,7 @@ SORTTXT = {'studio': ['Niet sorteren', 'Uitvoerende', 'Titel', 'Jaar'],
 SORTCOL = {'studio': ['', 'artist', 'titel', 'jaar'],
            'live': ['', 'artist', 'locatie', 'datum']}
 RECTYPES = ('Cassette',       # dmla.my.o_soort
+            'Tape',
             'CD: Enkel',
             'CD: Dubbel',
             'Vinyl: 1LP',
@@ -57,7 +25,6 @@ RECTYPES = ('Cassette',       # dmla.my.o_soort
             'Vinyl: 3LP',
             'Vinyl: single',
             'Vinyl: 12" single',
-            'Tape',
             'MP3 directory',
             'Banshee music player',
             'Clementine music player')
@@ -503,7 +470,7 @@ class Select(qtw.QWidget):
         vbox.addLayout(hbox)
 
         self.go_buttons = []
-        self.frm = qtw.QFrame(self)
+        frm = qtw.QFrame(self)
         vbox2 = qtw.QVBoxLayout()
         for album in self.parent().albums:
             name = str(album)
@@ -518,9 +485,9 @@ class Select(qtw.QWidget):
             hbox.addSpacing(40)
             self.go_buttons.append(btn)
             vbox2.addLayout(hbox)
-        self.frm.setLayout(vbox2)
+        frm.setLayout(vbox2)
         scrl = qtw.QScrollArea()
-        scrl.setWidget(self.frm)
+        scrl.setWidget(frm)
         vbox.addWidget(scrl)
 
         ## vbox.addStretch()
@@ -545,7 +512,7 @@ class Select(qtw.QWidget):
         """
         soort = {'studio': 'albums', 'live': 'concerten'}
         if self.parent().searchtype == 1:
-            searchtext = 'Artist = {}'.format(self.parent().artist.get_name())
+            searchtext = f'Artist = {self.parent().artist.get_name()}'
         else:
             if self.parent().searchtype:
                 searchtext = '{} contains "{}"'.format(
@@ -563,9 +530,8 @@ class Select(qtw.QWidget):
         else:
             self.change_type.setText('studio albums')
             itemtype = 'concert'
-        self.kiestekst.setText('Kies een {} uit de lijst:'.format(itemtype))
-        self.add_new.setText('voer een nieuw {} op bij deze selectie'.format(
-            itemtype))
+        self.kiestekst.setText(f'Kies een {itemtype} uit de lijst:')
+        self.add_new.setText(f'voer een nieuw {itemtype} op bij deze selectie')
 
     def other_artist(self):
         """read self.ask_artist for artist and change self.parent().artistid
@@ -905,8 +871,8 @@ class EditDetails(qtw.QWidget):
         for lbl, win in self.screendata[:2]:
             caption = lbl.text()
             if self.parent().searchtype == 1 and caption == 'Uitvoerende:':
-                ## win.setCurrentIndex([x for x in self.parent().artists].index(
-                    ## self.parent().artist) + 1)
+                # win.setCurrentIndex([x for x in self.parent().artists].index(
+                #     self.parent().artist) + 1)
                 win.setCurrentIndex(self.parent().artist_ids.index(
                     self.parent().search_arg.id) + 1)
             elif self.parent().searchtype == 2:
@@ -1360,7 +1326,7 @@ class Artists(qtw.QWidget):
         vbox.addLayout(newline(self))
 
         self.fields = []
-        self.frm = qtw.QFrame(self)
+        frm = qtw.QFrame(self)
         self.vbox2 = qtw.QVBoxLayout()
         self.last_artistid = 0
         for artist in self.artist_list:
@@ -1369,9 +1335,9 @@ class Artists(qtw.QWidget):
                 self.last_artistid = test
             self.add_artist_line(test, artist.first_name, artist.last_name)
         self.vbox2.addStretch()
-        self.frm.setLayout(self.vbox2)
+        frm.setLayout(self.vbox2)
         self.scrl = qtw.QScrollArea()
-        self.scrl.setWidget(self.frm)
+        self.scrl.setWidget(frm)
         self.scrl.setWidgetResizable(True)
         vbox.addWidget(self.scrl)
 
@@ -1406,9 +1372,8 @@ class Artists(qtw.QWidget):
         self.fields.append((win_f, win_l))
 
     def refresh_screen(self):
-        """bring screen up-to-date
+        """bring screen up-to-date - empty method for consistency
         """
-        pass
 
     def submit(self):
         """neem de waarden van de invulvelden over en geef ze door aan de database
@@ -1488,25 +1453,23 @@ class NewArtistDialog(qtw.QDialog):
 def get_artist_list():
     """get artist data from the database
     """
-    return [x for x in dmla.list_artists()]
+    return list(dmla.list_artists())
 
 
 def get_albums_by_artist(albumtype, search_for, sort_on):
     """get the selected artist's ID and build a list of albums
     """
-    return [x for x in dmla.list_albums_by_artist(albumtype, search_for, sort_on)]
+    return list(dmla.list_albums_by_artist(albumtype, search_for, sort_on))
 
 
 def get_albums_by_text(albumtype, search_type, search_for, sort_on):
     """get the selected artist's ID and build a list of albums
     """
     if albumtype == 'studio':
-        search_on = {0: '*', 2: 'name', 3: 'produced_by', 4: 'credits',
-                       5: 'bezetting'}[search_type]
+        search_on = {0: '*', 2: 'name', 3: 'produced_by', 4: 'credits', 5: 'bezetting'}[search_type]
     elif albumtype == 'live':
-        search_on = {0: '*', 2: 'name', 3: 'name', 4: 'produced_by',
-                       5: 'bezetting'}[search_type]
-    return [x for x in dmla.list_albums_by_search(albumtype, search_on, search_for, sort_on)]
+        search_on = {0: '*', 2: 'name', 3: 'name', 4: 'produced_by', 5: 'bezetting'}[search_type]
+    return list(dmla.list_albums_by_search(albumtype, search_on, search_for, sort_on))
 
 
 def get_album(album_id, albumtype):
@@ -1564,7 +1527,7 @@ def build_heading(win, readonly=False):
             if wintext == text:
                 newtext = f': {wintext}'
                 break
-            elif wintext.endswith(text):
+            if wintext.endswith(text):
                 newtext = f': {text}'
                 break
         text = 'G' if readonly else 'Wijzigen g'
