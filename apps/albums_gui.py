@@ -677,8 +677,8 @@ class Detail(qtw.QWidget):
         for trackindex, data in sorted(self.parent().albumdata['tracks'].items()):
             trackname, author, cred = data
             hbox = qtw.QHBoxLayout()
-            hbox.addWidget(qtw.QLabel('{:>8}.'.format(trackindex), self))
-            tracktext = '{} ({})'.format(trackname, author) if author else trackname
+            hbox.addWidget(qtw.QLabel(f'{trackindex:>8}.', self))
+            tracktext = f'{trackname} ({author})' if author else trackname
             win = qtw.QLabel(tracktext, self)
             hbox.addWidget(win)
             hbox.addStretch()
@@ -709,7 +709,8 @@ class Detail(qtw.QWidget):
         vbox2 = qtw.QVBoxLayout()
         for opnindex, opname in enumerate(self.parent().albumdata['opnames']):
             hbox = qtw.QHBoxLayout()
-            hbox.addWidget(qtw.QLabel('{:>8}.'.format(opnindex + 1), self))
+            plusone = opnindex + 1
+            hbox.addWidget(qtw.QLabel(f'{plusone:>8}.', self))
             win = qtw.QLabel(' '.join(opname), self)
             hbox.addWidget(win)
             hbox.addStretch()
@@ -734,10 +735,9 @@ class Detail(qtw.QWidget):
         """bring screen up-to-date
         """
         self.heading.setText(build_heading(self, readonly=True))
-        self.quickchange.setText('Snel naar een ander {} in deze selectie:'.format(
-            TYPETXT[self.parent().albumtype]))
-        self.subheading.setText("{}gegevens:".format(
-            TYPETXT[self.parent().albumtype].title()))
+        item = TYPETXT[self.parent().albumtype]
+        self.quickchange.setText(f'Snel naar een ander {item} in deze selectie:')
+        self.subheading.setText(f"{item.title()}gegevens:")
 
     def other_album(self):
         """Determine which other album to show and do so

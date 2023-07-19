@@ -148,7 +148,6 @@ def test_newline(monkeypatch, capsys):
                                        " <class 'unittests.mockqtwidgets.MockFrame'>\n")
 
 
-
 class MockHandler:
     "mock van een subscherm, alleen omdat ik de aanroepen nodog heb"
     # zit momenteel alleen in de twee navolgende functies
@@ -259,12 +258,14 @@ class MockMainFrame:
         print(f'called Main.do_new with args', kwargs)
     def do_detail(self):
         print('called Main.do_detail')
-    def do_edit_alg(self, **kwargs):
-        print(f'called Main.do_edit_alg with args', kwargs)
+    # def do_edit_alg(self, **kwargs):
+    #    print(f'called Main.do_edit_alg with args', kwargs)
+    def do_edit_alg(self):
+        print('called Main.do_edit_alg')
     def do_edit_trk(self):
-        print('called Main.edit_trk')
+        print('called Main.do_edit_trk')
     def do_edit_rec(self):
-        print('called Main.edit_rec')
+        print('called Main.do_edit_rec')
     def start_import_tool(self):
         print('called Main.start_import_tool')
     def close(self):
@@ -605,8 +606,23 @@ def test_main_start_import_tool(monkeypatch, capsys):
     assert capsys.readouterr().out == f"called AlbumsMatcher with args {{'app': {testobj.app}}}\n"
 
 
+def mock_newline(*args):
+    print(f'called newline with arg of type {type(args[0])}')
+    return mockqtw.MockHBox()
+
+def mock_button_strip(*args):
+    print(f'called button_strip with args', args)
+    return mockqtw.MockHBox()
+
+def mock_exitbutton(*args, **kwargs):
+    if len(args) == 3:
+        print(f'called exitbutton with args {args[0]}, {args[1]}, {type(args[2])}')
+    else:
+        print(f'called exitbutton with args', args, kwargs)
+    return mockqtw.MockHBox()
+
+
 def setup_start(monkeypatch, capsys):
-    # def mock_init(self):
     def mock_init(self, parent):
         print('called QWidget.__init__')
     def mock_setlayout(self, layout):
@@ -622,9 +638,6 @@ def setup_start(monkeypatch, capsys):
     return testobj
 
 def test_start_create_widgets(monkeypatch, capsys, expected_output):
-    def mock_newline(*args):
-        print(f'called newline with arg of type {type(args[0])}')
-        return mockqtw.MockHBox
     monkeypatch.setattr(testee.qtw, 'QGridLayout', mockqtw.MockGrid)
     monkeypatch.setattr(testee.qtw, 'QHBoxLayout', mockqtw.MockHBox)
     monkeypatch.setattr(testee.qtw, 'QComboBox', mockqtw.MockComboBox)
@@ -633,6 +646,7 @@ def test_start_create_widgets(monkeypatch, capsys, expected_output):
     monkeypatch.setattr(testee.qtw, 'QLabel', mockqtw.MockLabel)
     monkeypatch.setattr(testee.qtw, 'QFrame', mockqtw.MockFrame)
     monkeypatch.setattr(testee, 'newline', mock_newline)
+    monkeypatch.setattr(testee, 'exitbutton', mock_exitbutton)
     testobj = setup_start(monkeypatch, capsys)
     testobj.create_widgets()
     bindings = {'select_album': testobj.select_album,
@@ -910,6 +924,9 @@ def test_select_create_widgets(monkeypatch, capsys, expected_output):
     monkeypatch.setattr(testee.qtw, 'QLabel', mockqtw.MockLabel)
     monkeypatch.setattr(testee.qtw, 'QFrame', mockqtw.MockFrame)
     monkeypatch.setattr(testee.qtw, 'QScrollArea', mockqtw.MockScrollArea)
+    monkeypatch.setattr(testee, 'newline', mock_newline)
+    monkeypatch.setattr(testee, 'button_strip', mock_button_strip)
+    monkeypatch.setattr(testee, 'exitbutton', mock_exitbutton)
     testobj = setup_select(monkeypatch, capsys)
     testobj.parent().searchtype = 1                  # conditie 1: of niet 1
     testobj.parent().albumtype = 'live'            # conditie 2: of niet
@@ -1176,27 +1193,89 @@ def setup_detail(monkeypatch, capsys):
                                        'called QWidget.__init__\n')
     return testobj
 
-class _TestDetail:
-    def test_create_widgets(self):
-        ...
+def test_detail_create_widgets(monkeypatch, capsys, expected_output):
+    monkeypatch.setattr(testee.qtw, 'QGridLayout', mockqtw.MockGrid)
+    monkeypatch.setattr(testee.qtw, 'QVBoxLayout', mockqtw.MockVBox)
+    monkeypatch.setattr(testee.qtw, 'QHBoxLayout', mockqtw.MockHBox)
+    monkeypatch.setattr(testee.qtw, 'QComboBox', mockqtw.MockComboBox)
+    monkeypatch.setattr(testee.qtw, 'QPushButton', mockqtw.MockButton)
+    monkeypatch.setattr(testee.qtw, 'QLabel', mockqtw.MockLabel)
+    monkeypatch.setattr(testee.qtw, 'QFrame', mockqtw.MockFrame)
+    monkeypatch.setattr(testee.qtw, 'QScrollArea', mockqtw.MockScrollArea)
+    monkeypatch.setattr(testee, 'newline', mock_newline)
+    monkeypatch.setattr(testee, 'button_strip', mock_button_strip)
+    monkeypatch.setattr(testee, 'exitbutton', mock_exitbutton)
+    testobj = setup_detail(monkeypatch, capsys)
+    testobj.parent().albums = [types.SimpleNamespace(name='xxx'), types.SimpleNamespace(name='yyy')]
+    testobj.parent().albumdata = {'details': [('x', 'y'), ('a', 'b')],
+                                  'tracks': {1: ['a', 'b', 'c'], 2: ['x', 'y', '']},
+                                  'opnames': [['p', 'q'], ['r']]}
+    testobj.create_widgets()
+    bindings = {'other_album': testobj.other_album,
+                'edit_alg': testobj.edit_alg,
+                'edit_trk': testobj.edit_trk,
+                'edit_rec': testobj.edit_rec,
+                'exit': testobj.exit,
+                'me': testobj}
+    assert capsys.readouterr().out == expected_output['detail'].format(**bindings)
+    assert testobj.detailwins == []
+    assert testobj.trackwins == []
+    assert testobj.recwins == []
 
-    def test_refresh_screen(self):
-        ...
+def test_detail_refresh_screen(monkeypatch, capsys):
+    def mock_build(*args, **kwargs):
+        print('called build_heading with args', args, kwargs)
+        return 'heading'
+    monkeypatch.setattr(testee, 'build_heading', mock_build)
+    monkeypatch.setattr(testee, 'TYPETXT', {'x': 'item'})
+    testobj = setup_detail(monkeypatch, capsys)
+    testobj.heading = mockqtw.MockLabel()
+    testobj.quickchange = mockqtw.MockLabel()
+    testobj.subheading = mockqtw.MockLabel()
+    assert capsys.readouterr().out == ('called Label.__init__\n'
+                                       'called Label.__init__\n'
+                                       'called Label.__init__\n')
+    testobj.parent().albumtype = 'x'
+    testobj.refresh_screen()
+    assert capsys.readouterr().out == (f'called build_heading with args ({testobj},)'
+                                       " {'readonly': True}\n"
+                                       'called Label.setText with arg `heading`\n'
+                                       'called Label.setText with arg'
+                                       ' `Snel naar een ander item in deze selectie:`\n'
+                                       'called Label.setText with arg `Itemgegevens:`\n')
 
-    def test_other_album(self):
-        ...
+def test_detail_other_album(monkeypatch, capsys):
+    testobj = setup_detail(monkeypatch, capsys)
+    testobj.parent().albums = ['xxx']
+    testobj.ask_album = mockqtw.MockComboBox()
+    testobj.other_album()
+    assert testobj.parent().album == 'xxx'
+    assert capsys.readouterr().out == ('called ComboBox.__init__\n'
+                                       'called ComboBox.currentIndex\n'
+                                       'called Main.do_detail\n')
+    monkeypatch.setattr(mockqtw.MockComboBox, 'currentIndex', lambda *x: 0)
+    testobj.other_album()
+    assert capsys.readouterr().out == ''
 
-    def test_edit_alg(self):
-        ...
+def test_detail_edit_alg(monkeypatch, capsys):
+    testobj = setup_detail(monkeypatch, capsys)
+    testobj.edit_alg()
+    assert capsys.readouterr().out == 'called Main.do_edit_alg\n'
 
-    def test_edit_trk(self):
-        ...
+def test_detail_edit_trk(monkeypatch, capsys):
+    testobj = setup_detail(monkeypatch, capsys)
+    testobj.edit_trk()
+    assert capsys.readouterr().out == 'called Main.do_edit_trk\n'
 
-    def test_edit_rec(self):
-        ...
+def test_detail_edit_rec(monkeypatch, capsys):
+    testobj = setup_detail(monkeypatch, capsys)
+    testobj.edit_rec()
+    assert capsys.readouterr().out == 'called Main.do_edit_rec\n'
 
-    def test_exit(self):
-        ...
+def test_detail_exit(monkeypatch, capsys):
+    testobj = setup_detail(monkeypatch, capsys)
+    testobj.exit()
+    assert capsys.readouterr().out == 'called Main.close\n'
 
 
 def setup_edit(monkeypatch, capsys):
