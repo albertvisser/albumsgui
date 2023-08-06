@@ -6,11 +6,11 @@ called newline with arg of type <class 'apps.albums_gui.Start'>
 called HBoxLayout.__init__
 called GridLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'> at (0, 0, 1, 3)
 called HBoxLayout.__init__
-called Label.__init__
+called Label.__init__ with args ('Studio Albums', {me})
 called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLabel'>
 called GridLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'> at (1, 0, 1, 3)
 called HBoxLayout.__init__
-called Label.__init__
+called Label.__init__ with args ('Selecteer:', {me})
 called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLabel'>
 called GridLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'> at (2, 0)
 called ComboBox.__init__
@@ -19,7 +19,7 @@ called ComboBox.setMaximumWidth to `200`
 called ComboBox.setMinimumWidth to `200`
 called GridLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockComboBox'> at (2, 1)
 called HBoxLayout.__init__
-called Label.__init__
+called Label.__init__ with args ('Kies Uitvoerende:', {me})
 called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLabel'>
 called ComboBox.__init__
 called ComboBox.addItems with arg `--- Maak een selectie ---`
@@ -29,7 +29,7 @@ called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.Moc
 called HBoxLayout.addStretch
 called GridLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'> at (3, 1)
 called HBoxLayout.__init__
-called Label.__init__
+called Label.__init__ with args ('Zoektekst voor 3-6:', {me})
 called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLabel'>
 called LineEdit.__init__
 called LineEdit.setMaximumWidth to `200`
@@ -37,7 +37,7 @@ called LineEdit.setMinimumWidth to `200`
 called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLineEdit'>
 called HBoxLayout.addStretch
 called GridLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'> at (4, 1)
-called Label.__init__
+called Label.__init__ with args ('Sorteer op:', {me})
 called GridLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLabel'> at (5, 0)
 called ComboBox.__init__
 called ComboBox.addItems with arg `['Niet sorteren', 'Uitvoerende', 'Titel', 'Jaar']`
@@ -57,11 +57,11 @@ called newline with arg of type <class 'apps.albums_gui.Start'>
 called HBoxLayout.__init__
 called GridLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'> at (7, 0, 1, 3)
 called HBoxLayout.__init__
-called Label.__init__
+called Label.__init__ with args ('Live Concerten', {me})
 called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLabel'>
 called GridLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'> at (8, 0, 1, 3)
 called HBoxLayout.__init__
-called Label.__init__
+called Label.__init__ with args ('Selecteer:', {me})
 called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLabel'>
 called GridLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'> at (9, 0)
 called ComboBox.__init__
@@ -70,7 +70,7 @@ called ComboBox.setMaximumWidth to `200`
 called ComboBox.setMinimumWidth to `200`
 called GridLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockComboBox'> at (9, 1)
 called HBoxLayout.__init__
-called Label.__init__
+called Label.__init__ with args ('Kies Uitvoerende:', {me})
 called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLabel'>
 called ComboBox.__init__
 called ComboBox.addItems with arg `--- Maak een selectie ---`
@@ -80,7 +80,7 @@ called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.Moc
 called HBoxLayout.addStretch
 called GridLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'> at (10, 1)
 called HBoxLayout.__init__
-called Label.__init__
+called Label.__init__ with args ('Zoektekst voor 3-5:', {me})
 called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLabel'>
 called LineEdit.__init__
 called LineEdit.setMaximumWidth to `200`
@@ -88,7 +88,7 @@ called LineEdit.setMinimumWidth to `200`
 called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLineEdit'>
 called HBoxLayout.addStretch
 called GridLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'> at (11, 1)
-called Label.__init__
+called Label.__init__ with args ('Sorteer op:', {me})
 called GridLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLabel'> at (12, 0)
 called ComboBox.__init__
 called ComboBox.addItems with arg `['Niet sorteren', 'Uitvoerende', 'Locatie', 'Datum']`
@@ -110,7 +110,7 @@ called Frame.setFrameShape with arg `---`
 called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockFrame'>
 called GridLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'> at (14, 0, 1, 3)
 called HBoxLayout.__init__
-called Label.__init__
+called Label.__init__ with args ('Uitvoerende Artiesten', {me})
 called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLabel'>
 called GridLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'> at (15, 0, 1, 3)
 called HBoxLayout.__init__
@@ -138,14 +138,14 @@ called newline with arg of type <class 'apps.albums_gui.Select'>
 called HBoxLayout.__init__
 called VBoxLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'>
 called HBoxLayout.__init__
-called Label.__init__
+called Label.__init__ with args ('', {me})
 called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLabel'>
 called VBoxLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'>
-called HBoxLayout.__init__
-called Label.__init__
-called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLabel'>
 """
 select_other_artist_button = """\
+called HBoxLayout.__init__
+called Label.__init__ with args ('Snel naar dezelfde selectie voor een andere artiest:', {me})
+called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLabel'>
 called ComboBox.__init__
 called ComboBox.addItems with arg `--- Maak een selectie ---`
 called ComboBox.addItems with arg `['X', 'Y']`
@@ -155,18 +155,24 @@ called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.Moc
 called PushButton.__init__ with args ('Go', {me})
 called PushButton.setMaximumWidth to `40`
 called connect with args ({other_artist},)
-"""
-select_other_type_button = """\
 called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockButton'>
 called HBoxLayout.addStretch
 called VBoxLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'>
+"""
+select_other_type_button = """\
 called HBoxLayout.__init__
-called Label.__init__
+called Label.__init__ with args ('of naar een soortgelijke selectie voor ', {me})
 called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLabel'>
 called PushButton.__init__ with args ('', {me})
 called connect with args ({other_albumtype},)
+called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockButton'>
+called HBoxLayout.addStretch
+called VBoxLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'>
 """
 select_other_search_button = """\
+called HBoxLayout.__init__
+called Label.__init__ with args ('Snel naar dezelfde selectie voor een andere waarde:', {me})
+called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLabel'>
 called LineEdit.__init__
 called LineEdit.setMaximumWidth to `200`
 called LineEdit.setMinimumWidth to `200`
@@ -174,25 +180,37 @@ called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.Moc
 called PushButton.__init__ with args ('Go', {me})
 called PushButton.setMaximumWidth to `40`
 called connect with args ({other_search},)
-"""
-select_start_data = """\
 called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockButton'>
 called HBoxLayout.addStretch
 called VBoxLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'>
+"""
+select_start_data = """\
 called newline with arg of type <class 'apps.albums_gui.Select'>
 called HBoxLayout.__init__
 called VBoxLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'>
 called HBoxLayout.__init__
-called Label.__init__
+called Label.__init__ with args ('Kies een item uit de lijst:', {me})
 called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLabel'>
 called HBoxLayout.addStretch
 called VBoxLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'>
 called Frame.__init__
 called VBoxLayout.__init__
 """
-select_data_line = """\
+select_data_line_1 = """\
 called HBoxLayout.__init__
-called Label.__init__
+called Label.__init__ with args ('1', {me})
+called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLabel'>
+called HBoxLayout.addStretch
+called PushButton.__init__ with args ('Go', {me})
+called PushButton.setMaximumWidth to `40`
+called connect with args ({todetail},)
+called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockButton'>
+called HBoxLayout.addSpacing
+called VBoxLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'>
+"""
+select_data_line_2 = """\
+called HBoxLayout.__init__
+called Label.__init__ with args ('2', {me})
 called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLabel'>
 called HBoxLayout.addStretch
 called PushButton.__init__ with args ('Go', {me})
@@ -207,7 +225,7 @@ called Frame.setLayout with arg of type `<class 'unittests.mockqtwidgets.MockVBo
 called ScrollArea.setWidget with arg of type `<class 'unittests.mockqtwidgets.MockFrame'>`
 called VBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockScrollArea'>
 called HBoxLayout.__init__
-called Label.__init__
+called Label.__init__ with args ('Of', {me})
 called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLabel'>
 called PushButton.__init__ with args ('voer een nieuw item op bij deze selectie', {me})
 called connect with args ({add_new_to_sel},)
@@ -227,7 +245,7 @@ called QWidget.setLayout with arg of type <class 'unittests.mockqtwidgets.MockVB
 """
 detail_all = """\
 called GridLayout.__init__
-called Label.__init__
+called Label.__init__ with args ('', {me})
 called HBoxLayout.__init__
 called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLabel'>
 called GridLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'> at (0, 0, 1, 3)
@@ -235,7 +253,7 @@ called newline with arg of type <class 'apps.albums_gui.Detail'>
 called HBoxLayout.__init__
 called GridLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'> at (1, 0, 1, 3)
 called HBoxLayout.__init__
-called Label.__init__
+called Label.__init__ with args ('Snel naar een ander item in deze selectie:', {me})
 called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLabel'>
 called ComboBox.__init__
 called ComboBox.addItems with arg `--- selecteer titel ---`
@@ -253,7 +271,7 @@ called newline with arg of type <class 'apps.albums_gui.Detail'>
 called HBoxLayout.__init__
 called GridLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'> at (3, 0, 1, 3)
 called HBoxLayout.__init__
-called Label.__init__
+called Label.__init__ with args ('Detailgegevens:', {me})
 called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLabel'>
 called PushButton.__init__ with args ('wijzigen', {me})
 called connect with args ({edit_alg},)
@@ -264,17 +282,17 @@ called Frame.__init__
 called GridLayout.__init__
 called HBoxLayout.__init__
 called HBoxLayout.addSpacing
-called Label.__init__
+called Label.__init__ with args ('x', {me})
 called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLabel'>
 called GridLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'> at (0, 0, 1, 1)
-called Label.__init__
+called Label.__init__ with args ('y', {me})
 called GridLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLabel'> at (0, 1, 1, 2)
 called HBoxLayout.__init__
 called HBoxLayout.addSpacing
-called Label.__init__
+called Label.__init__ with args ('a', {me})
 called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLabel'>
 called GridLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'> at (1, 0, 1, 1)
-called Label.__init__
+called Label.__init__ with args ('b', {me})
 called GridLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLabel'> at (1, 1, 1, 2)
 called Frame.setLayout with arg of type `<class 'unittests.mockqtwidgets.MockGrid'>`
 called ScrollArea.setWidget with arg of type `<class 'unittests.mockqtwidgets.MockFrame'>`
@@ -283,7 +301,7 @@ called newline with arg of type <class 'apps.albums_gui.Detail'>
 called HBoxLayout.__init__
 called GridLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'> at (6, 0, 1, 3)
 called HBoxLayout.__init__
-called Label.__init__
+called Label.__init__ with args ('Tracks:', {me})
 called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLabel'>
 called PushButton.__init__ with args ('wijzigen', {me})
 called connect with args ({edit_trk},)
@@ -293,18 +311,18 @@ called GridLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.Moc
 called Frame.__init__
 called VBoxLayout.__init__
 called HBoxLayout.__init__
-called Label.__init__
+called Label.__init__ with args ('       1.', {me})
 called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLabel'>
-called Label.__init__
+called Label.__init__ with args ('a (b)', {me})
 called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLabel'>
 called HBoxLayout.addStretch
 called VBoxLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'>
-called Label.__init__
+called Label.__init__ with args ('c', {me})
 called VBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLabel'>
 called HBoxLayout.__init__
-called Label.__init__
+called Label.__init__ with args ('       2.', {me})
 called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLabel'>
-called Label.__init__
+called Label.__init__ with args ('x (y)', {me})
 called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLabel'>
 called HBoxLayout.addStretch
 called VBoxLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'>
@@ -315,7 +333,7 @@ called newline with arg of type <class 'apps.albums_gui.Detail'>
 called HBoxLayout.__init__
 called GridLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'> at (9, 0, 1, 3)
 called HBoxLayout.__init__
-called Label.__init__
+called Label.__init__ with args ('Opnames:', {me})
 called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLabel'>
 called PushButton.__init__ with args ('wijzigen', {me})
 called connect with args ({edit_rec},)
@@ -325,16 +343,16 @@ called GridLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.Moc
 called Frame.__init__
 called VBoxLayout.__init__
 called HBoxLayout.__init__
-called Label.__init__
+called Label.__init__ with args ('       1.', {me})
 called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLabel'>
-called Label.__init__
+called Label.__init__ with args ('p q', {me})
 called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLabel'>
 called HBoxLayout.addStretch
 called VBoxLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'>
 called HBoxLayout.__init__
-called Label.__init__
+called Label.__init__ with args ('       2.', {me})
 called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLabel'>
-called Label.__init__
+called Label.__init__ with args ('r', {me})
 called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLabel'>
 called HBoxLayout.addStretch
 called VBoxLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'>
@@ -352,6 +370,202 @@ called HBoxLayout.__init__
 called GridLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'> at (14, 0, 1, 3)
 called QWidget.setLayout with arg of type <class 'unittests.mockqtwidgets.MockGrid'>
 """
+editdetails_studio = """\
+called GridLayout.__init__
+called Label.__init__ with args ('', {me})
+called HBoxLayout.__init__
+called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLabel'>
+called GridLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'> at (0, 0, 1, 3)
+called newline with arg of type <class 'apps.albums_gui.EditDetails'>
+called HBoxLayout.__init__
+called GridLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'> at (1, 0, 1, 3)
+called HBoxLayout.__init__
+called HBoxLayout.addSpacing
+called Label.__init__ with args ('Uitvoerende:', {me})
+called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLabel'>
+called GridLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'> at (2, 0, 1, 1)
+called ComboBox.__init__
+called ComboBox.addItems with arg `--- Maak een selectie ---`
+called ComboBox.addItems with arg `['xxx', 'bbb']`
+called ComboBox.setCurrentIndex to `1`
+called GridLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockComboBox'> at (2, 1, 1, 2)
+called HBoxLayout.__init__
+called HBoxLayout.addSpacing
+called Label.__init__ with args ('Albumtitel:', {me})
+called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLabel'>
+called GridLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'> at (3, 0, 1, 1)
+called LineEdit.__init__
+called GridLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLineEdit'> at (3, 1, 1, 2)
+called HBoxLayout.__init__
+called HBoxLayout.addSpacing
+called Label.__init__ with args ('Label/jaar:', {me})
+called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLabel'>
+called GridLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'> at (4, 0, 1, 1)
+called HBoxLayout.__init__
+called LineEdit.__init__
+called LineEdit.setMaximumWidth to `200`
+called LineEdit.setMinimumWidth to `200`
+called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLineEdit'>
+called LineEdit.__init__
+called LineEdit.setMaximumWidth to `80`
+called LineEdit.setMinimumWidth to `80`
+called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLineEdit'>
+called HBoxLayout.addStretch
+called GridLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'> at (4, 1, 1, 2)
+called HBoxLayout.__init__
+called HBoxLayout.addSpacing
+called Label.__init__ with args ('Credits:', {me})
+called VBoxLayout.__init__
+called VBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLabel'>
+called VBoxLayout.addStretch
+called HBoxLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockVBox'>
+called GridLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'> at (5, 0, 1, 1)
+called TextEdit.__init__
+called GridLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockTextEdit'> at (5, 1, 1, 2)
+called VBoxLayout.__init__
+called VBoxLayout.addStretch
+called GridLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockVBox'> at (6, 0, 1, 3)
+called button_strip with args ({me}, 'Cancel', 'Go', 'GoBack', 'Select', 'Start')
+called HBoxLayout.__init__
+called GridLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'> at (7, 0, 1, 3)
+called exitbutton with args ({me}, {exit}) {{}}
+called HBoxLayout.__init__
+called GridLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'> at (8, 0, 1, 3)
+called QWidget.setLayout with arg of type <class 'unittests.mockqtwidgets.MockGrid'>
+"""
+editdetails_live = """\
+called GridLayout.__init__
+called Label.__init__ with args ('', {me})
+called HBoxLayout.__init__
+called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLabel'>
+called GridLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'> at (0, 0, 1, 3)
+called newline with arg of type <class 'apps.albums_gui.EditDetails'>
+called HBoxLayout.__init__
+called GridLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'> at (1, 0, 1, 3)
+called HBoxLayout.__init__
+called HBoxLayout.addSpacing
+called Label.__init__ with args ('Uitvoerende:', {me})
+called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLabel'>
+called GridLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'> at (2, 0, 1, 1)
+called ComboBox.__init__
+called ComboBox.addItems with arg `--- Maak een selectie ---`
+called ComboBox.addItems with arg `['xxx', 'bbb']`
+called ComboBox.setCurrentIndex to `1`
+called GridLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockComboBox'> at (2, 1, 1, 2)
+called HBoxLayout.__init__
+called HBoxLayout.addSpacing
+called Label.__init__ with args ('Locatie/datum:', {me})
+called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLabel'>
+called GridLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'> at (3, 0, 1, 1)
+called LineEdit.__init__
+called GridLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLineEdit'> at (3, 1, 1, 2)
+called HBoxLayout.__init__
+called HBoxLayout.addSpacing
+called Label.__init__ with args ('Bezetting:', {me})
+called VBoxLayout.__init__
+called VBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLabel'>
+called VBoxLayout.addStretch
+called HBoxLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockVBox'>
+called GridLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'> at (4, 0, 1, 1)
+called TextEdit.__init__
+called GridLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockTextEdit'> at (4, 1, 1, 2)
+called HBoxLayout.__init__
+called HBoxLayout.addSpacing
+called Label.__init__ with args ('Tevens met:', {me})
+called VBoxLayout.__init__
+called VBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLabel'>
+called VBoxLayout.addStretch
+called HBoxLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockVBox'>
+called GridLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'> at (5, 0, 1, 1)
+called TextEdit.__init__
+called GridLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockTextEdit'> at (5, 1, 1, 2)
+called VBoxLayout.__init__
+called VBoxLayout.addStretch
+called GridLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockVBox'> at (6, 0, 1, 3)
+called button_strip with args ({me}, 'Cancel', 'Go', 'GoBack', 'Select', 'Start')
+called HBoxLayout.__init__
+called GridLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'> at (7, 0, 1, 3)
+called exitbutton with args ({me}, {exit}) {{}}
+called HBoxLayout.__init__
+called GridLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'> at (8, 0, 1, 3)
+called QWidget.setLayout with arg of type <class 'unittests.mockqtwidgets.MockGrid'>
+"""
+editdetails_studio_nw = """\
+called GridLayout.__init__
+called Label.__init__ with args ('', {me})
+called HBoxLayout.__init__
+called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLabel'>
+called GridLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'> at (0, 0, 1, 3)
+called newline with arg of type <class 'apps.albums_gui.EditDetails'>
+called HBoxLayout.__init__
+called GridLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'> at (1, 0, 1, 3)
+called HBoxLayout.__init__
+called HBoxLayout.addSpacing
+called Label.__init__ with args ('Uitvoerende:', {me})
+called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLabel'>
+called GridLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'> at (2, 0, 1, 1)
+called ComboBox.__init__
+called ComboBox.addItems with arg `--- Maak een selectie ---`
+called ComboBox.addItems with arg `['xxx', 'bbb']`
+called GridLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockComboBox'> at (2, 1, 1, 2)
+called HBoxLayout.__init__
+called HBoxLayout.addSpacing
+called Label.__init__ with args ('Albumtitel:', {me})
+called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLabel'>
+called GridLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'> at (3, 0, 1, 1)
+called LineEdit.__init__
+called GridLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLineEdit'> at (3, 1, 1, 2)
+called VBoxLayout.__init__
+called VBoxLayout.addStretch
+called GridLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockVBox'> at (4, 0, 1, 3)
+called button_strip with args ({me}, 'Go', 'GoBack', 'Start')
+called HBoxLayout.__init__
+called GridLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'> at (5, 0, 1, 3)
+called exitbutton with args ({me}, {exit}) {{}}
+called HBoxLayout.__init__
+called GridLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'> at (6, 0, 1, 3)
+called QWidget.setLayout with arg of type <class 'unittests.mockqtwidgets.MockGrid'>
+"""
+editdetails_live_nw = """\
+called GridLayout.__init__
+called Label.__init__ with args ('', {me})
+called HBoxLayout.__init__
+called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLabel'>
+called GridLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'> at (0, 0, 1, 3)
+called newline with arg of type <class 'apps.albums_gui.EditDetails'>
+called HBoxLayout.__init__
+called GridLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'> at (1, 0, 1, 3)
+called HBoxLayout.__init__
+called HBoxLayout.addSpacing
+called Label.__init__ with args ('Uitvoerende:', {me})
+called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLabel'>
+called GridLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'> at (2, 0, 1, 1)
+called ComboBox.__init__
+called ComboBox.addItems with arg `--- Maak een selectie ---`
+called ComboBox.addItems with arg `['xxx', 'bbb']`
+called GridLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockComboBox'> at (2, 1, 1, 2)
+called HBoxLayout.__init__
+called HBoxLayout.addSpacing
+called Label.__init__ with args ('Locatie/datum:', {me})
+called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLabel'>
+called GridLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'> at (3, 0, 1, 1)
+called LineEdit.__init__
+called GridLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLineEdit'> at (3, 1, 1, 2)
+called VBoxLayout.__init__
+called VBoxLayout.addStretch
+called GridLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockVBox'> at (4, 0, 1, 3)
+called button_strip with args ({me}, 'Go', 'GoBack', 'Select', 'Start')
+called HBoxLayout.__init__
+called GridLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'> at (5, 0, 1, 3)
+called exitbutton with args ({me}, {exit}) {{}}
+called HBoxLayout.__init__
+called GridLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'> at (6, 0, 1, 3)
+called QWidget.setLayout with arg of type <class 'unittests.mockqtwidgets.MockGrid'>
+"""
+edittracks_all = """\
+"""
+editrecs_all = """\
+"""
 artists_all = """\
 """
 
@@ -360,9 +574,15 @@ def expected_output():
     return {
         'start': start_all,
         'select_1': (select_top + select_other_artist_button + select_other_type_button +
-                     select_start_data + select_data_line + select_data_line + select_end_data),
+                     select_start_data + select_data_line_1 + select_data_line_2 + select_end_data),
         'select_2': (select_top + select_other_search_button + select_other_type_button +
-                     select_start_data + select_data_line + select_end_data),
+                     select_start_data + select_data_line_1 + select_end_data),
         'select_3': select_top + select_other_search_button + select_start_data + select_end_data,
         'detail': detail_all,
+        'editdetails_studio': editdetails_studio,
+        'editdetails_live': editdetails_live,
+        'editdetails_studio_nw': editdetails_studio_nw,
+        'editdetails_live_nw': editdetails_live_nw,
+        'edittracks': edittracks_all,
+        'editrecs': editrecs_all,
         'artists': artists_all}

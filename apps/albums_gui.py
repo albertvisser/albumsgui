@@ -807,7 +807,9 @@ class EditDetails(qtw.QWidget):
                 listdata = self.parent().artist_names
                 win.addItems(listdata)
                 if text:
-                    win.setCurrentIndex(listdata.index(text.get_name()) + 1)
+                    # volgens main.get_all_artists is get_name al gedaan
+                    # win.setCurrentIndex(listdata.index(text.get_name()) + 1)
+                    win.setCurrentIndex(listdata.index(text) + 1)
             elif caption == 'Label/jaar:':
                 hbox2 = qtw.QHBoxLayout()
                 text = text.split(', ')
@@ -913,16 +915,6 @@ class EditDetails(qtw.QWidget):
     def submit(self, goback=False):
         """neem de waarden van de invulvelden over en geef ze door aan de database
         """
-        def replace_details(caption, value):
-            "replace value for a given entry"
-            changed = False
-            for ix, item in enumerate(self.parent().albumdata['details']):
-                if item[0] == caption:
-                    if value != item[1]:
-                        self.parent().albumdata['details'][ix] = (caption, value)
-                        changed = True
-                    break
-            return changed
         is_changed = False
         for fields in self.screendata:
             lbl, win = fields[:2]
@@ -941,18 +933,11 @@ class EditDetails(qtw.QWidget):
                     is_changed = True
             elif caption == 'Label/jaar:':
                 win_l, win_y = fields[1:]
-                test = replace_details(
-                    caption, ', '.join((win_l.text(), win_y.text())))
-                if test:
-                    is_changed = True
+                is_changed = self._replace_details(caption, ', '.join((win_l.text(), win_y.text())))
             elif caption in ('Credits:', 'Bezetting:', 'Tevens met:'):
-                test = replace_details(caption, win.toPlainText())
-                if test:
-                    is_changed = True
+                is_changed = self._replace_details(caption, win.toPlainText())
             else:
-                test = replace_details(caption, win.text())
-                if test:
-                    is_changed = True
+                is_changed = self._replace_details(caption, win.text())
 
         if is_changed:
             albumid = 0 if self.new_album else self.parent().album.id
@@ -964,11 +949,9 @@ class EditDetails(qtw.QWidget):
                     if self.new_album:
                         self.add_another()
                     else:
-                        qtw.QMessageBox.information(self, 'Albums',
-                                                    'Details updated')
+                        qtw.QMessageBox.information(self, 'Albums', 'Details updated')
             else:
-                qtw.QMessageBox.information(self, 'Albums',
-                                            'Something went wrong, please try again')
+                qtw.QMessageBox.information(self, 'Albums', 'Something went wrong, please try again')
                 return
             self.parent().album = album
             if self.new_album:
@@ -983,16 +966,27 @@ class EditDetails(qtw.QWidget):
             self.first_time = False
             self.refresh_screen()
 
+    def _replace_details(self, caption, value):
+        "replace value for a given entry"
+        changed = False
+        for ix, item in enumerate(self.parent().albumdata['details']):
+            if item[0] == caption:
+                if value != item[1]:
+                    self.parent().albumdata['details'][ix] = (caption, value)
+                    changed = True
+                break
+        return changed
+
     def add_another(self):
         """Show message with possibility to continue adding items
         """
-        message = qtw.QMessageBox(qtw.QMessageBox.Information, 'Albums', "Album "
-                                  "added", buttons=qtw.QMessageBox.Ok, parent=self)
+        message = qtw.QMessageBox(qtw.QMessageBox.information, 'Albums', "Album added",
+                                  buttons=qtw.QMessageBox.Ok, parent=self)
         message.setDefaultButton(qtw.QMessageBox.Ok)
         message.setEscapeButton(qtw.QMessageBox.Ok)
-        next = message.addButton('&Add Another', qtw.QMessageBox.AcceptRole)
+        next_button = create_next_button(message)
         message.exec_()
-        if message.clickedButton() == next:
+        if message.clickedButton() == next_button:
             self.parent().do_new(keep_sel=self.keep_sel)
 
     def submit_and_back(self):
@@ -1080,7 +1074,7 @@ class EditTracks(qtw.QWidget):
         """
         line = self.line + 1
         widgets = []
-        self.gbox.addWidget(qtw.QLabel('{:>8}.'.format(trackindex), self), line, 0)
+        self.gbox.addWidget(qtw.QLabel(f'{trackindex:>8}.', self), line, 0)
         hbox = qtw.QHBoxLayout()
         win = qtw.QLineEdit(trackname, self)
         win.setMaximumWidth(300)
@@ -1226,7 +1220,7 @@ class EditRecordings(qtw.QWidget):
         else:
             opnsoort, opntext = 0, ''
         hbox = qtw.QHBoxLayout()
-        hbox.addWidget(qtw.QLabel('{:>8}.'.format(opnindex + 1), self))
+        hbox.addWidget(qtw.QLabel(f'{opnindex + 1:>8}.', self))
         cb = qtw.QComboBox(self)
         cb.addItem('--- Maak een selectie ---')
         cb.addItems(RECTYPES)
@@ -1361,7 +1355,7 @@ class Artists(qtw.QWidget):
         """Create line in edit area with artist data (or not)
         """
         hbox = qtw.QHBoxLayout()
-        hbox.addWidget(qtw.QLabel('{:>3}.'.format(itemid), self))
+        hbox.addWidget(qtw.QLabel('{itemid:>3}.', self))
         win_f = qtw.QLineEdit(first_name, self)
         hbox.addWidget(win_f)
         win_l = qtw.QLineEdit(last_name, self)
@@ -1580,6 +1574,11 @@ def button_strip(parent, *buttons):
         hbox.addWidget(btn)
     hbox.addStretch()
     return hbox
+
+
+def create_next_button(messagebox):
+    """create a button to add a new entry"""
+    return messagebox.addButton('&Add Another', qtw.QMessageBox.AcceptRole)
 
 
 def exitbutton(parent, callback, extrawidget=None):

@@ -39,6 +39,8 @@ class MockVBox:
         print(f'called VBoxLayout.addWidget with arg of type {type(args[0])}')
     def addLayout(self, *args):
         print(f'called VBoxLayout.addLayout with arg of type {type(args[0])}')
+    def addStretch(self, *args):
+        print('called VBoxLayout.addStretch')
 
 
 class MockHBox:
@@ -52,6 +54,10 @@ class MockHBox:
         print('called HBoxLayout.addStretch')
     def addSpacing(self, *args):
         print('called HBoxLayout.addSpacing')
+    def count(self):
+        pass
+    def itemAt(self, num):
+        pass
 
 
 class MockGrid:
@@ -79,17 +85,19 @@ class MockComboBox:
     currentIndexChanged = types.SimpleNamespace(connect=mock_connect)
     def __init__(self, *args):
         print('called ComboBox.__init__')
+        self._index = 1
     def setMaximumWidth(self, number):
         print(f'called ComboBox.setMaximumWidth to `{number}`')
     def setMinimumWidth(self, number):
         print(f'called ComboBox.setMinimumWidth to `{number}`')
     def setCurrentIndex(self, number):
         print(f'called ComboBox.setCurrentIndex to `{number}`')
+        self._index = number
     def setCurrentText(self, text):
         print(f'called ComboBox.setCurrentText to `{text}`')
     def currentIndex(self):
         print('called ComboBox.currentIndex')
-        return 1
+        return self._index
     def currentText(self):
         print('called ComboBox.currentText')
         return '.'
@@ -108,16 +116,34 @@ class MockComboBox:
 class MockLineEdit:
     def __init__(self, *args):
         print('called LineEdit.__init__')
+        self._text = '..'
     def setMaximumWidth(self, number):
         print(f'called LineEdit.setMaximumWidth to `{number}`')
     def setMinimumWidth(self, number):
         print(f'called LineEdit.setMinimumWidth to `{number}`')
     def setText(self, text):
         print(f'called LineEdit.setText with arg `{text}`')
+        self._text = text
     def clear(self):
         print('called LineEdit.clear')
     def text(self):
         print('called LineEdit.text')
+        return self._text
+
+
+class MockTextEdit:
+    def __init__(self, *args):
+        print('called TextEdit.__init__')
+    def setMaximumWidth(self, number):
+        print(f'called TextEdit.setMaximumWidth to `{number}`')
+    def setMinimumWidth(self, number):
+        print(f'called TextEdit.setMinimumWidth to `{number}`')
+    def setText(self, text):
+        print(f'called TextEdit.setText with arg `{text}`')
+    def clear(self):
+        print('called TextEdit.clear')
+    def toPlainText(self):
+        print('called TextEdit.toPlainText')
         return '..'
 
 
@@ -138,7 +164,9 @@ class MockListBox:
 
 class MockLabel:
     def __init__(self, *args):
-        print('called Label.__init__')
+        print('called Label.__init__ with args', args)
+        if args:
+            self._text = args[0]
     def setVisible(self, value):
         print(f'called Label.setVisible to `{value}`')
     def setMinimumWidth(self, number):
@@ -147,6 +175,9 @@ class MockLabel:
         print(f'called Label.setMinimumHeight to `{number}`')
     def setText(self, text):
         print(f'called Label.setText with arg `{text}`')
+        self._text = text
+    def text(self):
+        return self._text
     def setPixmap(self, data):
         print(f'called Label.setPixmap')
 
@@ -157,9 +188,14 @@ class MockButton:
     clicked = types.SimpleNamespace(connect=mock_connect)
     def __init__(self, *args):
         print('called PushButton.__init__ with args', args)
+        self._text = args[0]
     def setMaximumWidth(self, number):
         print(f'called PushButton.setMaximumWidth to `{number}`')
-
+    def text(self):
+        return self._text
+    def setText(self, value):
+        self._text = value
+        print(f'called PushButton.setText with arg `{value}`')
 
 class MockPixmap:
     def __init__(self, *args):
@@ -173,8 +209,24 @@ class MockPixmap:
 
 
 class MockMessageBox:
+    Ok = 'okbutton'
+    AcceptRole = 1
+    Information = 2
+    def __init__(self, *args, **kwargs):
+        print('called QMessageBox with args', args, kwargs)
     def information(parent, caption, message):
         print(f'called QMessageBox.information with args `{caption}` `{message}`')
+    def setDefaultButton(self, arg):
+        print(f'called QMessageBox.setDefaultButton with arg `{arg}`')
+    def setEscapeButton(self, arg):
+        print(f'called QMessageBox.setEscapeButton with arg `{arg}`')
+    def addButton(self, *args):
+        print(f'called QMessageBox.addButton with arg `{args}`')
+    def exec_(self, *args):
+        print(f'called QMessageBox.exec_')
+    def clickedButton(self):
+        print(f'called QMessageBox.clickedButton')
+        return 'button'
 
 
 class MockScrollArea:
