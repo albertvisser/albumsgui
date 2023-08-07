@@ -332,7 +332,7 @@ class MockEditRecordings:
     def refresh_screen(self):
         print('called EditRecordings.refresh_screen')
 
-class MockDialog:
+class MockNewArtist:
     def __init__(self, parent):
         print('called NewArtistDialog')
     def exec_(self):
@@ -485,7 +485,7 @@ def test_main_do_new(monkeypatch, capsys):
     def mock_edit(**args):
         print('called Main.do_edit_alg with args', args)
     testobj = setup_main(monkeypatch, capsys)
-    monkeypatch.setattr(testee, 'NewArtistDialog', MockDialog)
+    monkeypatch.setattr(testee, 'NewArtistDialog', MockNewArtist)
     monkeypatch.setattr(testobj, 'get_all_artists', mock_get)
     monkeypatch.setattr(testobj, 'do_select', mock_select)
     monkeypatch.setattr(testee, 'get_album', mock_get_album)
@@ -504,8 +504,8 @@ def test_main_do_new(monkeypatch, capsys):
     assert capsys.readouterr().out == ('called NewArtistDialog\n'
                                        'called Main.get_all_artists\n'
                                        'called.Main.do_select\n')
-    monkeypatch.setattr(MockDialog, 'exec_', lambda *x: testee.qtw.QDialog.Rejected)
-    monkeypatch.setattr(testee, 'NewArtistDialog', MockDialog)
+    monkeypatch.setattr(MockNewArtist, 'exec_', lambda *x: testee.qtw.QDialog.Rejected)
+    monkeypatch.setattr(testee, 'NewArtistDialog', MockNewArtist)
     testobj.do_new()
     assert capsys.readouterr().out == ('called NewArtistDialog\n')
 
@@ -1668,7 +1668,6 @@ def test_edit_submit(monkeypatch, capsys):
                                        'called QMessageBox.information with args'
                                        ' `Albums` `Something went wrong, please try again`\n')
 
-
 def test_edit_replace_details(monkeypatch, capsys):
     testobj = setup_edit(monkeypatch, capsys)
     original = {'details': []}
@@ -1758,27 +1757,77 @@ def setup_edittracks(monkeypatch, capsys):
                                        'called QWidget.__init__\n')
     return testobj
 
-class _TestEditTracks:
-    def test_create_widgets(self):
-        ...
+def _test_edittracks_create_widgets(monkeypatch, capsys):
+    monkeypatch.setattr(testee.qtw, 'QGridLayout', mockqtw.MockGrid)
+    monkeypatch.setattr(testee.qtw, 'QVBoxLayout', mockqtw.MockVBox)
+    monkeypatch.setattr(testee.qtw, 'QHBoxLayout', mockqtw.MockHBox)
+    monkeypatch.setattr(testee.qtw, 'QComboBox', mockqtw.MockComboBox)
+    monkeypatch.setattr(testee.qtw, 'QPushButton', mockqtw.MockButton)
+    monkeypatch.setattr(testee.qtw, 'QLabel', mockqtw.MockLabel)
+    monkeypatch.setattr(testee.qtw, 'QLineEdit', mockqtw.MockLineEdit)
+    monkeypatch.setattr(testee.qtw, 'QTextEdit', mockqtw.MockTextEdit)
+    monkeypatch.setattr(testee.qtw, 'QFrame', mockqtw.MockFrame)
+    monkeypatch.setattr(testee.qtw, 'QScrollArea', mockqtw.MockScrollArea)
+    monkeypatch.setattr(testee, 'newline', mock_newline)
+    monkeypatch.setattr(testee, 'button_strip', mock_button_strip)
+    monkeypatch.setattr(testee, 'exitbutton', mock_exitbutton)
+    testobj = setup_edittracks(monkeypatch, capsys)
+    testobj.create_widgets()
 
-    def test_add_track_fields(self, trackindex, trackname='', author='', text=''):
-        ...
+def _test_edittracks_add_track_fields(monkeypatch, capsys):
+    testobj = setup_edittracks(monkeypatch, capsys)
+    testobj.add_track_fields(trackindex, trackname='', author='', text='')
 
-    def test_refresh_screen(self):
-        ...
+def test_edittracks_refresh_screen(monkeypatch, capsys):
+    def mock_build_heading(win):
+        print(f'called build_heading with arg `{win}`')
+        return 'heading'
+    def mock_settext(self, text):
+        print(f'called Label.setText with arg `{text}`')
+    monkeypatch.setattr(testee, 'build_heading', mock_build_heading)
+    monkeypatch.setattr(mockqtw.MockLabel, 'setText', mock_settext)
+    testobj = setup_edittracks(monkeypatch, capsys)
+    testobj.heading = mockqtw.MockLabel()
+    assert capsys.readouterr().out == 'called Label.__init__ with args ()\n'
+    testobj.refresh_screen()
+    assert capsys.readouterr().out == (f'called build_heading with arg `{testobj}`\n'
+                                       'called Label.setText with arg `heading`\n')
 
-    def test_add_new_item(self):
-        ...
+def test_edittracks_add_new_item(monkeypatch, capsys):
+    def mock_add(num):
+        print(f'called Artists.add_track_fields with arg `{num}`')
+    testobj = setup_edittracks(monkeypatch, capsys)
+    monkeypatch.setattr(testobj, 'add_track_fields', mock_add)
+    testobj.tracks = 5
+    testobj.scrl = mockqtw.MockScrolledWidget()
+    testobj.add_new_item()
+    assert testobj.tracks == 6
+    assert capsys.readouterr().out == ('called scrolledwidget.__init__\n'
+                                       'called Artists.add_track_fields with arg `6`\n'
+                                       'called scrolledwidget.verticalScrollBar\n'
+                                       'called scrollbar.__init__\n'
+                                       'called scrollbar.maximum\n'
+                                       'called scrollbar.setMaximum with value `167`\n'
+                                       'called scrollbar.maximum\n'
+                                       'called scrollbar.setValue with value `99`\n')
 
-    def test_submit(self, skip_confirm=False):
-        ...
+def _test_edittracks_submit(monkeypatch, capsys):
+    testobj = setup_edittracks(monkeypatch, capsys)
+    testobj.submit(skip_confirm=False)
 
-    def test_submit_and_back(self):
-        ...
+def test_edittracks_submit_and_back(monkeypatch, capsys):
+    def mock_submit(**kwargs):
+        print('called EditTracks.submit with args', kwargs)
+    testobj = setup_edittracks(monkeypatch, capsys)
+    monkeypatch.setattr(testobj, 'submit', mock_submit)
+    testobj.submit_and_back()
+    assert capsys.readouterr().out == ("called EditTracks.submit with args {'skip_confirm': True}\n"
+                                       'called Main.do_detail\n')
 
-    def test_exit(self):
-        ...
+def test_edittracks_exit(monkeypatch, capsys):
+    testobj = setup_edittracks(monkeypatch, capsys)
+    testobj.exit()
+    assert capsys.readouterr().out == 'called Main.close\n'
 
 
 def setup_editrecs(monkeypatch, capsys):
@@ -1796,27 +1845,78 @@ def setup_editrecs(monkeypatch, capsys):
                                        'called QWidget.__init__\n')
     return testobj
 
-class _TestEditRecordings:
-    def test_create_widgets(self):
-        ...
+def _test_editrecs_create_widgets(monkeypatch, capsys):
+    monkeypatch.setattr(testee.qtw, 'QGridLayout', mockqtw.MockGrid)
+    monkeypatch.setattr(testee.qtw, 'QVBoxLayout', mockqtw.MockVBox)
+    monkeypatch.setattr(testee.qtw, 'QHBoxLayout', mockqtw.MockHBox)
+    monkeypatch.setattr(testee.qtw, 'QComboBox', mockqtw.MockComboBox)
+    monkeypatch.setattr(testee.qtw, 'QPushButton', mockqtw.MockButton)
+    monkeypatch.setattr(testee.qtw, 'QLabel', mockqtw.MockLabel)
+    monkeypatch.setattr(testee.qtw, 'QLineEdit', mockqtw.MockLineEdit)
+    monkeypatch.setattr(testee.qtw, 'QTextEdit', mockqtw.MockTextEdit)
+    monkeypatch.setattr(testee.qtw, 'QFrame', mockqtw.MockFrame)
+    monkeypatch.setattr(testee.qtw, 'QScrollArea', mockqtw.MockScrollArea)
+    monkeypatch.setattr(testee, 'newline', mock_newline)
+    monkeypatch.setattr(testee, 'button_strip', mock_button_strip)
+    monkeypatch.setattr(testee, 'exitbutton', mock_exitbutton)
+    testobj = setup_editrecs(monkeypatch, capsys)
+    testobj.create_widgets()
 
-    def test_add_rec_fields(self, opnindex, opname=None):
-        ...
+def _test_editrecs_add_rec_fields(monkeypatch, capsys):
+    testobj = setup_editrecs(monkeypatch, capsys)
+    testobj.add_rec_fields(opnindex, opname=None)
 
-    def test_refresh_screen(self):
-        ...
+def test_editrecs_refresh_screen(monkeypatch, capsys):
+    def mock_build_heading(win):
+        print(f'called build_heading with arg `{win}`')
+        return 'heading'
+    def mock_settext(self, text):
+        print(f'called Label.setText with arg `{text}`')
+    monkeypatch.setattr(testee, 'build_heading', mock_build_heading)
+    monkeypatch.setattr(mockqtw.MockLabel, 'setText', mock_settext)
+    testobj = setup_editrecs(monkeypatch, capsys)
+    testobj.heading = mockqtw.MockLabel()
+    assert capsys.readouterr().out == 'called Label.__init__ with args ()\n'
+    testobj.refresh_screen()
+    assert capsys.readouterr().out == (f'called build_heading with arg `{testobj}`\n'
+                                       'called Label.setText with arg `heading`\n')
 
-    def test_add_new_item(self):
-        ...
+def test_editrecs_add_new_item(monkeypatch, capsys):
+    def mock_add(num):
+        print(f'called Artists.add_rec_fields with arg `{num}`')
+    testobj = setup_editrecs(monkeypatch, capsys)
+    monkeypatch.setattr(testobj, 'add_rec_fields', mock_add)
+    testobj.recs = 5
+    testobj.scrl = mockqtw.MockScrolledWidget()
+    testobj.add_new_item()
+    assert testobj.recs == 6
+    assert capsys.readouterr().out == ('called scrolledwidget.__init__\n'
+                                       'called Artists.add_rec_fields with arg `6`\n'
+                                       'called scrolledwidget.verticalScrollBar\n'
+                                       'called scrollbar.__init__\n'
+                                       'called scrollbar.maximum\n'
+                                       'called scrollbar.setMaximum with value `135`\n'
+                                       'called scrollbar.maximum\n'
+                                       'called scrollbar.setValue with value `99`\n')
 
-    def test_submit(self, skip_confirm=False):
-        ...
+def _test_editrecs_submit(monkeypatch, capsys):
+    testobj = setup_editrecs(monkeypatch, capsys)
+    testobj.submit(skip_confirm=False)
 
-    def test_submit_and_back(self):
-        ...
+def test_editrecs_submit_and_back(monkeypatch, capsys):
+    def mock_submit(**kwargs):
+        print('called EditRecordings.submit with args', kwargs)
+    testobj = setup_editrecs(monkeypatch, capsys)
+    monkeypatch.setattr(testobj, 'submit', mock_submit)
+    testobj.submit_and_back()
+    assert capsys.readouterr().out == ("called EditRecordings.submit with args"
+                                       " {'skip_confirm': True}\n"
+                                       'called Main.do_detail\n')
 
-    def test_exit(self):
-        ...
+def test_editrecs_exit(monkeypatch, capsys):
+    testobj = setup_editrecs(monkeypatch, capsys)
+    testobj.exit()
+    assert capsys.readouterr().out == 'called Main.close\n'
 
 
 def setup_artists(monkeypatch, capsys):
@@ -1834,43 +1934,168 @@ def setup_artists(monkeypatch, capsys):
                                        'called QWidget.__init__\n')
     return testobj
 
-class _TestArtists:
-    def test_create_widgets(self):
-        ...
+def _test_artists_create_widgets(monkeypatch, capsys):
+    monkeypatch.setattr(testee.qtw, 'QGridLayout', mockqtw.MockGrid)
+    monkeypatch.setattr(testee.qtw, 'QVBoxLayout', mockqtw.MockVBox)
+    monkeypatch.setattr(testee.qtw, 'QHBoxLayout', mockqtw.MockHBox)
+    monkeypatch.setattr(testee.qtw, 'QComboBox', mockqtw.MockComboBox)
+    monkeypatch.setattr(testee.qtw, 'QPushButton', mockqtw.MockButton)
+    monkeypatch.setattr(testee.qtw, 'QLabel', mockqtw.MockLabel)
+    monkeypatch.setattr(testee.qtw, 'QLineEdit', mockqtw.MockLineEdit)
+    monkeypatch.setattr(testee.qtw, 'QTextEdit', mockqtw.MockTextEdit)
+    monkeypatch.setattr(testee.qtw, 'QFrame', mockqtw.MockFrame)
+    monkeypatch.setattr(testee.qtw, 'QScrollArea', mockqtw.MockScrollArea)
+    monkeypatch.setattr(testee, 'newline', mock_newline)
+    monkeypatch.setattr(testee, 'button_strip', mock_button_strip)
+    monkeypatch.setattr(testee, 'exitbutton', mock_exitbutton)
+    testobj = setup_artists(monkeypatch, capsys)
+    testobj.create_widgets()
 
-    def test_filter(self):
-        ...
+def test_artists_filter(monkeypatch, capsys):
+    def mock_list(arg):
+        print(f'called dmla.list_artists with arg `{arg}`')
+        return ['x', 'z']
+    testobj = setup_artists(monkeypatch, capsys)
+    monkeypatch.setattr(testee.dmla, 'list_artists', mock_list)
+    testobj.ask_filter = mockqtw.MockLineEdit()
+    assert capsys.readouterr().out == 'called LineEdit.__init__\n'
+    testobj.parent().all_artists = ['x', 'y', 'z']
+    testobj.filter()
+    assert testobj.parent().artists == ['x', 'z']
+    assert testobj.parent().artist_filter == '..'
+    assert capsys.readouterr().out == ('called LineEdit.text\n'
+                                       'called dmla.list_artists with arg `..`\n'
+                                       'called Main.do_select\n')
+    monkeypatch.setattr(mockqtw.MockLineEdit, 'text', lambda *x: '')
+    testobj.ask_filter = mockqtw.MockLineEdit()
+    assert capsys.readouterr().out == 'called LineEdit.__init__\n'
+    testobj.filter()
+    assert testobj.parent().artists == ['x', 'y', 'z']
+    assert testobj.parent().artist_filter == ''
+    assert capsys.readouterr().out == 'called Main.do_select\n'
 
-    def test_add_artist_line(self, itemid, first_name='', last_name=''):
-        ...
+def test_artists_add_artist_line(monkeypatch, capsys):
+    def mock_init(self, *args):
+        print("called LineEdit.__init__ with args", args)
+    monkeypatch.setattr(testee.qtw, 'QHBoxLayout', mockqtw.MockHBox)
+    monkeypatch.setattr(testee.qtw, 'QLabel', mockqtw.MockLabel)
+    monkeypatch.setattr(mockqtw.MockLineEdit, '__init__', mock_init)
+    monkeypatch.setattr(testee.qtw, 'QLineEdit', mockqtw.MockLineEdit)
+    testobj = setup_artists(monkeypatch, capsys)
+    testobj.vbox2 = mockqtw.MockVBox()
+    assert capsys.readouterr().out == "called VBoxLayout.__init__\n"
+    testobj.fields = []
+    testobj.add_artist_line(1)
+    assert len(testobj.fields) == 1
+    assert isinstance(testobj.fields[0][0], testee.qtw.QLineEdit)
+    assert isinstance(testobj.fields[0][1], testee.qtw.QLineEdit)
+    assert capsys.readouterr().out == ("called HBoxLayout.__init__\n"
+                                       f"called Label.__init__ with args ('  1.', {testobj})\n"
+                                       "called HBoxLayout.addWidget with arg of type"
+                                       " <class 'unittests.mockqtwidgets.MockLabel'>\n"
+                                       f"called LineEdit.__init__ with args ('', {testobj})\n"
+                                       "called HBoxLayout.addWidget with arg of type"
+                                       " <class 'unittests.mockqtwidgets.MockLineEdit'>\n"
+                                       f"called LineEdit.__init__ with args ('', {testobj})\n"
+                                       "called LineEdit.setMaximumWidth to `300`\n"
+                                       "called LineEdit.setMinimumWidth to `300`\n"
+                                       "called HBoxLayout.addWidget with arg of type"
+                                       " <class 'unittests.mockqtwidgets.MockLineEdit'>\n"
+                                       "called VBoxLayout.addLayout with arg of type"
+                                       " <class 'unittests.mockqtwidgets.MockHBox'>\n")
+    testobj.fields = []
+    testobj.add_artist_line(2, first_name='x', last_name='y')
+    assert len(testobj.fields) == 1
+    assert isinstance(testobj.fields[0][0], testee.qtw.QLineEdit)
+    assert isinstance(testobj.fields[0][1], testee.qtw.QLineEdit)
+    assert capsys.readouterr().out == ("called HBoxLayout.__init__\n"
+                                       f"called Label.__init__ with args ('  2.', {testobj})\n"
+                                       "called HBoxLayout.addWidget with arg of type"
+                                       " <class 'unittests.mockqtwidgets.MockLabel'>\n"
+                                       f"called LineEdit.__init__ with args ('x', {testobj})\n"
+                                       "called HBoxLayout.addWidget with arg of type"
+                                       " <class 'unittests.mockqtwidgets.MockLineEdit'>\n"
+                                       f"called LineEdit.__init__ with args ('y', {testobj})\n"
+                                       "called LineEdit.setMaximumWidth to `300`\n"
+                                       "called LineEdit.setMinimumWidth to `300`\n"
+                                       "called HBoxLayout.addWidget with arg of type"
+                                       " <class 'unittests.mockqtwidgets.MockLineEdit'>\n"
+                                       "called VBoxLayout.addLayout with arg of type"
+                                       " <class 'unittests.mockqtwidgets.MockHBox'>\n")
 
-    def test_refresh_screen(self):
-        ...
+def test_artists_refresh_screen(monkeypatch, capsys):
+    "method-to-test is empty"
 
-    def test_submit(self):
-        ...
+def _test_artists_submit(monkeypatch, capsys):
+    testobj = setup_artists(monkeypatch, capsys)
+    testobj.submit()
 
-    def test_new(self):
-        ...
+def test_artists_new(monkeypatch, capsys):
+    def mock_add(num):
+        print(f'called Artists.add_artist_line with arg `{num}`')
+    testobj = setup_artists(monkeypatch, capsys)
+    monkeypatch.setattr(testobj, 'add_artist_line', mock_add)
+    testobj.last_artistid = 5
+    testobj.scrl = mockqtw.MockScrolledWidget()
+    testobj.new()
+    assert testobj.last_artistid == 6
+    assert capsys.readouterr().out == ('called scrolledwidget.__init__\n'
+                                       'called Artists.add_artist_line with arg `6`\n'
+                                       'called scrolledwidget.verticalScrollBar\n'
+                                       'called scrollbar.__init__\n'
+                                       'called scrollbar.maximum\n'
+                                       'called scrollbar.setMaximum with value `133`\n'
+                                       'called scrollbar.maximum\n'
+                                       'called scrollbar.setValue with value `99`\n')
 
-    def test_exit(self):
-        ...
+def test_artists_exit(monkeypatch, capsys):
+    testobj = setup_artists(monkeypatch, capsys)
+    testobj.exit()
+    assert capsys.readouterr().out == 'called Main.close\n'
 
 
-def setup_dialog(monkeypatch, capsys):
-    def mock_init(self, parent):
+def test_artistdialog(monkeypatch, capsys, expected_output):
+    def mock_init(self, *args):
         print('called QWidget.__init__')
-    def mock_setlayout(self, layout):
-        print(f'called QWidget.setLayout with arg of type {type(layout)}')
+    def mock_setLayout(self, widget):
+        print(f'called QWidget.setLayout with arg of type {type(widget)}')
     monkeypatch.setattr(testee.qtw.QWidget, '__init__', mock_init)
-    monkeypatch.setattr(testee.qtw.QWidget, 'setLayout', mock_setlayout)
-    testparent = MockMainFrame()
+    monkeypatch.setattr(testee.qtw.QWidget, 'setLayout', mock_setLayout)
+    monkeypatch.setattr(testee.qtw, 'QDialog', mockqtw.MockDialog)
+    monkeypatch.setattr(testee.qtw, 'QGridLayout', mockqtw.MockGrid)
+    monkeypatch.setattr(testee.qtw, 'QHBoxLayout', mockqtw.MockHBox)
+    monkeypatch.setattr(testee.qtw, 'QPushButton', mockqtw.MockButton)
+    monkeypatch.setattr(testee.qtw, 'QLabel', mockqtw.MockLabel)
+    monkeypatch.setattr(testee.qtw, 'QLineEdit', mockqtw.MockLineEdit)
+    testobj = testee.NewArtistDialog(testee.qtw.QWidget())
+    bindings = {'reject': testobj.reject, 'update': testobj.update, 'testobj': testobj}
+    assert capsys.readouterr().out == expected_output['artist_dialog'].format(**bindings)
+
+def test_artistdialog_update(monkeypatch, capsys):
+    def mock_init(self, *args):
+        print('called NewArtistDialog.__init__')
+    def mock_accept(self, *args):
+        print('called NewArtistDialog.accept')
+    counter = 0
+    def mock_text(*args):
+        nonlocal counter
+        counter += 1
+        print('QLineEdit returns', ('', 'x', 'y')[counter])
+    class mock_object:
+        def save(self):
+            print('called my.Act.save')
+    monkeypatch.setattr(testee.NewArtistDialog, '__init__', mock_init)
+    monkeypatch.setattr(testee.NewArtistDialog, 'accept', mock_accept)
     testobj = testee.NewArtistDialog()
-    return testobj
-
-class _TestNewArtistDialog:
-    def test___init__(self, parent):
-        ...
-
-    def test_update(self):
-        ...
+    assert capsys.readouterr().out == 'called NewArtistDialog.__init__\n'
+    monkeypatch.setattr(mockqtw.MockLineEdit, 'text', mock_text)
+    testobj.first_name = mockqtw.MockLineEdit()
+    testobj.last_name = mockqtw.MockLineEdit()
+    assert capsys.readouterr().out == ('called LineEdit.__init__\n'
+                                       'called LineEdit.__init__\n')
+    monkeypatch.setattr(testee.dmla.my.Act.objects, 'create', lambda *x: mock_object())
+    testobj.update()
+    assert capsys.readouterr().out == ('QLineEdit returns x\n'
+                                       'QLineEdit returns y\n'
+                                       'called my.Act.save\n'
+                                       'called NewArtistDialog.accept\n')

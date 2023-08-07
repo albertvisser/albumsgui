@@ -1343,19 +1343,19 @@ class Artists(qtw.QWidget):
     def filter(self):
         """callback for Filter button
         """
-        filter = self.ask_filter.text()
-        if filter:
-            self.parent().artists = dmla.list_artists(filter)
+        _filter = self.ask_filter.text()
+        if _filter:
+            self.parent().artists = dmla.list_artists(_filter)
         else:
             self.parent().artists = self.parent().all_artists
-        self.parent().artist_filter = filter
+        self.parent().artist_filter = _filter
         self.parent().do_select()
 
     def add_artist_line(self, itemid, first_name='', last_name=''):
         """Create line in edit area with artist data (or not)
         """
         hbox = qtw.QHBoxLayout()
-        hbox.addWidget(qtw.QLabel('{itemid:>3}.', self))
+        hbox.addWidget(qtw.QLabel(f'{itemid:>3}.', self))
         win_f = qtw.QLineEdit(first_name, self)
         hbox.addWidget(win_f)
         win_l = qtw.QLineEdit(last_name, self)

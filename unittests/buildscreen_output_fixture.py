@@ -568,6 +568,32 @@ editrecs_all = """\
 """
 artists_all = """\
 """
+artist_dialog = """\
+called QWidget.__init__
+called QWidget.__init__
+called GridLayout.__init__
+called Label.__init__ with args ('First name:', {testobj})
+called GridLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLabel'> at (0, 0)
+called LineEdit.__init__
+called GridLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLineEdit'> at (0, 1)
+called Label.__init__ with args ('Last name:', {testobj})
+called GridLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLabel'> at (1, 0)
+called LineEdit.__init__
+called GridLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLineEdit'> at (1, 1)
+called Label.__init__ with args ('Names wil be shown sorted on last name',)
+called GridLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLabel'> at (2, 0, 1, 2)
+called HBoxLayout.__init__
+called HBoxLayout.addStretch
+called PushButton.__init__ with args ('Cancel', {testobj})
+called connect with args ({reject},)
+called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockButton'>
+called PushButton.__init__ with args ('Update', {testobj})
+called connect with args ({update},)
+called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockButton'>
+called HBoxLayout.addStretch
+called GridLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'> at (3, 0, 1, 2)
+called QWidget.setLayout with arg of type <class 'unittests.mockqtwidgets.MockGrid'>
+"""
 
 @pytest.fixture
 def expected_output():
@@ -585,4 +611,5 @@ def expected_output():
         'editdetails_live_nw': editdetails_live_nw,
         'edittracks': edittracks_all,
         'editrecs': editrecs_all,
-        'artists': artists_all}
+        'artists': artists_all,
+        'artist_dialog': artist_dialog}

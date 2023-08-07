@@ -23,6 +23,26 @@ class MockWidget: # (qtw.QWidget):
         print('called widget.show')
 
 
+class MockScrollBar:
+    def __init__(self, *args):
+        print('called scrollbar.__init__')
+    def maximum(self):
+        print('called scrollbar.maximum')
+        return 99
+    def setMaximum(self, value):
+        print(f'called scrollbar.setMaximum with value `{value}`')
+    def setValue(self, value):
+        print(f'called scrollbar.setValue with value `{value}`')
+
+
+class MockScrolledWidget:
+    def __init__(self, *args):
+        print('called scrolledwidget.__init__')
+    def verticalScrollBar(self):
+        print('called scrolledwidget.verticalScrollBar')
+        return MockScrollBar()
+
+
 class MockMainWindow:
     def __init__(self):
         print('called QMainWindow.__init__')
@@ -232,3 +252,11 @@ class MockMessageBox:
 class MockScrollArea:
     def setWidget(self, arg):
         print(f'called ScrollArea.setWidget with arg of type `{type(arg)}`')
+
+class MockDialog:
+    def __init__(self, *args, **kwargs):
+        print('called QDialog.__init__')
+    # def setLayout(self, arg):
+    #     print(f'called QDialog.setLayout with arg of type `{type(arg)}`')
+    def accept(self):
+        print('called QDialog.accept')
