@@ -562,11 +562,210 @@ called HBoxLayout.__init__
 called GridLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'> at (6, 0, 1, 3)
 called QWidget.setLayout with arg of type <class 'unittests.mockqtwidgets.MockGrid'>
 """
-edittracks_all = """\
+edittracks_all_start = """\
+called VBoxLayout.__init__
+called Label.__init__ with args ('tracks', {me})
+called HBoxLayout.__init__
+called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLabel'>
+called VBoxLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'>
+called HBoxLayout.__init__
+called Frame.__init__
+called Frame.setFrameShape with arg `---`
+called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockFrame'>
+called VBoxLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'>
+called Frame.__init__
+called VBoxLayout.__init__
+called GridLayout.__init__
+called HBoxLayout.__init__
+called Label.__init__ with args ('Title\\nCredits', {me})
+called Label.setMinimumWidth to `304`
+called Label.setMaximumWidth to `304`
+called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLabel'>
+called Label.__init__ with args ('Author\\n', {me})
+called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLabel'>
+called GridLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'> at (1, 1)
 """
-editrecs_all = """\
+edittracks_all_middle = """\
+called EditTracks.add_track_fields with args (1, 'x')
+called EditTracks.add_track_fields with args (2, 'a', 'c')
 """
-artists_all = """\
+track_fields = """\
+called Label.__init__ with args ('       {num}.', {me})
+called GridLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLabel'> at (1, 0)
+called HBoxLayout.__init__
+called LineEdit.__init__ with args ('{text1}', {me})
+called LineEdit.setMaximumWidth to `300`
+called LineEdit.setMinimumWidth to `300`
+called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLineEdit'>
+called LineEdit.__init__ with args ('{text2}', {me})
+called LineEdit.setMaximumWidth to `200`
+called LineEdit.setMinimumWidth to `200`
+called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLineEdit'>
+called GridLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'> at (1, 1)
+called TextEdit.__init__ with args ('{text3}', {me})
+called TextEdit.setMaximumWidth to `508`
+called TextEdit.setMinimumWidth to `508`
+called TextEdit.setMaximumHeight to `38`
+called TextEdit.setMinimumHeight to `38`
+called GridLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockTextEdit'> at (2, 1)
+"""
+edittracks_all_end_1 = """\
+called VBoxLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockGrid'>
+called VBoxLayout.addStretch
+called Frame.setLayout with arg of type `<class 'unittests.mockqtwidgets.MockVBox'>`
+called ScrollArea.setWidget with arg of type `<class 'unittests.mockqtwidgets.MockFrame'>`
+called ScrollArea.setWidgetResizable with arg `True`
+called VBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockScrollArea'>
+called HBoxLayout.__init__
+called PushButton.__init__ with args ('Nieuw track', {me})
+called connect with args ({add_new_item},)
+called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockButton'>
+called HBoxLayout.addStretch
+called VBoxLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'>
+called HBoxLayout.__init__
+called Frame.__init__
+called Frame.setFrameShape with arg `---`
+called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockFrame'>
+called VBoxLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'>
+"""
+edittracks_all_buttonstrip_1 = """\
+called button_strip with args ({me}, 'Go', 'GoBack', 'Start')
+"""
+edittracks_all_buttonstrip_2 = """\
+called button_strip with args ({me}, 'Go', 'GoBack', 'Select', 'Start')
+"""
+edittracks_all_buttonstrip_3 = """\
+called button_strip with args ({me}, 'Cancel', 'Go', 'GoBack', 'Select', 'Start')
+"""
+edittracks_all_end_2 = """\
+called HBoxLayout.__init__
+called VBoxLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'>
+called exitbutton with args ({me}, {exit}) {{}}
+called HBoxLayout.__init__
+called VBoxLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'>
+called QWidget.setLayout with arg of type <class 'unittests.mockqtwidgets.MockVBox'>
+"""
+editrecs_all_start = """\
+called VBoxLayout.__init__
+called Label.__init__ with args ('opnames', {me})
+called HBoxLayout.__init__
+called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLabel'>
+called VBoxLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'>
+called HBoxLayout.__init__
+called Frame.__init__
+called Frame.setFrameShape with arg `---`
+called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockFrame'>
+called VBoxLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'>
+called Frame.__init__
+called VBoxLayout.__init__
+called VBoxLayout.addStretch
+"""
+editrecs_all_middle = """\
+called EditRecordings.add_track_fields with args (0, (1, ('x', 'y')))
+called EditRecordings.add_track_fields with args (1, (2, ('a', 'b')))
+"""
+rec_fields_start = """\
+called HBoxLayout.__init__
+called Label.__init__ with args ('       {num}.', {me})
+called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLabel'>
+called ComboBox.__init__
+called ComboBox.addItems with arg `--- Maak een selectie ---`
+called ComboBox.addItems with arg `('x', 'y', 'z')`
+"""
+rec_fields_middle = """called ComboBox.setCurrentIndex to `1`
+"""
+rec_fields_end = """\
+called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockComboBox'>
+called LineEdit.__init__ with args ('{text}', {me})
+called LineEdit.setMaximumWidth to `200`
+called LineEdit.setMinimumWidth to `200`
+called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLineEdit'>
+called HBoxLayout.addStretch
+called VBoxLayout.insertLayout with arg1 {insertpos} and arg2 of type <class 'unittests.mockqtwidgets.MockHBox'>
+"""
+editrecs_all_end_1 = """\
+called Frame.setLayout with arg of type `<class 'unittests.mockqtwidgets.MockVBox'>`
+called ScrollArea.setWidget with arg of type `<class 'unittests.mockqtwidgets.MockFrame'>`
+called ScrollArea.setWidgetResizable with arg `True`
+called VBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockScrollArea'>
+called HBoxLayout.__init__
+called PushButton.__init__ with args ('Nieuwe opname', {me})
+called connect with args ({add_new_item},)
+called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockButton'>
+called HBoxLayout.addStretch
+called VBoxLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'>
+called HBoxLayout.__init__
+called Frame.__init__
+called Frame.setFrameShape with arg `---`
+called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockFrame'>
+called VBoxLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'>
+"""
+editrecs_all_buttonstrip_1 = """\
+called button_strip with args ({me}, 'Go', 'GoBack', 'Start')
+"""
+editrecs_all_buttonstrip_2 = """\
+called button_strip with args ({me}, 'Go', 'GoBack', 'Select', 'Start')
+"""
+editrecs_all_buttonstrip_3 = """\
+called button_strip with args ({me}, 'Cancel', 'Go', 'GoBack', 'Select', 'Start')
+"""
+editrecs_all_end_2 = """\
+called HBoxLayout.__init__
+called VBoxLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'>
+called exitbutton with args ({me}, {exit}) {{}}
+called HBoxLayout.__init__
+called VBoxLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'>
+called QWidget.setLayout with arg of type <class 'unittests.mockqtwidgets.MockVBox'>
+"""
+artists_all_start = """\
+called VBoxLayout.__init__
+called HBoxLayout.__init__
+called Label.__init__ with args ('Artiestenlijst - gefilterd op', {testobj})
+called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLabel'>
+called LineEdit.__init__
+called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLineEdit'>
+called PushButton.__init__ with args ('&Go', {testobj})
+called connect with args ({filter},)
+called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockButton'>
+called VBoxLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'>
+called HBoxLayout.__init__
+called Frame.__init__
+called Frame.setFrameShape with arg `---`
+called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockFrame'>
+called VBoxLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'>
+called Frame.__init__
+called VBoxLayout.__init__
+"""
+artists_all_middle = """\
+called Artists.add_artist_line with args (1, 'a', 'b')
+called Artists.add_artist_line with args (3, 'b', 'a')
+called Artists.add_artist_line with args (2, 'x', 'y')
+"""
+artists_all_end = """\
+called VBoxLayout.addStretch
+called Frame.setLayout with arg of type `<class 'unittests.mockqtwidgets.MockVBox'>`
+called ScrollArea.setWidget with arg of type `<class 'unittests.mockqtwidgets.MockFrame'>`
+called ScrollArea.setWidgetResizable with arg `True`
+called VBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockScrollArea'>
+called button_strip with args ({testobj}, 'Edit', 'New', 'Start')
+called HBoxLayout.__init__
+called VBoxLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'>
+called exitbutton with args ({testobj}, {exit}) {{}}
+called HBoxLayout.__init__
+called VBoxLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'>
+called QWidget.setLayout with arg of type <class 'unittests.mockqtwidgets.MockVBox'>
+"""
+artists_line = """\
+called HBoxLayout.__init__
+called Label.__init__ with args ('  {num}.', {testobj})
+called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLabel'>
+called LineEdit.__init__ with args ('{text1}', {testobj})
+called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLineEdit'>
+called LineEdit.__init__ with args ('{text2}', {testobj})
+called LineEdit.setMaximumWidth to `300`
+called LineEdit.setMinimumWidth to `300`
+called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLineEdit'>
+called VBoxLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'>
 """
 artist_dialog = """\
 called QWidget.__init__
@@ -609,7 +808,22 @@ def expected_output():
         'editdetails_live': editdetails_live,
         'editdetails_studio_nw': editdetails_studio_nw,
         'editdetails_live_nw': editdetails_live_nw,
-        'edittracks': edittracks_all,
-        'editrecs': editrecs_all,
-        'artists': artists_all,
+        'edittracks': (edittracks_all_start + edittracks_all_end_1 + edittracks_all_buttonstrip_1 +
+                       edittracks_all_end_2),
+        'edittracks_2': (edittracks_all_start + edittracks_all_end_1 + edittracks_all_buttonstrip_2 +
+                         edittracks_all_end_2),
+        'edittracks_3': (edittracks_all_start + edittracks_all_middle + edittracks_all_end_1 +
+                         edittracks_all_buttonstrip_3 + edittracks_all_end_2),
+        'edittracks_line': track_fields,
+        'editrecs': (editrecs_all_start + editrecs_all_end_1 + editrecs_all_buttonstrip_1 +
+                       editrecs_all_end_2),
+        'editrecs_2': (editrecs_all_start + editrecs_all_end_1 + editrecs_all_buttonstrip_2 +
+                         editrecs_all_end_2),
+        'editrecs_3': (editrecs_all_start + editrecs_all_middle + editrecs_all_end_1 +
+                         editrecs_all_buttonstrip_3 + editrecs_all_end_2),
+        'editrecs_line': rec_fields_start + rec_fields_end,
+        'editrecs_line_2': rec_fields_start + rec_fields_middle + rec_fields_end,
+        'artists': artists_all_start + artists_all_middle + artists_all_end,
+        'artists_2': artists_all_start + artists_all_end,
+        'artist_line': artists_line,
         'artist_dialog': artist_dialog}

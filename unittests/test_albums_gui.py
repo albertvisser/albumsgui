@@ -273,6 +273,8 @@ class MockMainFrame:
         print('called Main.do_edit_trk')
     def do_edit_rec(self):
         print('called Main.do_edit_rec')
+    def get_all_artists(self):
+        print('called Main.get_all_artists')
     def start_import_tool(self):
         print('called Main.start_import_tool')
     def close(self):
@@ -350,8 +352,8 @@ class MockArtists:
 
 
 def test_main_init(monkeypatch, capsys):
-    monkeypatch.setattr(testee.qtw, 'QApplication', mockqtw.MockApplication)
-    monkeypatch.setattr(testee.qtw, 'QMainWindow', mockqtw.MockMainWindow)
+    monkeypatch.setattr(testee.qtw.QApplication, '__init__', mockqtw.MockApplication.__init__)
+    monkeypatch.setattr(testee.qtw.QMainWindow, '__init__', mockqtw.MockMainWindow.__init__)
     monkeypatch.setattr(testee.MainFrame, 'move', mockqtw.MockMainWindow.move)
     monkeypatch.setattr(testee.MainFrame, 'show', mockqtw.MockMainWindow.show)
     monkeypatch.setattr(testee.MainFrame, 'do_start', MockMainFrame.do_start)
@@ -677,10 +679,6 @@ def test_start_refresh_screen(monkeypatch, capsys):
     testobj.ask_live_search = mockqtw.MockComboBox()
     testobj.ask_live_sort = mockqtw.MockComboBox()
     testobj.live_zoektekst = mockqtw.MockLineEdit()
-    testobj.parent().artist_names = ['twee', 'een']
-    testobj.parent().albumtype = 'x'
-    testobj.parent().searchtype = 1
-    testobj.refresh_screen()
     assert capsys.readouterr().out == ('called ComboBox.__init__\n'
                                        'called ComboBox.__init__\n'
                                        'called ComboBox.__init__\n'
@@ -688,8 +686,12 @@ def test_start_refresh_screen(monkeypatch, capsys):
                                        'called ComboBox.__init__\n'
                                        'called ComboBox.__init__\n'
                                        'called ComboBox.__init__\n'
-                                       'called LineEdit.__init__\n'
-                                       "called ComboBox.addItems with arg `['twee', 'een']`\n"
+                                       'called LineEdit.__init__\n')
+    testobj.parent().artist_names = ['twee', 'een']
+    testobj.parent().albumtype = 'x'
+    testobj.parent().searchtype = 1
+    testobj.refresh_screen()
+    assert capsys.readouterr().out == ("called ComboBox.addItems with arg `['twee', 'een']`\n"
                                        "called ComboBox.addItems with arg `['twee', 'een']`\n"
                                        'called ComboBox.setCurrentIndex to `1`\n'
                                        'called ComboBox.setCurrentIndex to `3`\n'
@@ -777,17 +779,17 @@ def test_start_select_1(monkeypatch, capsys):
     actwin = mockqtw.MockComboBox()
     argwin = mockqtw.MockLineEdit()
     sortwin = mockqtw.MockComboBox()
+    assert capsys.readouterr().out == ('called ComboBox.__init__\n'
+                                       'called ComboBox.__init__\n'
+                                       'called LineEdit.__init__\n'
+                                       'called ComboBox.__init__\n')
     testobj._select('studio', typewin, actwin, argwin, sortwin)
     assert testobj.parent().searchtype == 0
     # assert testobj.parent().artist == 1
     # assert testobj.parent().search_arg == 'x'
     assert testobj.parent().albumtype == 'studio'
     assert testobj.parent().sorttype == '.'
-    assert capsys.readouterr().out == ('called ComboBox.__init__\n'
-                                       'called ComboBox.__init__\n'
-                                       'called LineEdit.__init__\n'
-                                       'called ComboBox.__init__\n'
-                                       'called ComboBox.currentText\n'
+    assert capsys.readouterr().out == ('called ComboBox.currentText\n'
                                        'called Main.do_select\n')
 
 def test_start_select_2(monkeypatch, capsys):
@@ -1757,26 +1759,84 @@ def setup_edittracks(monkeypatch, capsys):
                                        'called QWidget.__init__\n')
     return testobj
 
-def _test_edittracks_create_widgets(monkeypatch, capsys):
+def test_edittracks_create_widgets(monkeypatch, capsys, expected_output):
+    def mock_add(*args):
+        print('called EditTracks.add_track_fields with args', args)
     monkeypatch.setattr(testee.qtw, 'QGridLayout', mockqtw.MockGrid)
     monkeypatch.setattr(testee.qtw, 'QVBoxLayout', mockqtw.MockVBox)
     monkeypatch.setattr(testee.qtw, 'QHBoxLayout', mockqtw.MockHBox)
-    monkeypatch.setattr(testee.qtw, 'QComboBox', mockqtw.MockComboBox)
     monkeypatch.setattr(testee.qtw, 'QPushButton', mockqtw.MockButton)
     monkeypatch.setattr(testee.qtw, 'QLabel', mockqtw.MockLabel)
-    monkeypatch.setattr(testee.qtw, 'QLineEdit', mockqtw.MockLineEdit)
-    monkeypatch.setattr(testee.qtw, 'QTextEdit', mockqtw.MockTextEdit)
     monkeypatch.setattr(testee.qtw, 'QFrame', mockqtw.MockFrame)
     monkeypatch.setattr(testee.qtw, 'QScrollArea', mockqtw.MockScrollArea)
-    monkeypatch.setattr(testee, 'newline', mock_newline)
     monkeypatch.setattr(testee, 'button_strip', mock_button_strip)
     monkeypatch.setattr(testee, 'exitbutton', mock_exitbutton)
     testobj = setup_edittracks(monkeypatch, capsys)
+    monkeypatch.setattr(testobj, 'add_track_fields', mock_add)
+    testobj.parent().albumdata = {'tracks': {}}
+    testobj.parent().album = None
+    testobj.parent().search_arg = ''
     testobj.create_widgets()
+    assert testobj.first_time
+    assert testobj.line == 1
+    assert testobj.widgets == []
+    assert testobj.tracks == 0
+    bindings = {'me': testobj,
+                'add_new_item': testobj.add_new_item,
+                'exit': testobj.exit}
+    assert capsys.readouterr().out == expected_output['edittracks'].format(**bindings)
+    testobj.parent().albumdata = {'tracks': {}}
+    testobj.parent().album = None
+    testobj.parent().search_arg = 'x'
+    testobj.create_widgets()
+    assert testobj.line == 1
+    assert testobj.widgets == []
+    assert testobj.tracks == 0
+    assert capsys.readouterr().out == expected_output['edittracks_2'].format(**bindings)
+    testobj.parent().albumdata = {'tracks': {1: {'x': 'y'}, 2: {'a': 'b', 'c': 'd'}}}
+    testobj.parent().album = 'x'
+    testobj.parent().search_arg = ''
+    testobj.create_widgets()
+    assert testobj.line == 1      # ophogen wordt bij add_track_fields test geverifieerd
+    assert testobj.widgets == []  # uitbreiden wordt bij add_track_fields test geverifieerd
+    assert testobj.tracks == 2
+    assert capsys.readouterr().out == expected_output['edittracks_3'].format(**bindings)
 
-def _test_edittracks_add_track_fields(monkeypatch, capsys):
+def test_edittracks_add_track_fields(monkeypatch, capsys, expected_output):
+    def mock_init(self, *args):
+        print("called LineEdit.__init__ with args", args)
+    def mock_init_2(self, *args):
+        print("called TextEdit.__init__ with args", args)
+    monkeypatch.setattr(testee.qtw, 'QGridLayout', mockqtw.MockGrid)
+    monkeypatch.setattr(testee.qtw, 'QHBoxLayout', mockqtw.MockHBox)
+    monkeypatch.setattr(testee.qtw, 'QLabel', mockqtw.MockLabel)
+    monkeypatch.setattr(mockqtw.MockLineEdit, '__init__', mock_init)
+    monkeypatch.setattr(testee.qtw, 'QLineEdit', mockqtw.MockLineEdit)
+    monkeypatch.setattr(mockqtw.MockTextEdit, '__init__', mock_init_2)
+    monkeypatch.setattr(testee.qtw, 'QTextEdit', mockqtw.MockTextEdit)
     testobj = setup_edittracks(monkeypatch, capsys)
-    testobj.add_track_fields(trackindex, trackname='', author='', text='')
+    testobj.gbox = mockqtw.MockGrid()
+    assert capsys.readouterr().out == 'called GridLayout.__init__\n'
+    testobj.widgets = []
+    testobj.line = 0
+    testobj.add_track_fields(1)
+    assert testobj.line == 2
+    assert len(testobj.widgets) == 1
+    assert isinstance(testobj.widgets[0][0], testee.qtw.QLineEdit)
+    assert isinstance(testobj.widgets[0][1], testee.qtw.QLineEdit)
+    assert isinstance(testobj.widgets[0][2], testee.qtw.QTextEdit)
+    bindings = {'me': testobj, 'num': 1, 'text1': '', 'text2': '', 'text3': ''}
+    assert capsys.readouterr().out == expected_output['edittracks_line'].format(**bindings)
+    testobj.widgets = []
+    testobj.line = 0
+    testobj.add_track_fields(2, trackname='x', author='y', text='z')
+    assert testobj.line == 2
+    assert len(testobj.widgets) == 1
+    assert isinstance(testobj.widgets[0][0], testee.qtw.QLineEdit)
+    assert isinstance(testobj.widgets[0][1], testee.qtw.QLineEdit)
+    assert isinstance(testobj.widgets[0][2], testee.qtw.QTextEdit)
+    bindings = {'me': testobj, 'num': 2, 'text1': 'x', 'text2': 'y', 'text3': 'z'}
+    assert capsys.readouterr().out == expected_output['edittracks_line'].format(**bindings)
 
 def test_edittracks_refresh_screen(monkeypatch, capsys):
     def mock_build_heading(win):
@@ -1811,9 +1871,72 @@ def test_edittracks_add_new_item(monkeypatch, capsys):
                                        'called scrollbar.maximum\n'
                                        'called scrollbar.setValue with value `99`\n')
 
-def _test_edittracks_submit(monkeypatch, capsys):
+def test_edittracks_submit(monkeypatch, capsys):
+    def mock_refresh():
+        print('called EditDetails.refresh_screen')
+    def mock_update(*args):
+        print('called dmla.update_album_tracks with args', args)
+        return True
+    monkeypatch.setattr(testee.dmla, 'update_album_tracks', mock_update)
+    monkeypatch.setattr(testee.qtw, 'QMessageBox', mockqtw.MockMessageBox)
     testobj = setup_edittracks(monkeypatch, capsys)
-    testobj.submit(skip_confirm=False)
+    monkeypatch.setattr(testobj, 'refresh_screen', mock_refresh)
+    testobj.widgets = []
+    testobj.first_time = True
+    testobj.submit()
+    assert not testobj.first_time
+    assert capsys.readouterr().out == ('called QMessageBox.information with args'
+                                       ' `Albums` `Nothing changed`\n'
+                                       'called EditDetails.refresh_screen\n')
+    testobj.widgets = [(mockqtw.MockLineEdit('', testobj), mockqtw.MockLineEdit('', testobj),
+                        mockqtw.MockTextEdit('', testobj))]
+    assert capsys.readouterr().out ==('called LineEdit.__init__\n'
+                                      'called LineEdit.__init__\n'
+                                      'called TextEdit.__init__\n')
+    testobj.parent().albumdata = {'tracks': {}}
+    testobj.parent().album = types.SimpleNamespace(id=1)
+    testobj.submit()
+    assert testobj.parent().albumdata == {'tracks': {}}
+    assert capsys.readouterr().out == ('called LineEdit.text\n'
+                                       'called LineEdit.text\n'
+                                       'called TextEdit.toPlainText\n'
+                                       'called dmla.update_album_tracks with args'
+                                       " (1, [(1, ('', '', ''))])\n"
+                                       'called QMessageBox.information with args'
+                                       ' `Albums` `Tracks updated`\n')
+    testobj.widgets = [(mockqtw.MockLineEdit('x', testobj), mockqtw.MockLineEdit('y', testobj),
+                        mockqtw.MockTextEdit('z', testobj))]
+    assert capsys.readouterr().out ==('called LineEdit.__init__\n'
+                                      'called LineEdit.__init__\n'
+                                      'called TextEdit.__init__\n')
+    testobj.parent().albumdata = {'tracks': {1: ('x', 'y', 'z')}}
+    testobj.parent().album = types.SimpleNamespace(id=1)
+    testobj.submit()
+    assert testobj.parent().albumdata == {'tracks': {1: ('x', 'y', 'z')}}
+    assert capsys.readouterr().out == ('called LineEdit.text\n'
+                                       'called LineEdit.text\n'
+                                       'called TextEdit.toPlainText\n'
+                                       'called QMessageBox.information with args'
+                                       ' `Albums` `Nothing changed`\n')
+    testobj.parent().albumdata = {'tracks': {1: ('a', 'b', 'c')}}
+    testobj.parent().album = types.SimpleNamespace(id=1)
+    testobj.submit(skip_confirm=True)
+    assert testobj.parent().albumdata == {'tracks': {1: ('x', 'y', 'z')}}
+    assert capsys.readouterr().out == ('called LineEdit.text\n'
+                                       'called LineEdit.text\n'
+                                       'called TextEdit.toPlainText\n'
+                                       'called dmla.update_album_tracks with args'
+                                       " (1, [(1, ('x', 'y', 'z'))])\n")
+    testobj.parent().albumdata = {'tracks': {}}
+    testobj.parent().album = types.SimpleNamespace(id=1)
+    monkeypatch.setattr(testee.dmla, 'update_album_tracks', lambda *x: False)
+    testobj.submit()
+    assert testobj.parent().albumdata == {'tracks': {}}   # waarom verandert deze niet?
+    assert capsys.readouterr().out == ('called LineEdit.text\n'
+                                       'called LineEdit.text\n'
+                                       'called TextEdit.toPlainText\n'
+                                       'called QMessageBox.information with args'
+                                       ' `Albums` `Something went wrong, please try again`\n')
 
 def test_edittracks_submit_and_back(monkeypatch, capsys):
     def mock_submit(**kwargs):
@@ -1845,26 +1968,75 @@ def setup_editrecs(monkeypatch, capsys):
                                        'called QWidget.__init__\n')
     return testobj
 
-def _test_editrecs_create_widgets(monkeypatch, capsys):
+def test_editrecs_create_widgets(monkeypatch, capsys, expected_output):
+    def mock_add(*args):
+        print('called EditRecordings.add_track_fields with args', args)
     monkeypatch.setattr(testee.qtw, 'QGridLayout', mockqtw.MockGrid)
     monkeypatch.setattr(testee.qtw, 'QVBoxLayout', mockqtw.MockVBox)
     monkeypatch.setattr(testee.qtw, 'QHBoxLayout', mockqtw.MockHBox)
-    monkeypatch.setattr(testee.qtw, 'QComboBox', mockqtw.MockComboBox)
     monkeypatch.setattr(testee.qtw, 'QPushButton', mockqtw.MockButton)
     monkeypatch.setattr(testee.qtw, 'QLabel', mockqtw.MockLabel)
-    monkeypatch.setattr(testee.qtw, 'QLineEdit', mockqtw.MockLineEdit)
-    monkeypatch.setattr(testee.qtw, 'QTextEdit', mockqtw.MockTextEdit)
     monkeypatch.setattr(testee.qtw, 'QFrame', mockqtw.MockFrame)
     monkeypatch.setattr(testee.qtw, 'QScrollArea', mockqtw.MockScrollArea)
-    monkeypatch.setattr(testee, 'newline', mock_newline)
     monkeypatch.setattr(testee, 'button_strip', mock_button_strip)
     monkeypatch.setattr(testee, 'exitbutton', mock_exitbutton)
     testobj = setup_editrecs(monkeypatch, capsys)
+    monkeypatch.setattr(testobj, 'add_rec_fields', mock_add)
+    testobj.parent().albumdata = {'opnames': {}}
+    testobj.parent().album = None
+    testobj.parent().search_arg = ''
     testobj.create_widgets()
+    assert testobj.first_time
+    assert testobj.recwins == []
+    assert testobj.recs == 0
+    bindings = {'me': testobj,
+                'add_new_item': testobj.add_new_item,
+                'exit': testobj.exit}
+    assert capsys.readouterr().out == expected_output['editrecs'].format(**bindings)
+    testobj.parent().albumdata = {'opnames': {}}
+    testobj.parent().album = None
+    testobj.parent().search_arg = 'x'
+    testobj.create_widgets()
+    assert testobj.recwins == []
+    assert testobj.recs == 0
+    assert capsys.readouterr().out == expected_output['editrecs_2'].format(**bindings)
+    testobj.parent().albumdata = {'opnames': [(1, ('x', 'y')), (2, ('a', 'b'))]}
+    testobj.parent().album = 'x'
+    testobj.parent().search_arg = ''
+    testobj.create_widgets()
+    assert testobj.recwins == []  # uitbreiden wordt bij add_track_fields test geverifieerd
+    assert testobj.recs == 2
+    assert capsys.readouterr().out == expected_output['editrecs_3'].format(**bindings)
 
-def _test_editrecs_add_rec_fields(monkeypatch, capsys):
+def test_editrecs_add_rec_fields(monkeypatch, capsys, expected_output):
+    def mock_init(self, *args):
+        print("called LineEdit.__init__ with args", args)
+    def mock_init_2(self, *args):
+        print("called TextEdit.__init__ with args", args)
+    monkeypatch.setattr(testee, 'RECTYPES', ('x', 'y', 'z'))
+    monkeypatch.setattr(testee.qtw, 'QGridLayout', mockqtw.MockGrid)
+    monkeypatch.setattr(testee.qtw, 'QHBoxLayout', mockqtw.MockHBox)
+    monkeypatch.setattr(testee.qtw, 'QLabel', mockqtw.MockLabel)
+    monkeypatch.setattr(testee.qtw, 'QComboBox', mockqtw.MockComboBox)
+    monkeypatch.setattr(mockqtw.MockLineEdit, '__init__', mock_init)
+    monkeypatch.setattr(testee.qtw, 'QLineEdit', mockqtw.MockLineEdit)
     testobj = setup_editrecs(monkeypatch, capsys)
-    testobj.add_rec_fields(opnindex, opname=None)
+    testobj.vbox2 = mockqtw.MockVBox()
+    assert capsys.readouterr().out == 'called VBoxLayout.__init__\n'
+    testobj.recwins = []
+    testobj.add_rec_fields(1)
+    assert len(testobj.recwins) == 1
+    assert isinstance(testobj.recwins[0][0], testee.qtw.QComboBox)
+    assert isinstance(testobj.recwins[0][1], testee.qtw.QLineEdit)
+    bindings = {'me': testobj, 'num': 2, 'text': '', 'insertpos': -1}
+    assert capsys.readouterr().out == expected_output['editrecs_line'].format(**bindings)
+    testobj.recwins = []
+    testobj.add_rec_fields(2, opname=('x', 'y'))
+    assert len(testobj.recwins) == 1
+    assert isinstance(testobj.recwins[0][0], testee.qtw.QComboBox)
+    assert isinstance(testobj.recwins[0][1], testee.qtw.QLineEdit)
+    bindings = {'me': testobj, 'num': 3, 'text': 'y', 'insertpos': 0}
+    assert capsys.readouterr().out == expected_output['editrecs_line_2'].format(**bindings)
 
 def test_editrecs_refresh_screen(monkeypatch, capsys):
     def mock_build_heading(win):
@@ -1899,9 +2071,67 @@ def test_editrecs_add_new_item(monkeypatch, capsys):
                                        'called scrollbar.maximum\n'
                                        'called scrollbar.setValue with value `99`\n')
 
-def _test_editrecs_submit(monkeypatch, capsys):
+def test_editrecs_submit(monkeypatch, capsys):
+    def mock_refresh():
+        print('called EditDetails.refresh_screen')
+    def mock_update(*args):
+        print('called dmla.update_album_recordings with args', args)
+        return True
+    monkeypatch.setattr(testee.dmla, 'update_album_recordings', mock_update)
+    monkeypatch.setattr(testee.qtw, 'QMessageBox', mockqtw.MockMessageBox)
     testobj = setup_editrecs(monkeypatch, capsys)
-    testobj.submit(skip_confirm=False)
+    monkeypatch.setattr(testobj, 'refresh_screen', mock_refresh)
+    testobj.recwins = []
+    testobj.first_time = True
+    testobj.submit()
+    assert not testobj.first_time
+    assert capsys.readouterr().out == ('called QMessageBox.information with args'
+                                       ' `Albums` `Nothing changed`\n'
+                                       'called EditDetails.refresh_screen\n')
+    testobj.recwins = [(mockqtw.MockComboBox(testobj), mockqtw.MockLineEdit('', testobj))]
+    testobj.recwins[0][0].setCurrentText('')
+    assert capsys.readouterr().out ==('called ComboBox.__init__\n'
+                                      'called LineEdit.__init__\n'
+                                      'called ComboBox.setCurrentText to ``\n')
+    testobj.parent().albumdata = {'opnames': []}  #
+    testobj.parent().album = types.SimpleNamespace(id=1)
+    testobj.submit()
+    assert testobj.parent().albumdata == {'opnames': []}
+    assert capsys.readouterr().out == ('called ComboBox.currentText\n'
+                                       'called LineEdit.text\n'
+                                       'called dmla.update_album_recordings with args'
+                                       " (1, [(0, ('.', ''))])\n"
+                                       'called QMessageBox.information with args'
+                                       ' `Albums` `Recordings updated`\n')
+    testobj.recwins = [(mockqtw.MockComboBox(testobj), mockqtw.MockLineEdit('y', testobj))]
+    newvalue = 'x'
+    testobj.recwins[0][0].setCurrentText(newvalue)
+    assert capsys.readouterr().out ==('called ComboBox.__init__\n'
+                                      'called LineEdit.__init__\n'
+                                      'called ComboBox.setCurrentText to `x`\n')
+    monkeypatch.setattr(mockqtw.MockComboBox, 'currentText', lambda *x: newvalue)
+    testobj.parent().albumdata = {'opnames': [('x', 'y')]}
+    testobj.parent().album = types.SimpleNamespace(id=1)
+    testobj.submit()
+    assert testobj.parent().albumdata == {'opnames': [('x', 'y')]}
+    assert capsys.readouterr().out == ('called LineEdit.text\n'
+                                       'called QMessageBox.information with args'
+                                       ' `Albums` `Nothing changed`\n')
+    testobj.parent().albumdata = {'opnames': [('a', 'b')]}
+    testobj.parent().album = types.SimpleNamespace(id=1)
+    testobj.submit(skip_confirm=True)
+    assert testobj.parent().albumdata == {'opnames': [('x', 'y')]}
+    assert capsys.readouterr().out == ('called LineEdit.text\n'
+                                       'called dmla.update_album_recordings with args'
+                                       " (1, [(0, ('x', 'y'))])\n")
+    testobj.parent().albumdata = {'opnames': []}
+    testobj.parent().album = types.SimpleNamespace(id=1)
+    monkeypatch.setattr(testee.dmla, 'update_album_recordings', lambda *x: False)
+    testobj.submit()
+    assert testobj.parent().albumdata == {'opnames': []}
+    assert capsys.readouterr().out == ('called LineEdit.text\n'
+                                       'called QMessageBox.information with args'
+                                       ' `Albums` `Something went wrong, please try again`\n')
 
 def test_editrecs_submit_and_back(monkeypatch, capsys):
     def mock_submit(**kwargs):
@@ -1934,22 +2164,37 @@ def setup_artists(monkeypatch, capsys):
                                        'called QWidget.__init__\n')
     return testobj
 
-def _test_artists_create_widgets(monkeypatch, capsys):
-    monkeypatch.setattr(testee.qtw, 'QGridLayout', mockqtw.MockGrid)
+def test_artists_create_widgets(monkeypatch, capsys, expected_output):
+    def mock_add(*args):
+        print('called Artists.add_artist_line with args', args)
     monkeypatch.setattr(testee.qtw, 'QVBoxLayout', mockqtw.MockVBox)
     monkeypatch.setattr(testee.qtw, 'QHBoxLayout', mockqtw.MockHBox)
-    monkeypatch.setattr(testee.qtw, 'QComboBox', mockqtw.MockComboBox)
     monkeypatch.setattr(testee.qtw, 'QPushButton', mockqtw.MockButton)
     monkeypatch.setattr(testee.qtw, 'QLabel', mockqtw.MockLabel)
     monkeypatch.setattr(testee.qtw, 'QLineEdit', mockqtw.MockLineEdit)
-    monkeypatch.setattr(testee.qtw, 'QTextEdit', mockqtw.MockTextEdit)
     monkeypatch.setattr(testee.qtw, 'QFrame', mockqtw.MockFrame)
     monkeypatch.setattr(testee.qtw, 'QScrollArea', mockqtw.MockScrollArea)
-    monkeypatch.setattr(testee, 'newline', mock_newline)
     monkeypatch.setattr(testee, 'button_strip', mock_button_strip)
     monkeypatch.setattr(testee, 'exitbutton', mock_exitbutton)
     testobj = setup_artists(monkeypatch, capsys)
+    testobj.parent().artist_filter = 'xxx'
+    artist1 = types.SimpleNamespace(id=1, first_name='a', last_name='b')
+    artist2 = types.SimpleNamespace(id=3, first_name='b', last_name='a')
+    artist3 = types.SimpleNamespace(id=2, first_name='x', last_name='y')
+    testobj.parent().artists = [artist1, artist2, artist3]
+    monkeypatch.setattr(testobj, 'add_artist_line', mock_add)
     testobj.create_widgets()
+    assert testobj.artist_list == [artist1, artist2, artist3]
+    assert testobj.last_artistid == 3
+    bindings = {'testobj': testobj,
+                'filter': testobj.filter,
+                'exit': testobj.exit}
+    assert capsys.readouterr().out == expected_output['artists'].format(**bindings)
+    testobj.parent().artists = []
+    testobj.create_widgets()
+    assert testobj.artist_list == []
+    assert testobj.last_artistid == 0
+    assert capsys.readouterr().out == expected_output['artists_2'].format(**bindings)
 
 def test_artists_filter(monkeypatch, capsys):
     def mock_list(arg):
@@ -1974,7 +2219,7 @@ def test_artists_filter(monkeypatch, capsys):
     assert testobj.parent().artist_filter == ''
     assert capsys.readouterr().out == 'called Main.do_select\n'
 
-def test_artists_add_artist_line(monkeypatch, capsys):
+def test_artists_add_artist_line(monkeypatch, capsys, expected_output):
     def mock_init(self, *args):
         print("called LineEdit.__init__ with args", args)
     monkeypatch.setattr(testee.qtw, 'QHBoxLayout', mockqtw.MockHBox)
@@ -1989,46 +2234,67 @@ def test_artists_add_artist_line(monkeypatch, capsys):
     assert len(testobj.fields) == 1
     assert isinstance(testobj.fields[0][0], testee.qtw.QLineEdit)
     assert isinstance(testobj.fields[0][1], testee.qtw.QLineEdit)
-    assert capsys.readouterr().out == ("called HBoxLayout.__init__\n"
-                                       f"called Label.__init__ with args ('  1.', {testobj})\n"
-                                       "called HBoxLayout.addWidget with arg of type"
-                                       " <class 'unittests.mockqtwidgets.MockLabel'>\n"
-                                       f"called LineEdit.__init__ with args ('', {testobj})\n"
-                                       "called HBoxLayout.addWidget with arg of type"
-                                       " <class 'unittests.mockqtwidgets.MockLineEdit'>\n"
-                                       f"called LineEdit.__init__ with args ('', {testobj})\n"
-                                       "called LineEdit.setMaximumWidth to `300`\n"
-                                       "called LineEdit.setMinimumWidth to `300`\n"
-                                       "called HBoxLayout.addWidget with arg of type"
-                                       " <class 'unittests.mockqtwidgets.MockLineEdit'>\n"
-                                       "called VBoxLayout.addLayout with arg of type"
-                                       " <class 'unittests.mockqtwidgets.MockHBox'>\n")
+    bindings = {'testobj': testobj, 'num': 1, 'text1': '', 'text2': ''}
+    assert capsys.readouterr().out == expected_output['artist_line'].format(**bindings)
     testobj.fields = []
     testobj.add_artist_line(2, first_name='x', last_name='y')
     assert len(testobj.fields) == 1
     assert isinstance(testobj.fields[0][0], testee.qtw.QLineEdit)
     assert isinstance(testobj.fields[0][1], testee.qtw.QLineEdit)
-    assert capsys.readouterr().out == ("called HBoxLayout.__init__\n"
-                                       f"called Label.__init__ with args ('  2.', {testobj})\n"
-                                       "called HBoxLayout.addWidget with arg of type"
-                                       " <class 'unittests.mockqtwidgets.MockLabel'>\n"
-                                       f"called LineEdit.__init__ with args ('x', {testobj})\n"
-                                       "called HBoxLayout.addWidget with arg of type"
-                                       " <class 'unittests.mockqtwidgets.MockLineEdit'>\n"
-                                       f"called LineEdit.__init__ with args ('y', {testobj})\n"
-                                       "called LineEdit.setMaximumWidth to `300`\n"
-                                       "called LineEdit.setMinimumWidth to `300`\n"
-                                       "called HBoxLayout.addWidget with arg of type"
-                                       " <class 'unittests.mockqtwidgets.MockLineEdit'>\n"
-                                       "called VBoxLayout.addLayout with arg of type"
-                                       " <class 'unittests.mockqtwidgets.MockHBox'>\n")
+    bindings = {'testobj': testobj, 'num': 2, 'text1': 'x', 'text2': 'y'}
+    assert capsys.readouterr().out == expected_output['artist_line'].format(**bindings)
 
 def test_artists_refresh_screen(monkeypatch, capsys):
     "method-to-test is empty"
 
-def _test_artists_submit(monkeypatch, capsys):
+def test_artists_submit(monkeypatch, capsys):
+    def mock_update(*args):
+        print('called dmla.update_artists with args', args)
+        return True
+    monkeypatch.setattr(testee.core.Qt, 'WaitCursor', 'waitcursor')
+    monkeypatch.setattr(testee.gui, 'QCursor', mockqtw.MockCursor)
+    monkeypatch.setattr(testee.dmla, 'update_artists', mock_update)
+    monkeypatch.setattr(testee.qtw, 'QMessageBox', mockqtw.MockMessageBox)
     testobj = setup_artists(monkeypatch, capsys)
+    testobj.fields = ()
     testobj.submit()
+    assert capsys.readouterr().out == ('called QCursor with arg waitcursor\n'
+                                       'called changeOverrideCursor with arg of type'
+                                       " <class 'unittests.mockqtwidgets.MockCursor'>\n"
+                                       'called QMessageBox.information with args'
+                                       ' `Albums` `Nothing changed`\n'
+                                       'called app.restoreOverrideCursor\n'
+                                       'called Main.get_all_artists\n'
+                                       'called Main.do_select\n')
+    testobj.parent().artists = ()
+    testobj.fields = [(mockqtw.MockLineEdit('x'), mockqtw.MockLineEdit('y'))]
+    assert capsys.readouterr().out == ('called LineEdit.__init__\n'
+                                       'called LineEdit.__init__\n')
+    testobj.submit()
+    assert capsys.readouterr().out == ('called QCursor with arg waitcursor\n'
+                                       'called changeOverrideCursor with arg of type'
+                                       " <class 'unittests.mockqtwidgets.MockCursor'>\n"
+                                       'called LineEdit.text\n'
+                                       'called LineEdit.text\n'
+                                       "called dmla.update_artists with args ([(0, 'x', 'y')],)\n"
+                                       'called app.restoreOverrideCursor\n'
+                                       'called Main.get_all_artists\n'
+                                       'called Main.do_select\n')
+    testobj.parent().artists = [types.SimpleNamespace(id=1, first_name='a', last_name='b')]
+    testobj.fields = [(mockqtw.MockLineEdit('x'), mockqtw.MockLineEdit('y'))]
+    assert capsys.readouterr().out == ('called LineEdit.__init__\n'
+                                       'called LineEdit.__init__\n')
+    testobj.submit()
+    assert capsys.readouterr().out == ('called QCursor with arg waitcursor\n'
+                                       'called changeOverrideCursor with arg of type'
+                                       " <class 'unittests.mockqtwidgets.MockCursor'>\n"
+                                       'called LineEdit.text\n'
+                                       'called LineEdit.text\n'
+                                       "called dmla.update_artists with args ([(1, 'x', 'y')],)\n"
+                                       'called app.restoreOverrideCursor\n'
+                                       'called Main.get_all_artists\n'
+                                       'called Main.do_select\n')
+
 
 def test_artists_new(monkeypatch, capsys):
     def mock_add(num):

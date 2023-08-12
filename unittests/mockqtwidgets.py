@@ -5,7 +5,14 @@ class MockApplication:  # (qtw.QApplication):
         print('called QApplication.__init__')
     def exec_(self):
         print('called QApplication.exec_')
+    def changeOverrideCursor(self, arg):
+        print(f'called changeOverrideCursor with arg of type {type(arg)}')
+    def restoreOverrideCursor(self):
+        print('called app.restoreOverrideCursor')
 
+class MockCursor:
+    def __init__(self, arg):
+        print(f'called QCursor with arg {arg}')
 
 class MockControl:
     def setVisible(self, value):
@@ -55,12 +62,20 @@ class MockMainWindow:
 class MockVBox:
     def __init__(self):
         print('called VBoxLayout.__init__')
+        self._count = 0
     def addWidget(self, *args):
         print(f'called VBoxLayout.addWidget with arg of type {type(args[0])}')
+        self._count += 1
     def addLayout(self, *args):
         print(f'called VBoxLayout.addLayout with arg of type {type(args[0])}')
+        self._count += 1
+    def insertLayout(self, *args):
+        print(f'called VBoxLayout.insertLayout with arg1 {args[0]} and arg2 of type {type(args[1])}')
+        self._count += 1
     def addStretch(self, *args):
         print('called VBoxLayout.addStretch')
+    def count(self):
+        return self._count
 
 
 class MockHBox:
@@ -136,7 +151,7 @@ class MockComboBox:
 class MockLineEdit:
     def __init__(self, *args):
         print('called LineEdit.__init__')
-        self._text = '..'
+        self._text = args[0] if args else '..'
     def setMaximumWidth(self, number):
         print(f'called LineEdit.setMaximumWidth to `{number}`')
     def setMinimumWidth(self, number):
@@ -154,17 +169,22 @@ class MockLineEdit:
 class MockTextEdit:
     def __init__(self, *args):
         print('called TextEdit.__init__')
+        self._text = args[0] if args else '..'
     def setMaximumWidth(self, number):
         print(f'called TextEdit.setMaximumWidth to `{number}`')
+    def setMaximumHeight(self, number):
+        print(f'called TextEdit.setMaximumHeight to `{number}`')
     def setMinimumWidth(self, number):
         print(f'called TextEdit.setMinimumWidth to `{number}`')
+    def setMinimumHeight(self, number):
+        print(f'called TextEdit.setMinimumHeight to `{number}`')
     def setText(self, text):
         print(f'called TextEdit.setText with arg `{text}`')
     def clear(self):
         print('called TextEdit.clear')
     def toPlainText(self):
         print('called TextEdit.toPlainText')
-        return '..'
+        return self._text
 
 
 class MockListBox:
@@ -193,6 +213,8 @@ class MockLabel:
         print(f'called Label.setMinimumWidth to `{number}`')
     def setMinimumHeight(self, number):
         print(f'called Label.setMinimumHeight to `{number}`')
+    def setMaximumWidth(self, number):
+        print(f'called Label.setMaximumWidth to `{number}`')
     def setText(self, text):
         print(f'called Label.setText with arg `{text}`')
         self._text = text
@@ -252,6 +274,8 @@ class MockMessageBox:
 class MockScrollArea:
     def setWidget(self, arg):
         print(f'called ScrollArea.setWidget with arg of type `{type(arg)}`')
+    def setWidgetResizable(self, arg):
+        print(f'called ScrollArea.setWidgetResizable with arg `{arg}`')
 
 class MockDialog:
     def __init__(self, *args, **kwargs):

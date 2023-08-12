@@ -36,8 +36,8 @@ class MainFrame(qtw.QMainWindow):
     """
     def __init__(self):
         self.app = qtw.QApplication(sys.argv)
-        # super().__init__()
-        qtw.QMainWindow.__init__(self)  # met super() gaat de unittest mis
+        super().__init__()
+        # qtw.QMainWindow.__init__(self)  # met super() gaat de unittest mis
         self.move(300, 50)
         ## self.resize(400, 600)
         self.artist = None
@@ -1374,15 +1374,14 @@ class Artists(qtw.QWidget):
         """
         self.parent().app.changeOverrideCursor(gui.QCursor(core.Qt.WaitCursor))
         changes = []
-        changed = False
+        new = changed = False
         for ix, wins in enumerate(self.fields):
-            new = False
             if ix < len(self.parent().artists):
                 fname, lname = wins[0].text(), wins[1].text()
                 artist = self.parent().artists[ix]
                 if fname != artist.first_name or lname != artist.last_name:
                     changed = True
-                    changes.append((artist.id, wins[0].text(), wins[1].text()))
+                    changes.append((artist.id, fname, lname))
             else:
                 new = True
                 changes.append((0, wins[0].text(), wins[1].text()))
