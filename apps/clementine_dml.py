@@ -20,17 +20,24 @@ def retrieve(query, parms):
 
 def get_artists_lists():
     "produce list of artists"
-    data = [x["artist"] for x in retrieve("select distinct artist from songs "
-                                          "where unavailable = '0' order by artist;", ())]
+    data = list_artists()
     return data, data
+
+
+def list_artists():
+    return [x["artist"] for x in retrieve("select distinct artist from songs "
+                                          "where unavailable = '0' order by artist;", ())]
 
 
 def get_albums_lists(artist_name):
     "produce list of albums for artist"
-    data = [x["album"] for x in retrieve("select distinct album, year from songs where artist = ? "
-                                         "and unavailable = '0';", (artist_name,))]
+    data = list_albums(artist_name)
     return data, data
 
+
+def list_albums(artist_name):
+    return [x["album"] for x in retrieve("select distinct album, year from songs where artist = ? "
+                                         "and unavailable = '0';", (artist_name,))]
 
 def get_album_cover(artist_name='', album_name='', all_tracks=False):
     """produce list of album covers
@@ -66,7 +73,11 @@ def list_tracks_for_artist(artist_name):
 
 def get_tracks_lists(artist_name, album_name):
     "produce list of tracks for album"
-    data = [x["title"] for x in retrieve("select rowid, track, title from songs"
+    data = list_tracks_for_album(artist_name, album_name)
+    return data, data
+
+
+def list_tracks_for_album(artist_name, album_name):
+    return [x["title"] for x in retrieve("select rowid, track, title from songs"
                                          " where artist = ? and album = ? and unavailable = '0'"
                                          " order by disc, track;", (artist_name, album_name))]
-    return data, data

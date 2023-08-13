@@ -28,7 +28,6 @@ def test_retrieve(monkeypatch, capsys):
                                        'executing query parms\n')
 
 
-
 def test_get_artists_lists(monkeypatch, capsys):
     def mock_retrieve(query, parms):
         print(f'called retrieve with args `{query}`, {parms}')
