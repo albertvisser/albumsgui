@@ -1339,7 +1339,7 @@ def build_album_name(album):
     except AttributeError:
         name, year = album.text(0), album.text(1)
     if year:
-        name += ' ({year})'
+        name += f' ({year})'
     return name
 
 
@@ -1361,7 +1361,7 @@ def load_appdata():
         with FNAME.open() as _in:
             appdata = json.load(_in)
     except FileNotFoundError:
-        return ''
+        return None
     return appdata
 
 

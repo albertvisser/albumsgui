@@ -208,7 +208,7 @@ def _test_cmpart_refresh_screen(monkeypatch, capsys):
 #
 def _test_cmpart_set_modified(monkeypatch, capsys):
     testobj = setup_cmpart()
-    testobj.set_modified(value):
+    testobj.set_modified(value)
 #
 def _test_cmpart_focus_artist(monkeypatch, capsys):
     testobj = setup_cmpart()
@@ -245,7 +245,7 @@ def _test_cmpart_check_deletable(monkeypatch, capsys):
     testobj.check_deletable()
 #         if item in self.new_artists:
 #
-def _test_cmpart_select_and_go(monkeypatch, capsys): i
+def _test_cmpart_select_and_go(monkeypatch, capsys):
     testobj = setup_cmpart()
     testobj.select_and_go()
 #         if not item:
@@ -597,5 +597,5 @@ def _test_main_check_oldpage(monkeypatch, capsys):
 #
 def _test_main_exit(monkeypatch, capsys):
     testobj = setup_main()
-    testobj.exit():
+    testobj.exit()
 #         if self.check_oldpage(self.current):
