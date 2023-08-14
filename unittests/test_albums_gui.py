@@ -2259,7 +2259,7 @@ def test_artists_submit(monkeypatch, capsys):
     testobj.fields = ()
     testobj.submit()
     assert capsys.readouterr().out == ('called QCursor with arg waitcursor\n'
-                                       'called changeOverrideCursor with arg of type'
+                                       'called setOverrideCursor with arg of type'
                                        " <class 'unittests.mockqtwidgets.MockCursor'>\n"
                                        'called QMessageBox.information with args'
                                        ' `Albums` `Nothing changed`\n'
@@ -2272,7 +2272,7 @@ def test_artists_submit(monkeypatch, capsys):
                                        'called LineEdit.__init__\n')
     testobj.submit()
     assert capsys.readouterr().out == ('called QCursor with arg waitcursor\n'
-                                       'called changeOverrideCursor with arg of type'
+                                       'called setOverrideCursor with arg of type'
                                        " <class 'unittests.mockqtwidgets.MockCursor'>\n"
                                        'called LineEdit.text\n'
                                        'called LineEdit.text\n'
@@ -2286,7 +2286,7 @@ def test_artists_submit(monkeypatch, capsys):
                                        'called LineEdit.__init__\n')
     testobj.submit()
     assert capsys.readouterr().out == ('called QCursor with arg waitcursor\n'
-                                       'called changeOverrideCursor with arg of type'
+                                       'called setOverrideCursor with arg of type'
                                        " <class 'unittests.mockqtwidgets.MockCursor'>\n"
                                        'called LineEdit.text\n'
                                        'called LineEdit.text\n'

@@ -5,8 +5,8 @@ class MockApplication:  # (qtw.QApplication):
         print('called QApplication.__init__')
     def exec_(self):
         print('called QApplication.exec_')
-    def changeOverrideCursor(self, arg):
-        print(f'called changeOverrideCursor with arg of type {type(arg)}')
+    def setOverrideCursor(self, arg):
+        print(f'called app.setOverrideCursor with arg of type {type(arg)}')
     def restoreOverrideCursor(self):
         print('called app.restoreOverrideCursor')
 

@@ -1372,7 +1372,7 @@ class Artists(qtw.QWidget):
     def submit(self):
         """neem de waarden van de invulvelden over en geef ze door aan de database
         """
-        self.parent().app.changeOverrideCursor(gui.QCursor(core.Qt.WaitCursor))
+        self.parent().app.setOverrideCursor(gui.QCursor(core.Qt.WaitCursor))
         changes = []
         new = changed = False
         for ix, wins in enumerate(self.fields):
