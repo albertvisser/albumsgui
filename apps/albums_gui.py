@@ -56,7 +56,7 @@ class MainFrame(qtw.QMainWindow):
         self.go()
 
     def go(self):
-        "to make testing easier"
+        "start the event loop"
         sys.exit(self.app.exec_())
 
     def get_all_artists(self):
