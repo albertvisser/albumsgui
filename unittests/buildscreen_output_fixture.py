@@ -793,6 +793,114 @@ called HBoxLayout.addStretch
 called GridLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'> at (3, 0, 1, 2)
 called QWidget.setLayout with arg of type <class 'unittests.mockqtwidgets.MockGrid'>
 """
+matcher_noapp = "called QApplication._init__\n"
+matcher = """\
+called Icon.__init__
+called Icon.__init__
+called Icon.__init__
+called Icon.__init__
+called QMainWindow._init__ with args ()
+called QMainWindow.setWindowTitle to `AlbumsMatcher`
+called QMainWindow.move with args (300, 50)
+called QMainWindow.resize with args (600, 650)
+called QTabWidget.__init__
+called connect with args ({page_changed},)
+called Frame.__init__
+called VBoxLayout.__init__
+called HBoxLayout.__init__
+called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockTabWidget'>
+called VBoxLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'>
+called HBoxLayout.__init__
+called HBoxLayout.addStretch
+called PushButton.__init__ with args ('E&xit', {parent})
+called connect with args ({exit},)
+called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockButton'>
+called HBoxLayout.addStretch
+called VBoxLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'>
+called Frame.setLayout with arg of type `<class 'unittests.mockqtwidgets.MockVBox'>`
+called QMainWidget.setCentralWindow with arg of type `<class 'unittests.mockqtwidgets.MockFrame'>`
+called QAction.__init__ with args ('Exit', {me})
+called connect with args ({exit},)
+called QAction.setShortcut with arg `Ctrl+Q`
+called QMainWindow.addAction
+called MainFrame.check_for_data
+called MainFrame.settabs
+called QTabWidget.setCurrentIndex with arg `0`
+called QMainWindow.show
+called MainFrame.go with arg `{app}`
+"""
+cmpart = """\
+called QTreeWidget.__init__
+called QTreeWidget.setColumnCount with arg `2`
+called QTreeWidget.header
+called QHeaderView.__init__
+called QHeaderView.setStretchLastSection with arg False
+called QHeaderView.setSectionResixeMode for col 0 mode stretch
+called QTreeWidget.setColumnWidth with args 1, 50
+called QTreeWidget.setHeaderLabels with arg `['Artist', 'Match']`
+called QTreeWidget.setMouseTracking with arg `True`
+called connect with args ({popuptext},)
+called connect with args ({select_and_go},)
+called QTreeWidget.__init__
+called QTreeWidget.setColumnCount with arg `3`
+called QTreeWidget.header
+called QHeaderView.__init__
+called QHeaderView.setStretchLastSection with arg False
+called QTreeWidget.setColumnWidth with args 0, 80
+called QTreeWidget.setColumnWidth with args 2, 50
+called QHeaderView.setSectionResixeMode for col 1 mode stretch
+called QTreeWidget.setHeaderLabels with arg `['First Name', 'Last Name', 'Id']`
+called QTreeWidget.setMouseTracking with arg `True`
+called connect with args ({popuptext},)
+called connect with args ({check_deletable},)
+called PushButton.__init__ with args ('&Help', {me})
+called connect with args ({help},)
+called PushButton.__init__ with args ({me},)
+called PushButton.setIcon with arg `next_icon`
+called Size.__init__ with args (12, 12)
+called PushButton.setIconSize with arg of type <class 'unittests.mockqtwidgets.MockSize'>
+called PushButton.setToolTip with arg `Go to next unmatched artist`
+called connect with args ({focus_next},)
+called PushButton.__init__ with args ({me},)
+called PushButton.setIcon with arg `prev_icon`
+called Size.__init__ with args (12, 12)
+called PushButton.setIconSize with arg of type <class 'unittests.mockqtwidgets.MockSize'>
+called PushButton.setToolTip with arg `Go to previous unmatched artist`
+called connect with args ({focus_prev},)
+called PushButton.__init__ with args ('&Check Artist', {me})
+called connect with args ({find_artist},)
+called PushButton.__init__ with args ('&Delete', {me})
+called connect with args ({delete_artist},)
+called PushButton.setEnabled with arg `False`
+called PushButton.__init__ with args ('&Save All', {me})
+called connect with args ({save_all},)
+called HBoxLayout.__init__
+called VBoxLayout.__init__
+called VBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockTree'>
+called HBoxLayout.__init__
+called HBoxLayout.addStretch
+called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockButton'>
+called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockButton'>
+called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockButton'>
+called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockButton'>
+called HBoxLayout.addStretch
+called VBoxLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'>
+called HBoxLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockVBox'>
+called VBoxLayout.__init__
+called VBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockTree'>
+called HBoxLayout.__init__
+called HBoxLayout.addStretch
+called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockButton'>
+called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockButton'>
+called HBoxLayout.addStretch
+called VBoxLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'>
+called HBoxLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockVBox'>
+called QWidget.setLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'>
+"""
+cmpalb = """\
+"""
+cmptrk = """\
+"""
 
 @pytest.fixture
 def expected_output():
@@ -826,4 +934,10 @@ def expected_output():
         'artists': artists_all_start + artists_all_middle + artists_all_end,
         'artists_2': artists_all_start + artists_all_end,
         'artist_line': artists_line,
-        'artist_dialog': artist_dialog}
+        'artist_dialog': artist_dialog,
+        'matcher_main': matcher_noapp + matcher,
+        'matcher_main_w_app': matcher,
+        'compare_artists': cmpart,
+        'compare_albums': cmpalb,
+        'compare_tracks': cmptrk,
+        }

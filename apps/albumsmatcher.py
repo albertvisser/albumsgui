@@ -19,27 +19,29 @@ F_NEXT = pathlib.Path(HERE / 'icons/go-bottom.png')
 F_PREV = pathlib.Path(HERE / 'icons/go-top.png')
 F_DOWN = pathlib.Path(HERE / 'icons/go-down.png')
 F_UP = pathlib.Path(HERE / 'icons/go-up.png')
+checkpage_messages = {0: 'Artist matches have not been saved',
+                      1: 'Album matches have not been saved',
+                      2: 'Unlinked albums have not been saved'}
 # logging.basicConfig(filename='/tmp/albumsmatcher.log', level=logging.DEBUG,
 #                     format='%(asctime)s %(funcName)s %(message)s')
 # log = logging.info
 
 
 class MainFrame(qtw.QMainWindow):
-    """Het idee hierachter is om bij elke schermwijziging
-    het centralwidget opnieuw in te stellen
-    Voor deze applicatie is een TabWidget misschien beter op z'n plaats?
+    """Het hoofdscherm van deze applicatie is een container voor de drie specifieke schermen
     """
     def __init__(self, parent=None, app=None):
         if app:
-            self.app = app
+            self.app = parent_app = app
         else:
             self.app = qtw.QApplication(sys.argv)
-        self.next_icon = gui.QIcon(F_NEXT)
-        self.prev_icon = gui.QIcon(F_PREV)
-        self.down_icon = gui.QIcon(F_DOWN)
-        self.up_icon = gui.QIcon(F_UP)
+            parent_app = None
+        self.next_icon = gui.QIcon(str(F_NEXT))
+        self.prev_icon = gui.QIcon(str(F_PREV))
+        self.down_icon = gui.QIcon(str(F_DOWN))
+        self.up_icon = gui.QIcon(str(F_UP))
         self.title = "AlbumsMatcher"
-        super().__init__()
+        super().__init__()  # moet je niet parent meegeven?
         self.setWindowTitle(self.title)
         self.move(300, 50)
         self.resize(600, 650)
@@ -69,25 +71,40 @@ class MainFrame(qtw.QMainWindow):
 
         self.current = -1
         self.not_again = False
-        self.artist_map = {}    # map clementine artist name to albums artist id
-        self.albums_map = {}    # map clementine artist name to dict that maps
-                                # clementine album names to albums album ids
-        appdata = load_appdata()
-        if appdata:
-            self.artist_map, self.albums_map = appdata
-        self.pages = collections.OrderedDict()
-        for ix, item in enumerate([('artists', CompareArtists(self)),
-                                   ('albums', CompareAlbums(self)),
-                                   ('tracks', CompareTracks(self))]):
-            self.pages[ix] = item
-            item[1].first_time = True
-            item[1]._parent = self
-            self.nb.addTab(item[1], item[0].title())
+        self.artist_map, self.albums_map = self.check_for_data()
+        self.pages = self.setup_tabwidget()
         self.nb.setCurrentIndex(0)
         self.show()
         ## self.nb.currentWidget().setFocus()
-        if not app:
+        self.go(parent_app)
+
+    def go(self, app_from_parent):
+        "if standalone, start the event loop"
+        if not app_from_parent:
             sys.exit(self.app.exec_())
+
+    def check_for_data(self):
+        """retrieve saved data if it exists
+        """
+        artist_map = {}    # map clementine artist name to albums artist id
+        albums_map = {}    # map clementine artist name to dict that maps
+                           # clementine album names to albums album ids
+        appdata = load_appdata()
+        if appdata:
+            artist_map, albums_map = appdata
+        return artist_map, albums_map
+
+    def setup_tabwidget(self):
+        "define the pages and attach them to the main window"
+        pages = {}  # collections.OrderedDict()
+        for ix, item in enumerate([('artists', CompareArtists(self)),
+                                   ('albums', CompareAlbums(self)),
+                                   ('tracks', CompareTracks(self))]):
+            pages[ix] = item
+            item[1].first_time = True
+            item[1]._parent = self
+            self.nb.addTab(item[1], item[0].title())
+        return pages
 
     def page_changed(self):
         """pagina aanpassen nadat een andere gekozen is
@@ -116,11 +133,8 @@ class MainFrame(qtw.QMainWindow):
 
     def check_oldpage(self, pageno):
         "check if page can be left"
-        messages = {0: 'Artist matches have not been saved',
-                    1: 'Album matches have not been saved',
-                    2: 'Unlinked albums have not been saved'}
         if self.pages[pageno][1].modified:
-            qtw.QMessageBox.information(self, self.title, messages[pageno])
+            qtw.QMessageBox.information(self, self.title, checkpage_messages[pageno])
             return False
         return True
 
@@ -170,11 +184,13 @@ class CompareArtists(qtw.QWidget):
         b_next = qtw.QPushButton(self)
         b_next.setIcon(self._parent.next_icon)
         b_next.setIconSize(core.QSize(12, 12))
+        # b_next.setIconSize(12, 12)
         b_next.setToolTip('Go to next unmatched artist')
         b_next.clicked.connect(self.focus_next)
         b_prev = qtw.QPushButton(self)
         b_prev.setIcon(self._parent.prev_icon)
         b_prev.setIconSize(core.QSize(12, 12))
+        # b_prev.setIconSize(12, 12)
         b_prev.setToolTip('Go to previous unmatched artist')
         b_prev.clicked.connect(self.focus_prev)
         b_find = qtw.QPushButton('&Check Artist', self)

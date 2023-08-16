@@ -55,8 +55,16 @@ class MockMainWindow:
         print('called QMainWindow.__init__')
     def move(self, *args):
         print('called QMainWindow.move with args', args)
+    def resize(self, *args):
+        print('called QMainWindow.resize with args', args)
     def show(self):
         print('called QMainWindow.show')
+    def setWindowTitle(self, text):
+        print(f'called QMainWindow.setWindowTitle to `{text}`')
+    def setCentralWidget(self, arg):
+        print(f'called QMainWidget.setCentralWindow with arg of type `{type(arg)}`')
+    def addAction(self, arg):
+        print('called QMainWindow.addAction')
 
 
 class MockVBox:
@@ -106,7 +114,7 @@ class MockGrid:
 
 class MockFrame:
     HLine = '---'
-    def __init__(self, parent):
+    def __init__(self, parent=None):
         print('called Frame.__init__')
     def setFrameShape(self, arg):
         print(f'called Frame.setFrameShape with arg `{arg}`')
@@ -238,6 +246,14 @@ class MockButton:
     def setText(self, value):
         self._text = value
         print(f'called PushButton.setText with arg `{value}`')
+    def setEnabled(self, value):
+        print(f'called PushButton.setEnabled with arg `{value}`')
+    def setIcon(self, value):
+        print(f'called PushButton.setIcon with arg `{value}`')
+    def setIconSize(self, arg):
+        print(f'called PushButton.setIconSize with arg of type {type(arg)}')
+    def setToolTip(self, value):
+        print(f'called PushButton.setToolTip with arg `{value}`')
 
 class MockPixmap:
     def __init__(self, *args):
@@ -249,6 +265,13 @@ class MockPixmap:
         print(f'called Pixmap.scaled to `{x}`, `{y}`')
         return 'ok'
 
+class MockIcon:
+    def __init__(self, *args):
+        print('called Icon.__init__')
+
+class MockSize:
+    def __init__(self, *args):
+        print('called Size.__init__ with args', args)
 
 class MockMessageBox:
     Ok = 'okbutton'
@@ -284,3 +307,61 @@ class MockDialog:
     #     print(f'called QDialog.setLayout with arg of type `{type(arg)}`')
     def accept(self):
         print('called QDialog.accept')
+
+class MockTabWidget:
+    def mock_connect(*args):
+        print('called connect with args', args)
+    currentChanged = types.SimpleNamespace(connect=mock_connect)
+    def __init__(self, *args):
+        print('called QTabWidget.__init__')
+        self._current = -1
+    def setCurrentIndex(self, num):
+        print(f'called QTabWidget.setCurrentIndex with arg `{num}`')
+        self._current = num
+    def currentIndex(self):
+        print('called QTabWidget.currentIndex')
+        return self._current
+    def currentWidget(self):
+        print('called QTabWidget.currentWidget')
+        return None
+    def addTab(self, *args):
+        print('called QTabWidget.addTab with args', args)
+
+
+class MockHeader:
+    Stretch = 'stretch'
+    def __init__(self, *args):
+        print('called QHeaderView.__init__')
+    def setStretchLastSection(self, value):
+        print(f'called QHeaderView.setStretchLastSection with arg {value}')
+    def setSectionResizeMode(self, col, mode):
+        print(f'called QHeaderView.setSectionResixeMode for col {col} mode {mode}')
+
+class MockTree:
+    def mock_connect(*args):
+        print('called connect with args', args)
+    itemEntered = types.SimpleNamespace(connect=mock_connect)
+    itemDoubleClicked = types.SimpleNamespace(connect=mock_connect)
+    currentItemChanged = types.SimpleNamespace(connect=mock_connect)
+    def __init__(self, *args):
+        print('called QTreeWidget.__init__')
+    def setColumnCount(self, num):
+        print(f'called QTreeWidget.setColumnCount with arg `{num}`')
+    def setColumnWidth(self, col, width):
+        print(f'called QTreeWidget.setColumnWidth with args {col}, {width}')
+    def header(self):
+        print('called QTreeWidget.header')
+        return MockHeader()
+    def setHeaderLabels(self, label_list):
+        print(f'called QTreeWidget.setHeaderLabels with arg `{label_list}`')
+    def setMouseTracking(self, value):
+        print(f'called QTreeWidget.setMouseTracking with arg `{value}`')
+
+class MockAction:
+    def mock_connect(*args):
+        print('called connect with args', args)
+    triggered = types.SimpleNamespace(connect=mock_connect)
+    def __init__(self, *args):
+        print('called QAction.__init__ with args', args)
+    def setShortcut(self, value):
+        print(f'called QAction.setShortcut with arg `{value}`')
