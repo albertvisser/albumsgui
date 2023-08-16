@@ -28,6 +28,7 @@ def test_retrieve(monkeypatch, capsys):
                                        'executing query parms\n')
 
 
+#implicitely tests list_artists function
 def test_get_artists_lists(monkeypatch, capsys):
     def mock_retrieve(query, parms):
         print(f'called retrieve with args `{query}`, {parms}')
@@ -38,6 +39,7 @@ def test_get_artists_lists(monkeypatch, capsys):
             " `select distinct artist from songs where unavailable = '0' order by artist;`, ()\n")
 
 
+#implicitely tests list_albums function
 def test_get_albums_lists(monkeypatch, capsys):
     def mock_retrieve(query, parms):
         print(f'called retrieve with args `{query}`, {parms}')
@@ -87,6 +89,7 @@ def test_list_tracks_for_artist(monkeypatch, capsys):
             "artist = ? order by album, disc, track;`, ('artist',)\n")
 
 
+#implicitely tests list_tracks function
 def test_get_tracks_lists(monkeypatch, capsys):
     def mock_retrieve(query, parms):
         print(f'called retrieve with args `{query}`, {parms}')
