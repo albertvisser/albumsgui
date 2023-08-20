@@ -80,6 +80,7 @@ def get_tracks_lists(artist_name, album_name):
 
 
 def list_tracks_for_album(artist_name, album_name):
+    "produce list of tracks for album"
     return list(retrieve("select rowid, track, title from songs"
                          " where artist = ? and album = ? and unavailable = '0'"
                          " order by disc, track;", (artist_name, album_name)))
