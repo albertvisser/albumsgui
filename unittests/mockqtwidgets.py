@@ -1,5 +1,6 @@
 import types
 
+
 class MockApplication:  # (qtw.QApplication):
     def __init__(self, *args):
         print('called QApplication.__init__')
@@ -10,9 +11,11 @@ class MockApplication:  # (qtw.QApplication):
     def restoreOverrideCursor(self):
         print('called app.restoreOverrideCursor')
 
+
 class MockCursor:
     def __init__(self, arg):
         print(f'called QCursor with arg {arg}')
+
 
 class MockControl:
     def setVisible(self, value):
@@ -255,6 +258,7 @@ class MockButton:
     def setToolTip(self, value):
         print(f'called PushButton.setToolTip with arg `{value}`')
 
+
 class MockPixmap:
     def __init__(self, *args):
         print('called Pixmap.__init__')
@@ -265,22 +269,32 @@ class MockPixmap:
         print(f'called Pixmap.scaled to `{x}`, `{y}`')
         return 'ok'
 
+
 class MockIcon:
     def __init__(self, *args):
         print('called Icon.__init__')
+
 
 class MockSize:
     def __init__(self, *args):
         print('called Size.__init__ with args', args)
 
+
 class MockMessageBox:
-    Ok = 'okbutton'
+    Ok = 1
+    Cancel = 2
+    Yes = 4
+    No = 8
     AcceptRole = 1
     Information = 2
     def __init__(self, *args, **kwargs):
         print('called QMessageBox with args', args, kwargs)
     def information(parent, caption, message):
         print(f'called QMessageBox.information with args `{caption}` `{message}`')
+    def question(parent, caption, message, buttons, default):
+        print('called QMessageBox.question with args'
+              f' `{caption}` `{message}` `{buttons}` `{default}`')
+        return 8
     def setDefaultButton(self, arg):
         print(f'called QMessageBox.setDefaultButton with arg `{arg}`')
     def setEscapeButton(self, arg):
@@ -300,6 +314,7 @@ class MockScrollArea:
     def setWidgetResizable(self, arg):
         print(f'called ScrollArea.setWidgetResizable with arg `{arg}`')
 
+
 class MockDialog:
     def __init__(self, *args, **kwargs):
         print('called QDialog.__init__')
@@ -307,6 +322,15 @@ class MockDialog:
     #     print(f'called QDialog.setLayout with arg of type `{type(arg)}`')
     def accept(self):
         print('called QDialog.accept')
+
+
+class MockInputDialog:
+    def __init__(self, *args, **kwargs):
+        print('called QInputDialog.__init__')
+    def getItem(parent, *args, **kwargs):
+        print('called InputDialog.getItem with args', args, kwargs)
+        return '', False
+
 
 class MockTabWidget:
     def mock_connect(*args):
@@ -337,6 +361,22 @@ class MockHeader:
     def setSectionResizeMode(self, col, mode):
         print(f'called QHeaderView.setSectionResixeMode for col {col} mode {mode}')
 
+
+class MockTreeItem:
+    def __init__(self, *args):
+        print('called QTreeWidgetItem.__init__ with args', args)
+        if args:
+            self._text = list(args)
+        else:
+            self._text = []
+    def setText(self, col, text):
+        print(f'called QTreeWidgetItem.setText to `{text} for col {col}')
+        self._text[col] = text
+    def text(self, col):
+        print(f'called QTreeWidgetItem.text for col {col}')
+        return self._text[col]
+
+
 class MockTree:
     def mock_connect(*args):
         print('called connect with args', args)
@@ -356,6 +396,41 @@ class MockTree:
         print(f'called QTreeWidget.setHeaderLabels with arg `{label_list}`')
     def setMouseTracking(self, value):
         print(f'called QTreeWidget.setMouseTracking with arg `{value}`')
+    def setFocus(self):
+        print('called QTreeWidget.setFocus')
+    def addTopLevelItem(self, arg):
+        print(f'called QTreeWidget.addTopLevelItem with arg of type `{type(arg)}`')
+    def topLevelItem(self, arg):
+        return f'TreeWidget.topLevelItem with index {arg}'
+    def takeTopLevelItem(self, arg):
+        return f'TreeWidget.takeTopLevelItem with index {arg}'
+    def topLevelItemCount(self):
+        print('called TreeWidget.topLevelItem')
+        return 0
+    def findItems(self, *args):
+        print('called QTreeWidget.findItems with args', args)
+        return []
+    def setCurrentIndex(self, arg):
+        print(f'called QTreeWidget.setCurrentIndex with arg `{arg}`')
+    def setCurrentItem(self, arg):
+        print(f'called QTreeWidget.setCurrentItem with arg `{arg}`')
+    def scrollToItem(self, arg):
+        print(f'called QTreeWidget.scrollToItem with arg `{arg}`')
+    def currentItem(self):
+        return 'TreeWidget.currentItem'
+    def currentIndex(self):
+        print('called TreeWidget.currentIndex')
+        # return 1
+        return types.SimpleNamespace(row=lambda *x: 1, column=lambda *x: 0)
+    def indexFromItem(self, item):
+        print('called TreeWidget.indexFromItem with arg `{item}`')
+        return types.SimpleNamespace(row=lambda: 1, column=lambda: 0)
+    def itemBelow(self, arg):
+        print(f'called TreeWidget.itemBelow with arg {arg}')
+        return 'x'
+    def clear(self):
+        print('called QTreeWidget.clear')
+
 
 class MockAction:
     def mock_connect(*args):
@@ -365,3 +440,5 @@ class MockAction:
         print('called QAction.__init__ with args', args)
     def setShortcut(self, value):
         print(f'called QAction.setShortcut with arg `{value}`')
+    def setShortcuts(self, arg):
+        print(f'called QAction.setShortcut with arg `{arg}`')

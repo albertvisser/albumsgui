@@ -897,6 +897,53 @@ called VBoxLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.Moc
 called HBoxLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockVBox'>
 called QWidget.setLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'>
 """
+cmpart_act = """\
+called QTreeWidget.__init__
+called QAction.__init__ with args ('Help', {me})
+called connect with args ({help},)
+called QAction.setShortcut with arg `['F1', 'Ctrl+H']`
+called CompareArtists.addAction
+called QAction.__init__ with args ('Focus', {me})
+called connect with args ({setfocus},)
+called QAction.setShortcut with arg `['Ctrl+L']`
+called CompareArtists.addAction
+called QAction.__init__ with args ('Find', {me})
+called connect with args ({find_artist},)
+called QAction.setShortcut with arg `['Ctrl+Return', 'Ctrl+F']`
+called CompareArtists.addAction
+called QAction.__init__ with args ('Go', {me})
+called connect with args ({select_and_go},)
+called QAction.setShortcut with arg `['Ctrl+Shift+Return']`
+called CompareArtists.addAction
+called QAction.__init__ with args ('Next', {me})
+called connect with args ({focus_next},)
+called QAction.setShortcut with arg `['Ctrl+N']`
+called CompareArtists.addAction
+called QAction.__init__ with args ('Prev', {me})
+called connect with args ({focus_prev},)
+called QAction.setShortcut with arg `['Ctrl+P']`
+called CompareArtists.addAction
+called QAction.__init__ with args ('Delete', {me})
+called connect with args ({delete_artist},)
+called QAction.setShortcut with arg `['Ctrl+D', 'Del']`
+called CompareArtists.addAction
+called QAction.__init__ with args ('Save', {me})
+called connect with args ({save_all},)
+called QAction.setShortcut with arg `['Ctrl+S']`
+called CompareArtists.addAction
+"""
+cmpart_refresh = """\
+called set_modified with arg `False`
+called read_artists
+called QTreeWidget.clear
+called QTreeWidget.addTopLevelItem with arg of type `<class 'PyQt5.QtWidgets.QTreeWidgetItem'>`
+called QTreeWidget.addTopLevelItem with arg of type `<class 'PyQt5.QtWidgets.QTreeWidgetItem'>`
+called QTreeWidget.clear
+called QTreeWidget.addTopLevelItem with arg of type `<class 'PyQt5.QtWidgets.QTreeWidgetItem'>`
+called QTreeWidget.addTopLevelItem with arg of type `<class 'PyQt5.QtWidgets.QTreeWidgetItem'>`
+"""
+cmpart_ref_1 = 'called focus_artist with arg `None`\n'
+cmpart_ref_2 = 'called focus_artist with arg `artist`\n'
 cmpalb = """\
 """
 cmptrk = """\
@@ -938,6 +985,9 @@ def expected_output():
         'matcher_main': matcher_noapp + matcher,
         'matcher_main_w_app': matcher,
         'compare_artists': cmpart,
+        'compare_artists_actions': cmpart_act,
+        'compare_artists_refresh_1': cmpart_refresh + cmpart_ref_1,
+        'compare_artists_refresh_2': cmpart_refresh + cmpart_ref_2,
         'compare_albums': cmpalb,
         'compare_tracks': cmptrk,
         }

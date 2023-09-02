@@ -13,15 +13,13 @@ import PyQt5.QtGui as gui
 import PyQt5.QtCore as core
 import apps.albums_dml as dmla
 import apps.clementine_dml as dmlc
-HERE = pathlib.Path(__file__).parent.absolute()  # os.path.abspath(os.path.dirname(__file__))
+HERE = pathlib.Path(__file__).parent.parent.absolute()  # os.path.abspath(os.path.dirname(__file__))
 FNAME = pathlib.Path(HERE / 'albumsmatcher.json')
-F_NEXT = pathlib.Path(HERE / 'icons/go-bottom.png')
-F_PREV = pathlib.Path(HERE / 'icons/go-top.png')
-F_DOWN = pathlib.Path(HERE / 'icons/go-down.png')
-F_UP = pathlib.Path(HERE / 'icons/go-up.png')
-checkpage_messages = {0: 'Artist matches have not been saved',
-                      1: 'Album matches have not been saved',
-                      2: 'Unlinked albums have not been saved'}
+F_NEXT = pathlib.Path(HERE / 'icons' / 'go-bottom.png')
+F_PREV = pathlib.Path(HERE / 'icons' / 'go-top.png')
+F_DOWN = pathlib.Path(HERE / 'icons' / 'go-down.png')
+F_UP = pathlib.Path(HERE / 'icons' / 'go-up.png')
+from apps.texts import checkpage_messages, workflows
 # logging.basicConfig(filename='/tmp/albumsmatcher.log', level=logging.DEBUG,
 #                     format='%(asctime)s %(funcName)s %(message)s')
 # log = logging.info
@@ -236,16 +234,14 @@ class CompareArtists(qtw.QWidget):
     def create_actions(self):
         """keyboard shortcuts
         """
-        actions = (
-            ('Help', self.help, ['F1', 'Ctrl+H']),
-            ('Focus', self.clementine_artists.setFocus, ['Ctrl+L']),
-            ('Find', self.find_artist, ['Ctrl+Return', 'Ctrl+F']),
-            ('Go', self.select_and_go, ['Ctrl+Shift+Return']),
-            ('Next', self.focus_next, ['Ctrl+N']),
-            ('Prev', self.focus_prev, ['Ctrl+P']),
-            ('Delete', self.delete_artist, ['Ctrl+D', 'Del']),
-            ('Save', self.save_all, ['Ctrl+S']))
-        for text, callback, keys in actions:
+        for text, callback, keys in (('Help', self.help, ['F1', 'Ctrl+H']),
+                                     ('Focus', self.clementine_artists.setFocus, ['Ctrl+L']),
+                                     ('Find', self.find_artist, ['Ctrl+Return', 'Ctrl+F']),
+                                     ('Go', self.select_and_go, ['Ctrl+Shift+Return']),
+                                     ('Next', self.focus_next, ['Ctrl+N']),
+                                     ('Prev', self.focus_prev, ['Ctrl+P']),
+                                     ('Delete', self.delete_artist, ['Ctrl+D', 'Del']),
+                                     ('Save', self.save_all, ['Ctrl+S'])):
             act = qtw.QAction(text, self)
             act.triggered.connect(callback)
             act.setShortcuts(keys)
@@ -291,13 +287,12 @@ class CompareArtists(qtw.QWidget):
         else:
             findstr = ''
             column = 1
-        test = self.clementine_artists.findItems(findstr,
-                                                 core.Qt.MatchFixedString,
-                                                 column)
+        test = self.clementine_artists.findItems(findstr, core.Qt.MatchFixedString, column)
         if test:
             item = test[0]
         else:
-            item = self.clementine_albums.topLevelItem(0)
+            # item = self.clementine_albums.topLevelItem(0)  # verkeerde widget??
+            item = self.clementine_artists.topLevelItem(0)
         self.clementine_artists.setCurrentItem(item)
 
     def focus_next(self):
@@ -333,17 +328,14 @@ class CompareArtists(qtw.QWidget):
             self.clementine_artists.setCurrentIndex(
                 self.clementine_artists.indexFromItem(item))
         else:
-            qtw.QMessageBox.information(self, self._parent.title,
-                                        'No more unmatched items this way')
+            qtw.QMessageBox.information(self, self._parent.title, 'No more unmatched items this way')
 
     def check_deletable(self):
         """if selected (right-hand side) artist is not yet saved, activate
         delete button
         """
         item = self.albums_artists.currentItem()
-        self.delete_button.setEnabled(False)
-        if item in self.new_artists:
-            self.delete_button.setEnabled(True)
+        self.delete_button.setEnabled(item in self.new_artists)
 
     def select_and_go(self):
         """Go to tab 2 and select artist
@@ -353,8 +345,8 @@ class CompareArtists(qtw.QWidget):
             return
         search = item.text(0)
         if not self.artist_map[search]:
-            qtw.QMessageBox.information(self, self.appname, "Not possible - "
-                                        "artist hasn't been matched yet")
+            qtw.QMessageBox.information(self, self.appname,
+                                        "Not possible - artist hasn't been matched yet")
             return
         self._parent.current_data = search
         self._parent.nb.setCurrentIndex(1)
@@ -371,14 +363,32 @@ class CompareArtists(qtw.QWidget):
         self.artist_buffer = item
         search = item.text(0)
         self._parent.current_data = search
-        if self.artist_map[item.text(0)]:
-            ok = qtw.QMessageBox.question(self, self.appname, 'Artist already has a '
-                                          'match - do you want to reassign?',
+        if self.artist_map[search]:  # [item.text(0)]:
+            ok = qtw.QMessageBox.question(self, self.appname,
+                                          'Artist already has a match - do you want to reassign?',
                                           qtw.QMessageBox.Yes | qtw.QMessageBox.No,
                                           qtw.QMessageBox.No)
             if ok == qtw.QMessageBox.No:
                 return
-            self.artist_map[item.text(0)] = ''
+            self.artist_map[search] = ''  # [item.text(0)] = ''
+        found = self.determine_search_arg_and_find(search)
+        if found:
+            find = self.albums_artists.findItems(found, core.Qt.MatchFixedString, 2)
+            artists, results = self.filter_matched(find)
+            a_item = None
+            selected, ok = qtw.QInputDialog.getItem(self, self.appname, 'Select Artist', artists,
+                                                    editable=False)
+            if ok:
+                a_item = results[artists.index(selected)]
+                self.update_item(a_item, item)
+                return
+
+        self.add_artist()  # geen match -> lege match toevoegen
+
+    def determine_search_arg_and_find(self, search):
+        """if not found on entire name, try again for last name only
+        names may be slightly different so maybe there is more fuzzy logic to apply
+        """
         try:
             found = self.lookup[search]
         except KeyError:
@@ -391,25 +401,18 @@ class CompareArtists(qtw.QWidget):
                     found = self.lookup[search]
                 except KeyError:
                     found = False
-        if found:
-            find = self.albums_artists.findItems(found, core.Qt.MatchFixedString, 2)
-            artists = []
-            results = []
-            for a_item in find:  # only keep unmatched artists
-                if a_item.text(2) in self.artist_map.values():
-                    continue
-                results.append(a_item)
-                artists.append(build_artist_name(a_item.text(0), a_item.text(1)))
-            a_item = None
-            selected, ok = qtw.QInputDialog.getItem(self, self.appname,
-                                                    'Select Artist', artists,
-                                                    editable=False)
-            if ok:
-                a_item = results[artists.index(selected)]
-                self.update_item(a_item, item)
-                return
+        return found
 
-        self.add_artist()
+    def filter_matched(self, find):
+        "only keep unmatched artists in search result"
+        artists = []
+        results = []
+        for a_item in find:
+            if a_item.text(2) in self.artist_map.values():
+                continue
+            results.append(a_item)
+            artists.append(build_artist_name(a_item.text(0), a_item.text(1)))
+        return artists, results
 
     def update_item(self, new_item, from_item):
         """remember changes and make them visible
@@ -420,8 +423,7 @@ class CompareArtists(qtw.QWidget):
         self.new_matches[new_item.text(2)] = from_item.text(0)
         from_item.setText(1, 'X')
         self.set_modified(True)
-        nxt = self.clementine_artists.itemBelow(
-            self.clementine_artists.currentItem())
+        nxt = self.clementine_artists.itemBelow(self.clementine_artists.currentItem())
         if nxt:
             self.clementine_artists.setCurrentItem(nxt)
 
@@ -445,16 +447,15 @@ class CompareArtists(qtw.QWidget):
             if result:
                 item = result[0]
         if not item:
-            qtw.QMessageBox.information(self, self.appname, "Artist doesn't "
-                                        "exist on the Clementine side")
+            qtw.QMessageBox.information(self, self.appname,
+                                        "Artist doesn't exist on the Clementine side")
             return
 
         a_item = None
         results = self.albums_artists.findItems(lname, core.Qt.MatchFixedString, 1)
         data = [build_artist_name(x.text(0), x.text(1)) for x in results]
         if results:
-            selected, ok = qtw.QInputDialog.getItem(self, self.appname,
-                                                    'Select Artist', data,
+            selected, ok = qtw.QInputDialog.getItem(self, self.appname, 'Select Artist', data,
                                                     editable=False)
             if ok:
                 a_item = results[data.index(selected)]
@@ -487,9 +488,7 @@ class CompareArtists(qtw.QWidget):
             name = ''
         if name and self.artist_map[name] == a_itemkey:
             self.artist_map[name] = ''
-            results = self.clementine_artists.findItems(name,
-                                                        core.Qt.MatchFixedString,
-                                                        0)
+            results = self.clementine_artists.findItems(name, core.Qt.MatchFixedString, 0)
             results[0].setText(1, '')
         self.set_modified(bool(self.new_matches))
 
@@ -504,36 +503,14 @@ class CompareArtists(qtw.QWidget):
         for key, value in new_keys.items():
             self.artist_map[key] = str(value)
         self._parent.artist_map = self.artist_map
-        self._parent.artist_map.update({x: '' for x, y in self.artist_map.items()
-                                        if not y})
+        self._parent.artist_map.update({x: '' for x, y in self.artist_map.items() if not y})
         save_appdata([self._parent.artist_map, self._parent.albums_map])
         self.refresh_screen(self.clementine_artists.currentItem().text(0))
 
     def help(self):
         """explain intended workflow
         """
-        workflow = '\n'.join((
-            "Intended workflow:",
-            "",
-            "",
-            "Select an artist in the left-hand side column and use the "
-            "`Check Artist` button to see if it's present on the right-hand side.",
-            "",
-            "If it is, a relation between the two will be established. You can tell "
-            "by the number appearing in the Match column.",
-            "If it isn't, the `Add Artist` dialog will pop up with the artist name "
-            "shown in the `last name` field.",
-            "",
-            "To add the artist to the collection, complete the entries and press "
-            "`Save`. After confirmation, this will make the name appear in the list "
-            "on the right-hand side and establish the relation (again, indicated "
-            "in the Match column).",
-            "",
-            "To save the entire list to the Albums database, press `Save All`. The "
-            "relations will also be saved, they are needed to keep track of artists "
-            "that have already been matched.",
-            ""))
-        qtw.QMessageBox.information(self, self._parent.title, workflow)
+        qtw.QMessageBox.information(self, self._parent.title, workflows['cmpart'])
 
 
 class NewArtistDialog(qtw.QDialog):
@@ -573,8 +550,8 @@ class NewArtistDialog(qtw.QDialog):
         fname = self.first_name.text()
         lname = self.last_name.text()
         if not fname and not lname:
-            qtw.QMessageBox.information(self, 'AlbumsMatcher', "Enter at least one"
-                                        " name or press `Cancel`")
+            qtw.QMessageBox.information(self, 'AlbumsMatcher',
+                                        "Enter at least one name or press `Cancel`")
             return
         self.parent().data = (fname, lname)
         self.accept()
@@ -666,15 +643,13 @@ class CompareAlbums(qtw.QWidget):
     def create_actions(self):
         """keyboard shortcuts
         """
-        actions = (
-            ('Help', self.help, ['F1', 'Ctrl+H']),
-            ('Select', self.artist_list.setFocus, ['Ctrl+Home']),
-            ('Focus', self.focus_albums, ['Ctrl+L']),
-            ('Next', self.next_artist, ['Ctrl+N']),
-            ('Prev', self.prev_artist, ['Ctrl+P']),
-            ('Find', self.find_album, ['Ctrl+Return', 'Ctrl+F']),
-            ('Save', self.save_all, ['Ctrl+S']))
-        for text, callback, keys in actions:
+        for text, callback, keys in (('Help', self.help, ['F1', 'Ctrl+H']),
+                                     ('Select', self.artist_list.setFocus, ['Ctrl+Home']),
+                                     ('Focus', self.focus_albums, ['Ctrl+L']),
+                                     ('Next', self.next_artist, ['Ctrl+N']),
+                                     ('Prev', self.prev_artist, ['Ctrl+P']),
+                                     ('Find', self.find_album, ['Ctrl+Return', 'Ctrl+F']),
+                                     ('Save', self.save_all, ['Ctrl+S'])):
             act = qtw.QAction(text, self)
             act.triggered.connect(callback)
             act.setShortcuts(keys)
@@ -801,8 +776,8 @@ class CompareAlbums(qtw.QWidget):
             self.focus_albums()
             item = self.clementine_albums.currentItem()
         if item.text(0) in self.albums_map[self.c_artist]:
-            ok = qtw.QMessageBox.question(self, self.appname, 'Album already has a '
-                                          'match - do you want to reassign?',
+            ok = qtw.QMessageBox.question(self, self.appname,
+                                          'Album already has a match - do you want to reassign?',
                                           qtw.QMessageBox.Yes | qtw.QMessageBox.No,
                                           qtw.QMessageBox.Yes)
             if ok == qtw.QMessageBox.No:
@@ -874,21 +849,19 @@ class CompareAlbums(qtw.QWidget):
             return
         name, year, is_live = self.data
         if not item:
-            result = self.clementine_albums.findItems(name,
-                                                      core.Qt.MatchFixedString, 0)
+            result = self.clementine_albums.findItems(name, core.Qt.MatchFixedString, 0)
             if result:
                 item = result[0]
         if not item:
-            qtw.QMessageBox.information(self, self.appname, "Album doesn't "
-                                        "exist on the Clementine side")
+            qtw.QMessageBox.information(self, self.appname,
+                                        "Album doesn't exist on the Clementine side")
             return
 
         a_item = None
         results = self.albums_albums.findItems(name, core.Qt.MatchFixedString, 0)
         data = [build_album_name(x) for x in results]
         if results:
-            selected, ok = qtw.QInputDialog.getItem(self, self.appname,
-                                                    'Select Album', data,
+            selected, ok = qtw.QInputDialog.getItem(self, self.appname, 'Select Album', data,
                                                     editable=False)
             if ok:
                 a_item = results[data.index(selected)]
@@ -941,35 +914,7 @@ class CompareAlbums(qtw.QWidget):
     def help(self):
         """explain intended workflow
         """
-        workflow = '\n'.join((
-            "Intended workflow:",
-            "",
-            "",
-            "Select an artist in the combobox at the top and see two lists of al"
-            "bums appear: albums present in the Clementine and Albums databases "
-            "respectively. You can tell if a relation exists by the value in "
-            "the second column (an X or a number indicating the right-hand side "
-            "album's id).",
-            "",
-            "Select an album in the left-hand side list and press the `Check "
-            "Album` button to match it with one of the albums on the right-hand "
-            "side. A selection dialog will pop up where you can choose an album "
-            "from the right-hand side to esablish a relation with.",
-            "",
-            "If no right-hand side albums are available or you cancel the `Select "
-            "Album` dialog because none is the right one, a dialog will open with "
-            "the `title` field set to the left-hand side's album title so you can "
-            "add a new one and make a relation with it.",
-            "",
-            "To save the entire list to the Albums database, press `Save All`. Newly "
-            "created albums will be saved to the Albums database together with their "
-            "tracks. The relations will also be saved, they are needed to keep track "
-            "of albums that have already been matched.",
-            "",
-            "For now, you have to save the added/changed albums and relations "
-            "before you proceed to another artist or change panels.",
-            ""))
-        qtw.QMessageBox.information(self, self._parent.title, workflow)
+        qtw.QMessageBox.information(self, self._parent.title, workflows['cmpalb'])
 
 
 class NewAlbumDialog(qtw.QDialog):
@@ -1016,8 +961,8 @@ class NewAlbumDialog(qtw.QDialog):
         year = self.last_name.text()
         is_live = self.is_concert.isChecked()
         if not name:
-            qtw.QMessageBox.information(self, 'AlbumsMatcher', "Enter at least the"
-                                        " name or press `Cancel`")
+            qtw.QMessageBox.information(self, 'AlbumsMatcher',
+                                        "Enter at least the name or press `Cancel`")
             return
         self.parent().data = (name, year, is_live)
         self.accept()
@@ -1128,18 +1073,16 @@ class CompareTracks(qtw.QWidget):
     def create_actions(self):
         """keyboard shortcuts
         """
-        actions = (
-            ('Help', self.help, ['F1', 'Ctrl+H']),
-            ('Select_Artist', self.artists_list.setFocus, ['Ctrl+Home']),
-            ('Select_Album', self.albums_list.setFocus, ['Ctrl+A']),
-            ('Next_Artist', self.next_artist, ['Ctrl+N']),
-            ('Prev_Artist', self.prev_artist, ['Ctrl+P']),
-            ('Next_Album', self.next_album, ['Ctrl+Shift+N']),
-            ('Prev_Album', self.prev_album, ['Ctrl+Shift+P']),
-            ('Copy', self.copy_tracks, ['Ctrl+C']),
-            ('Unlink', self.unlink, ['Ctrl+U']),
-            ('Save', self.save_all, ['Ctrl+S']))
-        for text, callback, keys in actions:
+        for text, callback, keys in (('Help', self.help, ['F1', 'Ctrl+H']),
+                                     ('Select_Artist', self.artists_list.setFocus, ['Ctrl+Home']),
+                                     ('Select_Album', self.albums_list.setFocus, ['Ctrl+A']),
+                                     ('Next_Artist', self.next_artist, ['Ctrl+N']),
+                                     ('Prev_Artist', self.prev_artist, ['Ctrl+P']),
+                                     ('Next_Album', self.next_album, ['Ctrl+Shift+N']),
+                                     ('Prev_Album', self.prev_album, ['Ctrl+Shift+P']),
+                                     ('Copy', self.copy_tracks, ['Ctrl+C']),
+                                     ('Unlink', self.unlink, ['Ctrl+U']),
+                                     ('Save', self.save_all, ['Ctrl+S'])):
             act = qtw.QAction(text, self)
             act.triggered.connect(callback)
             act.setShortcuts(keys)
@@ -1223,11 +1166,10 @@ class CompareTracks(qtw.QWidget):
         try:
             self.a_album = self.albums_map[self.artist][self.c_album][1]
         except KeyError:
-            qtw.QMessageBox.information(self, self._parent.title, "This album "
-                                        "has not been matched yet")
+            qtw.QMessageBox.information(self, self._parent.title,
+                                        "This album has not been matched yet")
             return
-        a_tracks, c_tracks = read_album_tracks(self.a_album,
-                                               self.artist, self.c_album)
+        a_tracks, c_tracks = read_album_tracks(self.a_album, self.artist, self.c_album)
         for item in c_tracks:
             new = qtw.QTreeWidgetItem([item])
             self.clementine_tracks.addTopLevelItem(new)
@@ -1288,8 +1230,7 @@ class CompareTracks(qtw.QWidget):
             tracks.append((ix + 1, item.text(0)))
         with wait_cursor(self._parent):
             dmla.update_album_tracknames(self.a_album, tracks)
-        self.refresh_screen(self.artists_list.currentIndex(),
-                            self.albums_list.currentIndex())
+        self.refresh_screen(self.artists_list.currentIndex(), self.albums_list.currentIndex())
 
     def unlink(self):
         """remove "Clementine recording" from album
@@ -1305,37 +1246,21 @@ class CompareTracks(qtw.QWidget):
         if not still_present:
             dmla.unlink_album(self.a_album)
         self.modified = True
-        self.refresh_screen(self.artists_list.currentIndex(),
-                            self.albums_list.currentIndex(), modifyoff=False)
+        self.refresh_screen(self.artists_list.currentIndex(), self.albums_list.currentIndex(),
+                            modifyoff=False)
 
     def save_all(self):
         """save changes (additions) to Albums database
         """
         self._parent.albums_map = self.albums_map
-        self._parent.albums_map.update({x: {} for x, y in self.albums_map.items()
-                                        if not y})
+        self._parent.albums_map.update({x: {} for x, y in self.albums_map.items() if not y})
         save_appdata([self._parent.artist_map, self._parent.albums_map])
-        self.refresh_screen(self.artists_list.currentIndex(),
-                            self.albums_list.currentIndex())
+        self.refresh_screen(self.artists_list.currentIndex(), self.albums_list.currentIndex())
 
     def help(self):
         """explain intended workflow
         """
-        workflow = '\n'.join((
-            "Intended workflow:",
-            "",
-            "",
-            "Select an artist and an album in the two comboboxes at the top "
-            "and if two lists of tracks appear, that means that most of the work"
-            "has been done.",
-            "",
-            "It's possible, however, that the wrong album has been matched or that "
-            "the tracks have not been imported into the Albums database.",
-            "",
-            "This panel is intended to do a final comparison and correct eventual "
-            "errors.",
-            ""))
-        qtw.QMessageBox.information(self, self._parent.title, workflow)
+        qtw.QMessageBox.information(self, self._parent.title, workflows['cmptrk'])
 
 
 def build_artist_name(first, last):
