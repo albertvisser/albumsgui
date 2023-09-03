@@ -5,6 +5,152 @@ import unittests.mockqtwidgets as mockqtw
 from buildscreen_output_fixture import expected_output
 
 
+#  helper class, perhaps this one should be in mockqtwidgets
+class MockHandler:
+    "mock van een subscherm, alleen omdat ik de aanroepen nodog heb"
+    # zit momenteel alleen in de twee navolgende functies
+    class MockParent:
+        "mock van het hoofdscherm, alleen omdat ik de methode aanroepen nodig heb"
+        def do_select(self):
+            ...
+        def do_start(self):
+            ...
+        def do_detail(self):
+            ...
+    _parent = MockParent()
+    def parent(self):
+        return self._parent
+    def submit(self):
+        ...
+    def submit_and_back(self):
+        ...
+    def new(self):
+        ...
+    def do_select(self):
+        ...
+    def do_start(self):
+        ...
+
+
+# mock implementations of module-level functions
+def mock_newline(*args):
+    print(f'called newline with arg of type {type(args[0])}')
+    return mockqtw.MockHBox()
+
+def mock_button_strip(*args):
+    print(f'called button_strip with args', args)
+    return mockqtw.MockHBox()
+
+def mock_exitbutton(*args, **kwargs):
+    if len(args) == 3:
+        print(f'called exitbutton with args {args[0]}, {args[1]}, {type(args[2])}')
+    else:
+        print(f'called exitbutton with args', args, kwargs)
+    return mockqtw.MockHBox()
+
+
+# mock implementations of application classes
+class MockMainFrame:
+    def __init__(self):
+        print('called Main.__init__')
+        self.app = mockqtw.MockApplication()
+    def go(self):
+        print('called Main.go')
+    def do_start(self):
+        print('called Main.do_start')
+    def do_select(self):
+        print('called Main.do_select')
+    def do_new(self, **kwargs):
+        print(f'called Main.do_new with args', kwargs)
+    def do_detail(self):
+        print('called Main.do_detail')
+    # def do_edit_alg(self, **kwargs):
+    #    print(f'called Main.do_edit_alg with args', kwargs)
+    def do_edit_alg(self):
+        print('called Main.do_edit_alg')
+    def do_edit_trk(self):
+        print('called Main.do_edit_trk')
+    def do_edit_rec(self):
+        print('called Main.do_edit_rec')
+    def get_all_artists(self):
+        print('called Main.get_all_artists')
+    def start_import_tool(self):
+        print('called Main.start_import_tool')
+    def close(self):
+        print('called Main.close')
+
+class MockStart:
+    def __init__(self, parent):
+        print(f'called Start.__init__ with arg `{parent}`')
+    def create_widgets(self):
+        print('called Start.create_widgets')
+    def refresh_screen(self):
+        print('called Start.refresh_screen')
+
+class MockSelect:
+    def __init__(self, parent):
+        print(f'called Select.__init__ with arg `{parent}`')
+    def create_widgets(self):
+        print('called Select.create_widgets')
+    def refresh_screen(self):
+        print('called Select.refresh_screen')
+
+class MockDetail:
+    def __init__(self, parent):
+        print(f'called Detail.__init__ with arg `{parent}`')
+    def create_widgets(self):
+        print('called Detail.create_widgets')
+    def refresh_screen(self):
+        print('called Detail.refresh_screen')
+
+class MockEditDetails:
+    def __init__(self, parent):
+        print(f'called EditDetails.__init__ with arg `{parent}`')
+    def create_widgets(self):
+        print('called EditDetails.create_widgets')
+    def new_data(self, arg):
+        print(f'called EditDetails.new_data with arg `{arg}`')
+    def refresh_screen(self):
+        print('called EditDetails.refresh_screen')
+
+class MockEditTracks:
+    def __init__(self, parent):
+        print(f'called EditTracks.__init__ with arg `{parent}`')
+    def create_widgets(self):
+        print('called EditTracks.create_widgets')
+    def new_data(self, arg):
+        print(f'called EditTracks.new_data with arg `{arg}`')
+    def refresh_screen(self):
+        print('called EditTracks.refresh_screen')
+
+class MockEditRecordings:
+    def __init__(self, parent):
+        print(f'called EditRecordings.__init__ with arg `{parent}`')
+    def create_widgets(self):
+        print('called EditRecordings.create_widgets')
+    def new_data(self, arg):
+        print(f'called EditRecordings.new_data with arg `{arg}`')
+    def refresh_screen(self):
+        print('called EditRecordings.refresh_screen')
+
+class MockNewArtist:
+    def __init__(self, parent):
+        print('called NewArtistDialog')
+    def exec_(self):
+        return testee.qtw.QDialog.Accepted
+    def refresh_screen(self):
+        print('called Artists.refresh_screen')
+
+class MockArtists:
+    def __init__(self, parent):
+        print(f'called Artists.__init__ with arg `{parent}`')
+    def create_widgets(self):
+        print('called Artists.create_widgets')
+    def refresh_screen(self):
+        print('called Artists.refresh_screen')
+
+
+# module level functions ------------------
 def test_get_artist_list(monkeypatch):
     monkeypatch.setattr(testee.dmla, 'list_artists', lambda: ['x', 'y'])
     assert testee.get_artist_list() == ['x', 'y']
@@ -148,32 +294,6 @@ def test_newline(monkeypatch, capsys):
                                        " <class 'unittests.mockqtwidgets.MockFrame'>\n")
 
 
-class MockHandler:
-    "mock van een subscherm, alleen omdat ik de aanroepen nodog heb"
-    # zit momenteel alleen in de twee navolgende functies
-    class MockParent:
-        "mock van het hoofdscherm, alleen omdat ik de methode aanroepen nodig heb"
-        def do_select(self):
-            ...
-        def do_start(self):
-            ...
-        def do_detail(self):
-            ...
-    _parent = MockParent()
-    def parent(self):
-        return self._parent
-    def submit(self):
-        ...
-    def submit_and_back(self):
-        ...
-    def new(self):
-        ...
-    def do_select(self):
-        ...
-    def do_start(self):
-        ...
-
-
 def test_button_strip(monkeypatch, capsys):
     monkeypatch.setattr(testee.qtw, 'QHBoxLayout', mockqtw.MockHBox)
     monkeypatch.setattr(testee.qtw, 'QPushButton', mockqtw.MockButton)
@@ -251,106 +371,7 @@ def test_exitbutton(monkeypatch, capsys):
             'called HBoxLayout.addStretch\n')
 
 
-class MockMainFrame:
-    def __init__(self):
-        print('called Main.__init__')
-        self.app = mockqtw.MockApplication()
-    def go(self):
-        print('called Main.go')
-    def do_start(self):
-        print('called Main.do_start')
-    def do_select(self):
-        print('called Main.do_select')
-    def do_new(self, **kwargs):
-        print(f'called Main.do_new with args', kwargs)
-    def do_detail(self):
-        print('called Main.do_detail')
-    # def do_edit_alg(self, **kwargs):
-    #    print(f'called Main.do_edit_alg with args', kwargs)
-    def do_edit_alg(self):
-        print('called Main.do_edit_alg')
-    def do_edit_trk(self):
-        print('called Main.do_edit_trk')
-    def do_edit_rec(self):
-        print('called Main.do_edit_rec')
-    def get_all_artists(self):
-        print('called Main.get_all_artists')
-    def start_import_tool(self):
-        print('called Main.start_import_tool')
-    def close(self):
-        print('called Main.close')
-
-class MockStart:
-    def __init__(self, parent):
-        print(f'called Start.__init__ with arg `{parent}`')
-    def create_widgets(self):
-        print('called Start.create_widgets')
-    def refresh_screen(self):
-        print('called Start.refresh_screen')
-
-class MockSelect:
-    def __init__(self, parent):
-        print(f'called Select.__init__ with arg `{parent}`')
-    def create_widgets(self):
-        print('called Select.create_widgets')
-    def refresh_screen(self):
-        print('called Select.refresh_screen')
-
-class MockDetail:
-    def __init__(self, parent):
-        print(f'called Detail.__init__ with arg `{parent}`')
-    def create_widgets(self):
-        print('called Detail.create_widgets')
-    def refresh_screen(self):
-        print('called Detail.refresh_screen')
-
-class MockEditDetails:
-    def __init__(self, parent):
-        print(f'called EditDetails.__init__ with arg `{parent}`')
-    def create_widgets(self):
-        print('called EditDetails.create_widgets')
-    def new_data(self, arg):
-        print(f'called EditDetails.new_data with arg `{arg}`')
-    def refresh_screen(self):
-        print('called EditDetails.refresh_screen')
-
-class MockEditTracks:
-    def __init__(self, parent):
-        print(f'called EditTracks.__init__ with arg `{parent}`')
-    def create_widgets(self):
-        print('called EditTracks.create_widgets')
-    def new_data(self, arg):
-        print(f'called EditTracks.new_data with arg `{arg}`')
-    def refresh_screen(self):
-        print('called EditTracks.refresh_screen')
-
-class MockEditRecordings:
-    def __init__(self, parent):
-        print(f'called EditRecordings.__init__ with arg `{parent}`')
-    def create_widgets(self):
-        print('called EditRecordings.create_widgets')
-    def new_data(self, arg):
-        print(f'called EditRecordings.new_data with arg `{arg}`')
-    def refresh_screen(self):
-        print('called EditRecordings.refresh_screen')
-
-class MockNewArtist:
-    def __init__(self, parent):
-        print('called NewArtistDialog')
-    def exec_(self):
-        return testee.qtw.QDialog.Accepted
-    def refresh_screen(self):
-        print('called Artists.refresh_screen')
-
-class MockArtists:
-    def __init__(self, parent):
-        print(f'called Artists.__init__ with arg `{parent}`')
-    def create_widgets(self):
-        print('called Artists.create_widgets')
-    def refresh_screen(self):
-        print('called Artists.refresh_screen')
-
-
+# Main Window --------------
 def test_main_init(monkeypatch, capsys):
     monkeypatch.setattr(testee.qtw.QApplication, '__init__', mockqtw.MockApplication.__init__)
     monkeypatch.setattr(testee.qtw.QMainWindow, '__init__', mockqtw.MockMainWindow.__init__)
@@ -615,22 +636,7 @@ def test_main_start_import_tool(monkeypatch, capsys):
     assert capsys.readouterr().out == f"called AlbumsMatcher with args {{'app': {testobj.app}}}\n"
 
 
-def mock_newline(*args):
-    print(f'called newline with arg of type {type(args[0])}')
-    return mockqtw.MockHBox()
-
-def mock_button_strip(*args):
-    print(f'called button_strip with args', args)
-    return mockqtw.MockHBox()
-
-def mock_exitbutton(*args, **kwargs):
-    if len(args) == 3:
-        print(f'called exitbutton with args {args[0]}, {args[1]}, {type(args[2])}')
-    else:
-        print(f'called exitbutton with args', args, kwargs)
-    return mockqtw.MockHBox()
-
-
+# Application Start screen
 def setup_start(monkeypatch, capsys):
     def mock_init(self, parent):
         print('called QWidget.__init__')
@@ -909,6 +915,7 @@ def test_start_exit(monkeypatch, capsys):
     assert capsys.readouterr().out == 'called Main.close\n'
 
 
+# Application Selection screen
 def setup_select(monkeypatch, capsys):
     def mock_init(self, parent):
         print('called QWidget.__init__')
@@ -1189,6 +1196,7 @@ def test_select_exit(monkeypatch, capsys):
     assert capsys.readouterr().out == 'called Main.close\n'
 
 
+# Application details screen
 def setup_detail(monkeypatch, capsys):
     def mock_init(self, parent):
         print('called QWidget.__init__')
@@ -1289,6 +1297,7 @@ def test_detail_exit(monkeypatch, capsys):
     assert capsys.readouterr().out == 'called Main.close\n'
 
 
+# Application Details screen edit mode general part
 def setup_edit(monkeypatch, capsys):
     def mock_init(self, parent):
         print('called QWidget.__init__')
@@ -1697,10 +1706,10 @@ def test_edit_add_another(monkeypatch, capsys):
     testobj.add_another()
     assert capsys.readouterr().out == ("called QMessageBox with args ("
                                        f"{mockqtw.MockMessageBox.information},"
-                                       " 'Albums', 'Album added') {'buttons': 'okbutton',"
+                                       " 'Albums', 'Album added') {'buttons': 1,"
                                        f" 'parent': {testobj}}}\n"
-                                       "called QMessageBox.setDefaultButton with arg `okbutton`\n"
-                                       "called QMessageBox.setEscapeButton with arg `okbutton`\n"
+                                       "called QMessageBox.setDefaultButton with arg `1`\n"
+                                       "called QMessageBox.setEscapeButton with arg `1`\n"
                                        "called create_next_button with arg of type"
                                        " <class 'unittests.mockqtwidgets.MockMessageBox'>\n"
                                        "called QMessageBox.exec_\n"
@@ -1709,10 +1718,10 @@ def test_edit_add_another(monkeypatch, capsys):
     testobj.add_another()
     assert capsys.readouterr().out == ("called QMessageBox with args ("
                                        f"{mockqtw.MockMessageBox.information},"
-                                       " 'Albums', 'Album added') {'buttons': 'okbutton',"
+                                       " 'Albums', 'Album added') {'buttons': 1,"
                                        f" 'parent': {testobj}}}\n"
-                                       "called QMessageBox.setDefaultButton with arg `okbutton`\n"
-                                       "called QMessageBox.setEscapeButton with arg `okbutton`\n"
+                                       "called QMessageBox.setDefaultButton with arg `1`\n"
+                                       "called QMessageBox.setEscapeButton with arg `1`\n"
                                        "called QMessageBox.exec_\n"
                                        "called QMessageBox.clickedButton\n"
                                        "called Main.do_new with args {'keep_sel': True}\n")
@@ -1744,6 +1753,7 @@ def test_edit_exit(monkeypatch, capsys):
     assert capsys.readouterr().out == 'called Main.close\n'
 
 
+# Application Details screen edit mode tracks part
 def setup_edittracks(monkeypatch, capsys):
     def mock_init(self, parent):
         print('called QWidget.__init__')
@@ -1953,6 +1963,7 @@ def test_edittracks_exit(monkeypatch, capsys):
     assert capsys.readouterr().out == 'called Main.close\n'
 
 
+# Application Details screen edit mode recordings part
 def setup_editrecs(monkeypatch, capsys):
     def mock_init(self, parent):
         print('called QWidget.__init__')
@@ -2149,6 +2160,7 @@ def test_editrecs_exit(monkeypatch, capsys):
     assert capsys.readouterr().out == 'called Main.close\n'
 
 
+# Application Artists (list) screen
 def setup_artists(monkeypatch, capsys):
     def mock_init(self, parent):
         print('called QWidget.__init__')
@@ -2295,7 +2307,6 @@ def test_artists_submit(monkeypatch, capsys):
                                        'called Main.get_all_artists\n'
                                        'called Main.do_select\n')
 
-
 def test_artists_new(monkeypatch, capsys):
     def mock_add(num):
         print(f'called Artists.add_artist_line with arg `{num}`')
@@ -2320,6 +2331,7 @@ def test_artists_exit(monkeypatch, capsys):
     assert capsys.readouterr().out == 'called Main.close\n'
 
 
+# New Artist Dialog
 def test_artistdialog(monkeypatch, capsys, expected_output):
     def mock_init(self, *args):
         print('called QWidget.__init__')
