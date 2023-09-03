@@ -31,6 +31,8 @@ class MockWidget: # (qtw.QWidget):
         print('called widget.create_widgets, self.initializing is', self.initializing)
     def show(self):
         print('called widget.show')
+    # def setWindowTitle(self, text):
+    #     print(f'called widget.setWindowTitle to `{text}`')
 
 
 class MockScrollBar:
@@ -175,6 +177,8 @@ class MockLineEdit:
     def text(self):
         print('called LineEdit.text')
         return self._text
+    def setFocus(self):
+        print(f'called LineEdit.setFocus')
 
 
 class MockTextEdit:
@@ -251,6 +255,8 @@ class MockButton:
         print(f'called PushButton.setText with arg `{value}`')
     def setEnabled(self, value):
         print(f'called PushButton.setEnabled with arg `{value}`')
+    def setDefault(self, value):
+        print(f'called PushButton.setDefault with arg `{value}`')
     def setIcon(self, value):
         print(f'called PushButton.setIcon with arg `{value}`')
     def setIconSize(self, arg):
@@ -320,6 +326,10 @@ class MockDialog:
         print('called QDialog.__init__')
     # def setLayout(self, arg):
     #     print(f'called QDialog.setLayout with arg of type `{type(arg)}`')
+    # def parent(self):
+    #     return args[0]
+    # def setWindowTitle(self, text):
+    #     print('called QDialog.setWindowTitle with arg `{text}`')
     def accept(self):
         print('called QDialog.accept')
 

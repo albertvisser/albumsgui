@@ -5,6 +5,40 @@ import unittests.mockqtwidgets as mockqtw
 from unittests.buildscreen_output_fixture import expected_output
 
 
+# mock implementations of application classes
+class MockMainFrame:
+    next_icon = 'next_icon'  # nog even geen mockqtw.MockIcon()
+    prev_icon = 'prev_icon'  # idem
+    def __init__(self):
+        print('called MainFrame.__init__')
+        self.app = mockqtw.MockApplication()
+        self.title = 'appname'
+
+
+class MockNewArtistDialog:
+    def __init__(self, parent, name):
+        print('called NewArtistDialog.__init__'
+              f' with parent of type `{type(parent)}` and name `{name}`')
+    def exec_(self):
+        return testee.qtw.QDialog.Rejected
+
+
+class MockCmpArt:
+    def __init__(self, arg):
+        print(f'called CompareArtists.__init__ with arg `{arg}`')
+
+
+class MockCmpAlb:
+    def __init__(self, arg):
+        print(f'called CompareAlbums.__init__ with arg `{arg}`')
+
+
+class MockCmpTrk:
+    def __init__(self, arg):
+        print(f'called CompareTracks.__init__ with arg `{arg}`')
+
+
+# tests for module level functions
 def test_build_artist_name():
     assert testee.build_artist_name('', '') == ''
     assert testee.build_artist_name('', 'y') == 'y'
@@ -187,22 +221,214 @@ def test_wait_cursor(monkeypatch, capsys):
                                        "called app.restoreOverrideCursor\n")
 
 
-class MockMainFrame:
-    next_icon = 'next_icon'  # nog even geen mockqtw.MockIcon()
-    prev_icon = 'prev_icon'  # idem
-    def __init__(self):
-        print('called MainFrame.__init__')
-        self.app = mockqtw.MockApplication()
-        self.title = 'appname'
+# tests for main application class
+def setup_main(monkeypatch, capsys):
+    monkeypatch.setattr(testee.MainFrame, '__init__', MockMainFrame.__init__)
+    testobj = testee.MainFrame()
+    assert capsys.readouterr().out == ('called MainFrame.__init__\n'
+                                       'called QApplication.__init__\n')
+    return testobj
+
+def test_main_init(monkeypatch, capsys, expected_output):
+    def mock_app_init(self, *args):
+        print('called QApplication._init__')
+    def mock_init(self, *args):
+        print('called QMainWindow._init__ with args', args)
+    def mock_check(self):
+        print('called MainFrame.check_for_data')
+        return ['x', 'y'], ['a', 'b']
+    def mock_settabs(self):
+        print('called MainFrame.settabs')
+        return ['page1', 'page2']
+    def mock_go(self, arg):
+        print(f'called MainFrame.go with arg `{arg}`')
+    monkeypatch.setattr(testee.qtw.QApplication, '__init__', mock_app_init)
+    monkeypatch.setattr(testee.qtw.QMainWindow, '__init__', mock_init)
+    monkeypatch.setattr(testee.qtw.QMainWindow, 'move', mockqtw.MockMainWindow.move)
+    monkeypatch.setattr(testee.qtw.QMainWindow, 'resize', mockqtw.MockMainWindow.resize)
+    monkeypatch.setattr(testee.qtw.QMainWindow, 'setWindowTitle',
+                        mockqtw.MockMainWindow.setWindowTitle)
+    monkeypatch.setattr(testee.qtw.QMainWindow, 'setCentralWidget',
+                        mockqtw.MockMainWindow.setCentralWidget)
+    monkeypatch.setattr(testee.qtw.QMainWindow, 'addAction', mockqtw.MockMainWindow.addAction)
+    monkeypatch.setattr(testee.qtw.QMainWindow, 'show', mockqtw.MockMainWindow.show)
+    monkeypatch.setattr(testee.gui, 'QIcon', mockqtw.MockIcon)
+    monkeypatch.setattr(testee.qtw, 'QTabWidget', mockqtw.MockTabWidget)
+    monkeypatch.setattr(testee.qtw, 'QFrame', mockqtw.MockFrame)
+    monkeypatch.setattr(testee.qtw, 'QVBoxLayout', mockqtw.MockVBox)
+    monkeypatch.setattr(testee.qtw, 'QHBoxLayout', mockqtw.MockHBox)
+    monkeypatch.setattr(testee.qtw, 'QPushButton', mockqtw.MockButton)
+    monkeypatch.setattr(testee.qtw, 'QAction', mockqtw.MockAction)
+    monkeypatch.setattr(testee.MainFrame, 'check_for_data', mock_check)
+    monkeypatch.setattr(testee.MainFrame, 'setup_tabwidget', mock_settabs)
+    monkeypatch.setattr(testee.MainFrame, 'go', mock_go)
+    testobj = testee.MainFrame()
+    assert isinstance(testobj.app, testee.qtw.QApplication)
+    assert testobj.title == 'AlbumsMatcher'
+    assert testobj.current == -1
+    assert not testobj.not_again
+    bindings = {'me': testobj, 'parent': None, 'page_changed': testobj.page_changed,
+                'exit': testobj.exit, 'app': None}
+    assert capsys.readouterr().out == expected_output['matcher_main'].format(**bindings)
+
+    testobj = testee.MainFrame(parent='parent')
+    assert isinstance(testobj.app, testee.qtw.QApplication)
+    assert testobj.title == 'AlbumsMatcher'
+    assert testobj.current == -1
+    assert not testobj.not_again
+    bindings = {'me': testobj, 'parent': "'parent'", 'page_changed': testobj.page_changed,
+                'exit': testobj.exit, 'app': None}
+    assert capsys.readouterr().out == expected_output['matcher_main'].format(**bindings)
+
+    testobj = testee.MainFrame(app='app')
+    assert testobj.app == 'app'
+    assert testobj.title == 'AlbumsMatcher'
+    assert testobj.current == -1
+    assert not testobj.not_again
+    bindings = {'me': testobj, 'parent': None, 'page_changed': testobj.page_changed,
+                'exit': testobj.exit, 'app': 'app'}
+    assert capsys.readouterr().out == expected_output['matcher_main_w_app'].format(**bindings)
+
+def test_main_go(monkeypatch, capsys):
+    testobj = setup_main(monkeypatch, capsys)
+    testobj.go('app')
+    assert capsys.readouterr().out == ''
+    with pytest.raises(SystemExit):
+        testobj.go('')
+    assert capsys.readouterr().out == 'called QApplication.exec_\n'
+
+def test_main_check_for_data(monkeypatch, capsys):
+    counter = 0
+    def mock_load():
+        nonlocal counter
+        if counter:
+            print('called load_appdata') # negeren tijdens __init__
+        counter += 1
+        return 'x', 'y'
+    monkeypatch.setattr(testee, 'load_appdata', mock_load)
+    testobj = setup_main(monkeypatch, capsys)
+    assert testobj.check_for_data() == ('x', 'y')
+    monkeypatch.setattr(testee, 'load_appdata', lambda: None)
+    testobj = setup_main(monkeypatch, capsys)
+    assert testobj.check_for_data() == ({}, {})
+
+def test_main_setup_tabwidget(monkeypatch, capsys):
+    monkeypatch.setattr(testee, 'CompareArtists', MockCmpArt)
+    monkeypatch.setattr(testee, 'CompareAlbums', MockCmpAlb)
+    monkeypatch.setattr(testee, 'CompareTracks', MockCmpTrk)
+    testobj = setup_main(monkeypatch, capsys)
+    testobj.nb = mockqtw.MockTabWidget()
+    result = testobj.setup_tabwidget()
+    assert len(result) == 3
+    names = ['artists', 'albums', 'tracks']
+    classes = [testee.CompareArtists, testee.CompareAlbums, testee.CompareTracks]
+    for ix, item in enumerate(result.values()):
+        assert item[0] == names[ix]
+        assert isinstance(item[1], classes[ix])
+        assert item[1].first_time
+        assert item[1]._parent == testobj
+    assert capsys.readouterr().out == ('called QTabWidget.__init__\n'
+                                       f'called CompareArtists.__init__ with arg `{testobj}`\n'
+                                       f'called CompareAlbums.__init__ with arg `{testobj}`\n'
+                                       f'called CompareTracks.__init__ with arg `{testobj}`\n'
+                                       f"called QTabWidget.addTab with args ({result[0][1]},"
+                                       " 'Artists')\n"
+                                       f"called QTabWidget.addTab with args ({result[1][1]},"
+                                       " 'Albums')\n"
+                                       f"called QTabWidget.addTab with args ({result[2][1]},"
+                                       " 'Tracks')\n")
+
+def test_main_page_changed(monkeypatch, capsys):
+    def mock_check(page):
+        print(f'called Main.check_oldpage with arg `{page}`')
+        return True
+    def mock_current():
+        print('called QTabWidget.currentWidget')
+        return types.SimpleNamespace(first_time=True, create_widgets=mock_createw,
+                                     create_actions=mock_createa, refresh_screen=mock_refresh)
+    def mock_current_2():
+        print('called QTabWidget.currentWidget')
+        return types.SimpleNamespace(first_time=False, create_widgets=mock_createw,
+                                     create_actions=mock_createa, refresh_screen=mock_refresh_2)
+    def mock_createw():
+        print('called subscreen.create_widgets')
+    def mock_createa():
+        print('called subscreen.create_actions')
+    def mock_refresh(arg):
+        print(f'called subscreen.refresh_screen with arg `{arg}`')
+    def mock_refresh_2(arg):
+        return 'message'
+    monkeypatch.setattr(testee.qtw, 'QMessageBox', mockqtw.MockMessageBox)
+    testobj = setup_main(monkeypatch, capsys)
+    monkeypatch.setattr(testobj, 'check_oldpage', mock_check)
+    testobj.nb = mockqtw.MockTabWidget()
+    monkeypatch.setattr(testobj.nb, 'currentWidget', mock_current)
+    assert capsys.readouterr().out == 'called QTabWidget.__init__\n'
+    testobj.current = 0
+    testobj.current_data = 'current data'
+    testobj.not_again = True
+    testobj.page_changed()
+    assert not testobj.not_again
+    assert capsys.readouterr().out == ''
+
+    testobj.current = 1
+    testobj.not_again = False
+    testobj.page_changed()
+    assert capsys.readouterr().out == ('called Main.check_oldpage with arg `1`\n'
+                                       'called QTabWidget.currentIndex\n'
+                                       'called QTabWidget.currentWidget\n'
+                                       'called subscreen.create_widgets\n'
+                                       'called subscreen.create_actions\n'
+                                       'called subscreen.refresh_screen with arg `current data`\n')
+
+    testobj.current = 1
+    monkeypatch.setattr(testobj, 'check_oldpage', lambda *x: False)
+    testobj.page_changed()
+    assert testobj.not_again
+    assert capsys.readouterr().out == 'called QTabWidget.setCurrentIndex with arg `1`\n'
+
+    testobj.current = -1
+    monkeypatch.setattr(testobj.nb, 'currentWidget', mock_current_2)
+    testobj.page_changed()
+    assert capsys.readouterr().out == ('called QTabWidget.currentIndex\n'
+                                       'called QTabWidget.currentWidget\n'
+                                       'called QMessageBox.information with args'
+                                       ' `appname` `message`\n'
+                                       'called QTabWidget.setCurrentIndex with arg `0`\n')
+
+def test_main_check_oldpage(monkeypatch, capsys):
+    monkeypatch.setattr(testee.qtw, 'QMessageBox', mockqtw.MockMessageBox)
+    testobj = setup_main(monkeypatch, capsys)
+    testobj.pages = {0: ('', types.SimpleNamespace(modified=True)),
+                     1: ('', types.SimpleNamespace(modified=True)),
+                     2: ('', types.SimpleNamespace(modified=True)),
+                     }
+    for ix in range(2):
+        assert not testobj.check_oldpage(ix)
+        assert capsys.readouterr().out == ('called QMessageBox.information with args'
+                                           f' `appname` `{testee.checkpage_messages[ix]}`\n')
+    testobj.pages = {0: ('', types.SimpleNamespace(modified=False))}
+    assert testobj.check_oldpage(0)
+    assert capsys.readouterr().out == ''
+
+def test_main_exit(monkeypatch, capsys):
+    def mock_check(page):
+        print(f'called Main.check_oldpage with arg `{page}`')
+        return True
+    def mock_close():
+        print(f'called Main.close')
+    testobj = setup_main(monkeypatch, capsys)
+    testobj.current = 1
+    monkeypatch.setattr(testobj, 'check_oldpage', mock_check)
+    monkeypatch.setattr(testobj, 'close', mock_close)
+    testobj.exit()
+    assert capsys.readouterr().out == ('called Main.check_oldpage with arg `1`\n'
+                                       'called Main.close\n')
+    monkeypatch.setattr(testobj, 'check_oldpage', lambda *x: False)
+    assert capsys.readouterr().out == ''
 
 
-class MockNewArtistDialog:
-    def __init__(self, parent, name):
-        print('called NewArtistDialog.__init__'
-              f' with parent of type `{type(parent)}` and name `{name}`')
-    def exec_(self):
-        return testee.qtw.QDialog.Rejected
-
+# tests for Compare Artists Tab
 def setup_cmpart(monkeypatch, capsys, widgets=True):
     def mock_init(self, parent):
         print('called QWidget.__init__')
@@ -786,7 +1012,6 @@ def test_cmpart_delete_artist(monkeypatch, capsys):
                                        "called TreeItem.setText with args (1, '')\n"
                                        'called CompareArtists.set_modified with arg `True`\n')
 
-
 def test_cmpart_save_all(monkeypatch, capsys):
     def mock_update(arg):
         print(f'called update_artists with arg `{arg}`)')
@@ -847,13 +1072,96 @@ def test_cmpart_help(monkeypatch, capsys):
     assert capsys.readouterr().out == "called QMessageBox.information with args `appname` `wf`\n"
 
 
-def _test_newart___init__(monkeypatch, capsys):
+# tests for New Artist Dialog
+def test_newart_init(monkeypatch, capsys, expected_output):
+    def mock_init(self, *args):
+        print('called QWidget.__init__')
+    def mock_setLayout(self, widget):
+        print(f'called QWidget.setLayout with arg of type {type(widget)}')
+    def mock_setTitle(self, text):
+        print(f'called QDialog.setWindowTitle with arg `{text}`')
+    monkeypatch.setattr(testee.qtw.QWidget, '__init__', mock_init)
+    monkeypatch.setattr(testee.qtw.QWidget, 'setLayout', mock_setLayout)
+    monkeypatch.setattr(testee.qtw.QWidget, 'setWindowTitle', mock_setTitle)
+    parent = testee.qtw.QWidget()
+    assert capsys.readouterr().out == 'called QWidget.__init__\n'
+    parent.appname = 'appname'
+    monkeypatch.setattr(testee.qtw, 'QDialog', mockqtw.MockDialog)
+    monkeypatch.setattr(testee.qtw, 'QGridLayout', mockqtw.MockGrid)
+    monkeypatch.setattr(testee.qtw, 'QHBoxLayout', mockqtw.MockHBox)
+    monkeypatch.setattr(testee.qtw, 'QPushButton', mockqtw.MockButton)
+    monkeypatch.setattr(testee.qtw, 'QLabel', mockqtw.MockLabel)
+    monkeypatch.setattr(testee.qtw, 'QLineEdit', mockqtw.MockLineEdit)
     testobj = testee.NewArtistDialog(parent, name='')
+    bindings = {'reject': testobj.reject, 'update': testobj.update, 'me': testobj, 'text': ''}
+    assert capsys.readouterr().out == expected_output['new_artist'].format(**bindings)
+    # extra test om te bevestigen dat leeg of gevuld allebei werkt
+    testobj = testee.NewArtistDialog(parent, name='x')
+    bindings = {'reject': testobj.reject, 'update': testobj.update, 'me': testobj, 'text': ''}
+    assert capsys.readouterr().out == expected_output['new_artist'].format(**bindings)
 
-def _test_newart_update(monkeypatch, capsys):
+def test_newart_update(monkeypatch, capsys):
+    def mock_init(self, *args):
+        print('called NewArtistDialog.__init__')
+    def mock_accept(self, *args):
+        print('called NewArtistDialog.accept')
+    counter = 0
+    def mock_text_alles(*args):
+        nonlocal counter
+        counter += 1
+        print('called QLineEdit.text')
+        return ('', 'x', 'y')[counter]
+    def mock_text_niks(*args):
+        return ''
+    def mock_text_lname(*args):
+        nonlocal counter
+        counter += 1
+        return ('', '', 'y')[counter]
+    def mock_text_fname(*args):
+        nonlocal counter
+        counter += 1
+        return ('', 'x', '')[counter]
+    monkeypatch.setattr(testee.qtw, 'QMessageBox', mockqtw.MockMessageBox)
+    monkeypatch.setattr(testee.NewArtistDialog, '__init__', mock_init)
+    monkeypatch.setattr(testee.NewArtistDialog, 'accept', mock_accept)
+    testobj = testee.NewArtistDialog()
+    mock_parent = types.SimpleNamespace(data=())
+    monkeypatch.setattr(testobj, 'parent', lambda *x: mock_parent)
+    monkeypatch.setattr(mockqtw.MockLineEdit, 'text', mock_text_alles)
+    testobj.first_name = mockqtw.MockLineEdit()
+    testobj.last_name = mockqtw.MockLineEdit()
+    assert capsys.readouterr().out == ('called NewArtistDialog.__init__\n'
+                                       'called LineEdit.__init__\n'
+                                       'called LineEdit.__init__\n')
     testobj.update()
+    assert testobj.parent().data == ('x', 'y')
+    assert capsys.readouterr().out == ('called QLineEdit.text\n'
+                                       'called QLineEdit.text\n'
+                                       'called NewArtistDialog.accept\n')
+
+    testobj.parent().data = ()
+    monkeypatch.setattr(mockqtw.MockLineEdit, 'text', mock_text_niks)
+    testobj.update()
+    assert testobj.parent().data == ()
+    assert capsys.readouterr().out == ('called QMessageBox.information with args `AlbumsMatcher`'
+                                       ' `Enter at least one name or press `Cancel``\n')
+
+    counter = 0
+    testobj.parent().data = ()
+    monkeypatch.setattr(mockqtw.MockLineEdit, 'text', mock_text_fname)
+    testobj.update()
+    assert testobj.parent().data == ('x', '')
+    assert capsys.readouterr().out == 'called NewArtistDialog.accept\n'
+
+    counter = 0
+    testobj.parent().data = ()
+    monkeypatch.setattr(mockqtw.MockLineEdit, 'text', mock_text_lname)
+    testobj.update()
+    assert testobj.parent().data == ('', 'y')
+    assert capsys.readouterr().out == 'called NewArtistDialog.accept\n'
 
 
+# tests for Compare Albums Tab
 def setup_cmpalb(monkeypatch, capsys):
     testobj = testee.CompareAlbums()
     return testobj
@@ -911,13 +1219,15 @@ def _test_cmpalb_help(monkeypatch, capsys):
     testobj.help()
 
 
-def _test_newalb___init__():
+# tests for new album dialog
+def _test_newalb_init():
     testobj = testee.NewAlbumDialog(parent, name='', year='')
 
 def _test_newalb_update(monkeypatch, capsys):
     testobj.update()
 
 
+# tests for compare tracks tab
 def setup_cmptrk(monkeypatch, capsys):
     testobj = testee.CompareTracks
     return testobj
@@ -977,226 +1287,3 @@ def _test_cmptrk_save_all(monkeypatch, capsys):
 def _test_cmptrk_help(monkeypatch, capsys):
     testobj = setup_cmptrk(monkeypatch, capsys)
     testobj.help()
-
-
-def test_main_init(monkeypatch, capsys, expected_output):
-    def mock_app_init(self, *args):
-        print('called QApplication._init__')
-    def mock_init(self, *args):
-        print('called QMainWindow._init__ with args', args)
-    def mock_check(self):
-        print('called MainFrame.check_for_data')
-        return ['x', 'y'], ['a', 'b']
-    def mock_settabs(self):
-        print('called MainFrame.settabs')
-        return ['page1', 'page2']
-    def mock_go(self, arg):
-        print(f'called MainFrame.go with arg `{arg}`')
-    monkeypatch.setattr(testee.qtw.QApplication, '__init__', mock_app_init)
-    monkeypatch.setattr(testee.qtw.QMainWindow, '__init__', mock_init)
-    monkeypatch.setattr(testee.qtw.QMainWindow, 'move', mockqtw.MockMainWindow.move)
-    monkeypatch.setattr(testee.qtw.QMainWindow, 'resize', mockqtw.MockMainWindow.resize)
-    monkeypatch.setattr(testee.qtw.QMainWindow, 'setWindowTitle',
-                        mockqtw.MockMainWindow.setWindowTitle)
-    monkeypatch.setattr(testee.qtw.QMainWindow, 'setCentralWidget',
-                        mockqtw.MockMainWindow.setCentralWidget)
-    monkeypatch.setattr(testee.qtw.QMainWindow, 'addAction', mockqtw.MockMainWindow.addAction)
-    monkeypatch.setattr(testee.qtw.QMainWindow, 'show', mockqtw.MockMainWindow.show)
-    monkeypatch.setattr(testee.gui, 'QIcon', mockqtw.MockIcon)
-    monkeypatch.setattr(testee.qtw, 'QTabWidget', mockqtw.MockTabWidget)
-    monkeypatch.setattr(testee.qtw, 'QFrame', mockqtw.MockFrame)
-    monkeypatch.setattr(testee.qtw, 'QVBoxLayout', mockqtw.MockVBox)
-    monkeypatch.setattr(testee.qtw, 'QHBoxLayout', mockqtw.MockHBox)
-    monkeypatch.setattr(testee.qtw, 'QPushButton', mockqtw.MockButton)
-    monkeypatch.setattr(testee.qtw, 'QAction', mockqtw.MockAction)
-    monkeypatch.setattr(testee.MainFrame, 'check_for_data', mock_check)
-    monkeypatch.setattr(testee.MainFrame, 'setup_tabwidget', mock_settabs)
-    monkeypatch.setattr(testee.MainFrame, 'go', mock_go)
-    testobj = testee.MainFrame()
-    assert isinstance(testobj.app, testee.qtw.QApplication)
-    assert testobj.title == 'AlbumsMatcher'
-    assert testobj.current == -1
-    assert not testobj.not_again
-    bindings = {'me': testobj, 'parent': None, 'page_changed': testobj.page_changed,
-                'exit': testobj.exit, 'app': None}
-    assert capsys.readouterr().out == expected_output['matcher_main'].format(**bindings)
-
-    testobj = testee.MainFrame(parent='parent')
-    assert isinstance(testobj.app, testee.qtw.QApplication)
-    assert testobj.title == 'AlbumsMatcher'
-    assert testobj.current == -1
-    assert not testobj.not_again
-    bindings = {'me': testobj, 'parent': "'parent'", 'page_changed': testobj.page_changed,
-                'exit': testobj.exit, 'app': None}
-    assert capsys.readouterr().out == expected_output['matcher_main'].format(**bindings)
-
-    testobj = testee.MainFrame(app='app')
-    assert testobj.app == 'app'
-    assert testobj.title == 'AlbumsMatcher'
-    assert testobj.current == -1
-    assert not testobj.not_again
-    bindings = {'me': testobj, 'parent': None, 'page_changed': testobj.page_changed,
-                'exit': testobj.exit, 'app': 'app'}
-    assert capsys.readouterr().out == expected_output['matcher_main_w_app'].format(**bindings)
-
-
-def setup_main(monkeypatch, capsys):
-    monkeypatch.setattr(testee.MainFrame, '__init__', MockMainFrame.__init__)
-    testobj = testee.MainFrame()
-    assert capsys.readouterr().out == ('called MainFrame.__init__\n'
-                                       'called QApplication.__init__\n')
-    return testobj
-
-def test_main_go(monkeypatch, capsys):
-    testobj = setup_main(monkeypatch, capsys)
-    testobj.go('app')
-    assert capsys.readouterr().out == ''
-    with pytest.raises(SystemExit):
-        testobj.go('')
-    assert capsys.readouterr().out == 'called QApplication.exec_\n'
-
-
-def test_main_check_for_data(monkeypatch, capsys):
-    counter = 0
-    def mock_load():
-        nonlocal counter
-        if counter:
-            print('called load_appdata') # negeren tijdens __init__
-        counter += 1
-        return 'x', 'y'
-    monkeypatch.setattr(testee, 'load_appdata', mock_load)
-    testobj = setup_main(monkeypatch, capsys)
-    assert testobj.check_for_data() == ('x', 'y')
-    monkeypatch.setattr(testee, 'load_appdata', lambda: None)
-    testobj = setup_main(monkeypatch, capsys)
-    assert testobj.check_for_data() == ({}, {})
-
-class MockCmpArt:
-    def __init__(self, arg):
-        print(f'called CompareArtists.__init__ with arg `{arg}`')
-
-class MockCmpAlb:
-    def __init__(self, arg):
-        print(f'called CompareAlbums.__init__ with arg `{arg}`')
-
-class MockCmpTrk:
-    def __init__(self, arg):
-        print(f'called CompareTracks.__init__ with arg `{arg}`')
-
-def test_setup_tabwidget(monkeypatch, capsys):
-    monkeypatch.setattr(testee, 'CompareArtists', MockCmpArt)
-    monkeypatch.setattr(testee, 'CompareAlbums', MockCmpAlb)
-    monkeypatch.setattr(testee, 'CompareTracks', MockCmpTrk)
-    testobj = setup_main(monkeypatch, capsys)
-    testobj.nb = mockqtw.MockTabWidget()
-    result = testobj.setup_tabwidget()
-    assert len(result) == 3
-    names = ['artists', 'albums', 'tracks']
-    classes = [testee.CompareArtists, testee.CompareAlbums, testee.CompareTracks]
-    for ix, item in enumerate(result.values()):
-        assert item[0] == names[ix]
-        assert isinstance(item[1], classes[ix])
-        assert item[1].first_time
-        assert item[1]._parent == testobj
-    assert capsys.readouterr().out == ('called QTabWidget.__init__\n'
-                                       f'called CompareArtists.__init__ with arg `{testobj}`\n'
-                                       f'called CompareAlbums.__init__ with arg `{testobj}`\n'
-                                       f'called CompareTracks.__init__ with arg `{testobj}`\n'
-                                       f"called QTabWidget.addTab with args ({result[0][1]},"
-                                       " 'Artists')\n"
-                                       f"called QTabWidget.addTab with args ({result[1][1]},"
-                                       " 'Albums')\n"
-                                       f"called QTabWidget.addTab with args ({result[2][1]},"
-                                       " 'Tracks')\n")
-
-
-def test_main_page_changed(monkeypatch, capsys):
-    def mock_check(page):
-        print(f'called Main.check_oldpage with arg `{page}`')
-        return True
-    def mock_current():
-        print('called QTabWidget.currentWidget')
-        return types.SimpleNamespace(first_time=True, create_widgets=mock_createw,
-                                     create_actions=mock_createa, refresh_screen=mock_refresh)
-    def mock_current_2():
-        print('called QTabWidget.currentWidget')
-        return types.SimpleNamespace(first_time=False, create_widgets=mock_createw,
-                                     create_actions=mock_createa, refresh_screen=mock_refresh_2)
-    def mock_createw():
-        print('called subscreen.create_widgets')
-    def mock_createa():
-        print('called subscreen.create_actions')
-    def mock_refresh(arg):
-        print(f'called subscreen.refresh_screen with arg `{arg}`')
-    def mock_refresh_2(arg):
-        return 'message'
-    monkeypatch.setattr(testee.qtw, 'QMessageBox', mockqtw.MockMessageBox)
-    testobj = setup_main(monkeypatch, capsys)
-    monkeypatch.setattr(testobj, 'check_oldpage', mock_check)
-    testobj.nb = mockqtw.MockTabWidget()
-    monkeypatch.setattr(testobj.nb, 'currentWidget', mock_current)
-    assert capsys.readouterr().out == 'called QTabWidget.__init__\n'
-    testobj.current = 0
-    testobj.current_data = 'current data'
-    testobj.not_again = True
-    testobj.page_changed()
-    assert not testobj.not_again
-    assert capsys.readouterr().out == ''
-
-    testobj.current = 1
-    testobj.not_again = False
-    testobj.page_changed()
-    assert capsys.readouterr().out == ('called Main.check_oldpage with arg `1`\n'
-                                       'called QTabWidget.currentIndex\n'
-                                       'called QTabWidget.currentWidget\n'
-                                       'called subscreen.create_widgets\n'
-                                       'called subscreen.create_actions\n'
-                                       'called subscreen.refresh_screen with arg `current data`\n')
-
-    testobj.current = 1
-    monkeypatch.setattr(testobj, 'check_oldpage', lambda *x: False)
-    testobj.page_changed()
-    assert testobj.not_again
-    assert capsys.readouterr().out == 'called QTabWidget.setCurrentIndex with arg `1`\n'
-
-    testobj.current = -1
-    monkeypatch.setattr(testobj.nb, 'currentWidget', mock_current_2)
-    testobj.page_changed()
-    assert capsys.readouterr().out == ('called QTabWidget.currentIndex\n'
-                                       'called QTabWidget.currentWidget\n'
-                                       'called QMessageBox.information with args'
-                                       ' `appname` `message`\n'
-                                       'called QTabWidget.setCurrentIndex with arg `0`\n')
-
-
-def test_main_check_oldpage(monkeypatch, capsys):
-    monkeypatch.setattr(testee.qtw, 'QMessageBox', mockqtw.MockMessageBox)
-    testobj = setup_main(monkeypatch, capsys)
-    testobj.pages = {0: ('', types.SimpleNamespace(modified=True)),
-                     1: ('', types.SimpleNamespace(modified=True)),
-                     2: ('', types.SimpleNamespace(modified=True)),
-                     }
-    for ix in range(2):
-        assert not testobj.check_oldpage(ix)
-        assert capsys.readouterr().out == ('called QMessageBox.information with args'
-                                           f' `appname` `{testee.checkpage_messages[ix]}`\n')
-    testobj.pages = {0: ('', types.SimpleNamespace(modified=False))}
-    assert testobj.check_oldpage(0)
-    assert capsys.readouterr().out == ''
-
-
-def test_main_exit(monkeypatch, capsys):
-    def mock_check(page):
-        print(f'called Main.check_oldpage with arg `{page}`')
-        return True
-    def mock_close():
-        print(f'called Main.close')
-    testobj = setup_main(monkeypatch, capsys)
-    testobj.current = 1
-    monkeypatch.setattr(testobj, 'check_oldpage', mock_check)
-    monkeypatch.setattr(testobj, 'close', mock_close)
-    testobj.exit()
-    assert capsys.readouterr().out == ('called Main.check_oldpage with arg `1`\n'
-                                       'called Main.close\n')
-    monkeypatch.setattr(testobj, 'check_oldpage', lambda *x: False)
-    assert capsys.readouterr().out == ''

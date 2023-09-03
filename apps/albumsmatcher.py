@@ -518,7 +518,7 @@ class NewArtistDialog(qtw.QDialog):
     """
     def __init__(self, parent, name=''):
         super().__init__(parent)
-        self.setWindowTitle(self.parent().appname + ' - add artist')
+        self.setWindowTitle(parent.appname + ' - add artist')
         gbox = qtw.QGridLayout()
         gbox.addWidget(qtw.QLabel('First name:', self), 0, 0)
         self.first_name = qtw.QLineEdit(self)

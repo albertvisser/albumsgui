@@ -944,7 +944,39 @@ called QTreeWidget.addTopLevelItem with arg of type `<class 'PyQt5.QtWidgets.QTr
 """
 cmpart_ref_1 = 'called focus_artist with arg `None`\n'
 cmpart_ref_2 = 'called focus_artist with arg `artist`\n'
+newart = """\
+called QWidget.__init__
+called QDialog.setWindowTitle with arg `appname - add artist`
+called GridLayout.__init__
+called Label.__init__ with args ('First name:', {me})
+called GridLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLabel'> at (0, 0)
+called LineEdit.__init__
+called LineEdit.setMinimumWidth to `200`
+called LineEdit.setMaximumWidth to `200`
+called GridLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLineEdit'> at (0, 1)
+called Label.__init__ with args ('Last name:', {me})
+called GridLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLabel'> at (1, 0)
+called LineEdit.__init__
+called LineEdit.setMinimumWidth to `200`
+called LineEdit.setMaximumWidth to `200`
+called GridLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLineEdit'> at (1, 1)
+called HBoxLayout.__init__
+called HBoxLayout.addStretch
+called PushButton.__init__ with args ('&Cancel', {me})
+called connect with args ({reject},)
+called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockButton'>
+called PushButton.__init__ with args ('&Update', {me})
+called connect with args ({update},)
+called PushButton.setDefault with arg `True`
+called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockButton'>
+called HBoxLayout.addStretch
+called GridLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'> at (2, 0, 1, 2)
+called QWidget.setLayout with arg of type <class 'unittests.mockqtwidgets.MockGrid'>
+called LineEdit.setFocus
+"""
 cmpalb = """\
+"""
+newalb = """\
 """
 cmptrk = """\
 """
@@ -988,6 +1020,8 @@ def expected_output():
         'compare_artists_actions': cmpart_act,
         'compare_artists_refresh_1': cmpart_refresh + cmpart_ref_1,
         'compare_artists_refresh_2': cmpart_refresh + cmpart_ref_2,
+        'new_artist': newart,
         'compare_albums': cmpalb,
+        'new_album': newalb,
         'compare_tracks': cmptrk,
         }
