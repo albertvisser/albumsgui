@@ -662,6 +662,7 @@ class CompareAlbums(qtw.QWidget):
         self.artist_map = self._parent.artist_map
         self.albums_map = collections.defaultdict(dict)
         self.albums_map.update(self._parent.albums_map)
+        # is dit een terechte aanname: x['artist'] is altijd een key in de artist_map van de parent
         if self._parent.artist_map:
             self.c_artists = [x['artist'] for x in dmlc.list_artists()
                               if self._parent.artist_map[x['artist']]]
@@ -672,6 +673,7 @@ class CompareAlbums(qtw.QWidget):
         for ix in range(self.clementine_albums.topLevelItemCount()):
             item = self.clementine_albums.topLevelItem(ix)
             if item.text(1) == 'X':
+                # gaat dit nooit mis?
                 a_item = self.albums_map[self.c_artist][item.text(0)][1]
                 item.setText(1, str(a_item))
         if artist:
@@ -681,8 +683,6 @@ class CompareAlbums(qtw.QWidget):
                 try:
                     indx = self.c_artists.index(artist)
                 except ValueError:
-                    # qtw.QMessageBox.information(self, self._parent.title, "This "
-                    #                             "artist has not been matched yet")
                     return "This artist has not been matched yet"
                 self.artist_list.setCurrentIndex(indx)
         self.update_navigation_buttons()
@@ -825,8 +825,8 @@ class CompareAlbums(qtw.QWidget):
         """
         self.albums_albums.setCurrentItem(new_item)
         self.albums_albums.scrollToItem(new_item)
-        self.albums_map[self.c_artist][from_item.text(0)] = (
-            build_album_name(new_item), int(new_item.text(2)))
+        self.albums_map[self.c_artist][from_item.text(0)] = (build_album_name(new_item),
+                                                             int(new_item.text(2)))
         ## log('self.albums_map: %s', self.albums_map)
         from_item.setText(1, 'X')
         self.set_modified(True)

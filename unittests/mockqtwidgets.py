@@ -151,6 +151,9 @@ class MockComboBox:
         return '.'
     def setFocus(self):
         print('called ComboBox.setFocus')
+    def count(self):
+        print('called ComboBox.count')
+        return 0
     def clear(self):
         print('called ComboBox.clear')
     def addItem(self, item):
@@ -245,7 +248,7 @@ class MockButton:
     clicked = types.SimpleNamespace(connect=mock_connect)
     def __init__(self, *args):
         print('called PushButton.__init__ with args', args)
-        self._text = args[0]
+        self._text = args[0] if args else ''
     def setMaximumWidth(self, number):
         print(f'called PushButton.setMaximumWidth to `{number}`')
     def text(self):
@@ -415,7 +418,7 @@ class MockTree:
     def takeTopLevelItem(self, arg):
         return f'TreeWidget.takeTopLevelItem with index {arg}'
     def topLevelItemCount(self):
-        print('called TreeWidget.topLevelItem')
+        print('called TreeWidget.topLevelItemCount')
         return 0
     def findItems(self, *args):
         print('called QTreeWidget.findItems with args', args)
@@ -438,6 +441,9 @@ class MockTree:
     def itemBelow(self, arg):
         print(f'called TreeWidget.itemBelow with arg {arg}')
         return 'x'
+    def count(self):
+        print('called QTreeWidget.count')
+        return 0
     def clear(self):
         print('called QTreeWidget.clear')
 
