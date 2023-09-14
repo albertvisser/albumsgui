@@ -7,3 +7,11 @@ __pycache__/
 logs/
 *.swp
 *.swo
+projdocs*
+
+# data etc
+*albumsmatcher.json*
+# starter for standalone albumsmatcher
+start_matcher.py
+# actual app settings
+apps/banshee_settings.py
