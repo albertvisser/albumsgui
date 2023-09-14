@@ -922,7 +922,7 @@ class NewAlbumDialog(qtw.QDialog):
     """
     def __init__(self, parent, name='', year=''):
         super().__init__(parent)
-        self.setWindowTitle(self.parent().appname + ' - add album')
+        self.setWindowTitle(parent.appname + ' - add album')
         gbox = qtw.QGridLayout()
         gbox.addWidget(qtw.QLabel('Album title:', self), 0, 0)
         self.first_name = qtw.QLineEdit(name, self)

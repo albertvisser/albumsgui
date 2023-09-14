@@ -1078,6 +1078,40 @@ called QAction.setShortcut with arg `['Ctrl+S']`
 called CompareArtists.addAction
 """
 newalb = """\
+called QWidget.__init__
+called QDialog.setWindowTitle with arg `appname - add album`
+called GridLayout.__init__
+called Label.__init__ with args ('Album title:', {me})
+called GridLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLabel'> at (0, 0)
+called LineEdit.__init__
+called LineEdit.setMinimumWidth to `200`
+called LineEdit.setMaximumWidth to `200`
+called GridLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLineEdit'> at (0, 1)
+called Label.__init__ with args ('Release year:', {me})
+called GridLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLabel'> at (1, 0)
+called LineEdit.__init__
+called LineEdit.setMinimumWidth to `100`
+called LineEdit.setMaximumWidth to `100`
+called GridLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLineEdit'> at (1, 1)
+called HBoxLayout.__init__
+called QWidget.__init__
+called HBoxLayout.addStretch
+called HBoxLayout.addWidget with arg of type <class 'PyQt5.QtWidgets.QCheckBox'>
+called HBoxLayout.addStretch
+called GridLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'> at (2, 0, 1, 2)
+called HBoxLayout.__init__
+called HBoxLayout.addStretch
+called PushButton.__init__ with args ('&Cancel', {me})
+called connect with args ({reject},)
+called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockButton'>
+called PushButton.__init__ with args ('&Update', {me})
+called connect with args ({update},)
+called PushButton.setDefault with arg `True`
+called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockButton'>
+called HBoxLayout.addStretch
+called GridLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'> at (3, 0, 1, 2)
+called QWidget.setLayout with arg of type <class 'unittests.mockqtwidgets.MockGrid'>
+called LineEdit.setFocus
 """
 cmptrk = """\
 """

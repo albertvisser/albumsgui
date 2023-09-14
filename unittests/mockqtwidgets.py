@@ -220,6 +220,14 @@ class MockListBox:
         print(f'called ListWidget.addItems with arg `{itemlist}`')
 
 
+class MockCheckBox:
+    def __init__(self, *args):
+        print('called CheckBox.__init__')
+    def isChecked(self, *args):
+        print('called CheckBox.isChecked')
+        return False
+
+
 class MockLabel:
     def __init__(self, *args):
         print('called Label.__init__ with args', args)

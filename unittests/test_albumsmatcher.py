@@ -1091,10 +1091,10 @@ def test_newart_init(monkeypatch, capsys, expected_output):
     monkeypatch.setattr(testee.qtw, 'QPushButton', mockqtw.MockButton)
     monkeypatch.setattr(testee.qtw, 'QLabel', mockqtw.MockLabel)
     monkeypatch.setattr(testee.qtw, 'QLineEdit', mockqtw.MockLineEdit)
-    testobj = testee.NewArtistDialog(parent, name='')
+    testobj = testee.NewArtistDialog(parent)
     bindings = {'reject': testobj.reject, 'update': testobj.update, 'me': testobj, 'text': ''}
     assert capsys.readouterr().out == expected_output['new_artist'].format(**bindings)
-    # extra test om te bevestigen dat leeg of gevuld allebei werkt
+
     testobj = testee.NewArtistDialog(parent, name='x')
     bindings = {'reject': testobj.reject, 'update': testobj.update, 'me': testobj, 'text': ''}
     assert capsys.readouterr().out == expected_output['new_artist'].format(**bindings)
@@ -1644,11 +1644,104 @@ def test_cmpalb_help(monkeypatch, capsys):
 
 
 # tests for new album dialog
-def _test_newalb_init():
-    testobj = testee.NewAlbumDialog(parent, name='', year='')
+def test_newalb_init(monkeypatch, capsys, expected_output):
+    def mock_init(self, *args):
+        print('called QWidget.__init__')
+    def mock_setLayout(self, widget):
+        print(f'called QWidget.setLayout with arg of type {type(widget)}')
+    def mock_setTitle(self, text):
+        print(f'called QDialog.setWindowTitle with arg `{text}`')
+    monkeypatch.setattr(testee.qtw.QWidget, '__init__', mock_init)
+    monkeypatch.setattr(testee.qtw.QWidget, 'setLayout', mock_setLayout)
+    monkeypatch.setattr(testee.qtw.QWidget, 'setWindowTitle', mock_setTitle)
+    parent = testee.qtw.QWidget()
+    assert capsys.readouterr().out == 'called QWidget.__init__\n'
+    parent.appname = 'appname'
+    monkeypatch.setattr(testee.qtw, 'QDialog', mockqtw.MockDialog)
+    monkeypatch.setattr(testee.qtw, 'QGridLayout', mockqtw.MockGrid)
+    monkeypatch.setattr(testee.qtw, 'QHBoxLayout', mockqtw.MockHBox)
+    monkeypatch.setattr(testee.qtw, 'QPushButton', mockqtw.MockButton)
+    monkeypatch.setattr(testee.qtw, 'QLabel', mockqtw.MockLabel)
+    monkeypatch.setattr(testee.qtw, 'QLineEdit', mockqtw.MockLineEdit)
+    testobj = testee.NewAlbumDialog(parent)
+    bindings = {'reject': testobj.reject, 'update': testobj.update, 'me': testobj, 'text_n': '',
+                'text_y': ''}
+    assert capsys.readouterr().out == expected_output['new_album'].format(**bindings)
 
-def _test_newalb_update(monkeypatch, capsys):
+    testobj = testee.NewAlbumDialog(parent, name='x')
+    bindings = {'reject': testobj.reject, 'update': testobj.update, 'me': testobj, 'text_n': 'x',
+                'text_y': ''}
+    assert capsys.readouterr().out == expected_output['new_album'].format(**bindings)
+
+    testobj = testee.NewAlbumDialog(parent, year='x')
+    bindings = {'reject': testobj.reject, 'update': testobj.update, 'me': testobj, 'text_n': '',
+                'text_y': 'x'}
+    assert capsys.readouterr().out == expected_output['new_album'].format(**bindings)
+
+def test_newalb_update(monkeypatch, capsys):
+    def mock_init(self, *args):
+        print('called NewAlbumDialog.__init__')
+    def mock_accept(self, *args):
+        print('called NewAlbumDialog.accept')
+    counter = 0
+    def mock_text_alles(*args):
+        nonlocal counter
+        counter += 1
+        print('called QLineEdit.text')
+        return ('', 'x', 'y')[counter]
+    def mock_text_niks(*args):
+        return ''
+    def mock_text_year(*args):
+        nonlocal counter
+        counter += 1
+        return ('', '', 'y')[counter]
+    def mock_text_name(*args):
+        nonlocal counter
+        counter += 1
+        return ('', 'x', '')[counter]
+    monkeypatch.setattr(testee.qtw, 'QMessageBox', mockqtw.MockMessageBox)
+    monkeypatch.setattr(testee.NewAlbumDialog, '__init__', mock_init)
+    monkeypatch.setattr(testee.NewAlbumDialog, 'accept', mock_accept)
+    testobj = testee.NewAlbumDialog()
+    mock_parent = types.SimpleNamespace(data=())
+    monkeypatch.setattr(testobj, 'parent', lambda *x: mock_parent)
+    monkeypatch.setattr(mockqtw.MockLineEdit, 'text', mock_text_alles)
+    testobj.first_name = mockqtw.MockLineEdit()
+    testobj.last_name = mockqtw.MockLineEdit()
+    testobj.is_concert = mockqtw.MockCheckBox()
+    assert capsys.readouterr().out == ('called NewAlbumDialog.__init__\n'
+                                       'called LineEdit.__init__\n'
+                                       'called LineEdit.__init__\n'
+                                       'called CheckBox.__init__\n')
     testobj.update()
+    assert testobj.parent().data == ('x', 'y', False)
+    assert capsys.readouterr().out == ('called QLineEdit.text\n'
+                                       'called QLineEdit.text\n'
+                                       'called CheckBox.isChecked\n'
+                                       'called NewAlbumDialog.accept\n')
+
+    testobj.parent().data = ()
+    monkeypatch.setattr(mockqtw.MockLineEdit, 'text', mock_text_niks)
+    monkeypatch.setattr(mockqtw.MockCheckBox, 'isChecked', lambda *x: True)
+    testobj.update()
+    assert testobj.parent().data == ()
+    assert capsys.readouterr().out == ('called QMessageBox.information with args `AlbumsMatcher`'
+                                       ' `Enter at least the name or press `Cancel``\n')
+
+    counter = 0
+    testobj.parent().data = ()
+    monkeypatch.setattr(mockqtw.MockLineEdit, 'text', mock_text_name)
+    testobj.update()
+    assert testobj.parent().data == ('x', '', True)
+    assert capsys.readouterr().out == 'called NewAlbumDialog.accept\n'
+
+    counter = 0
+    testobj.parent().data = ()
+    monkeypatch.setattr(mockqtw.MockLineEdit, 'text', mock_text_year)
+    testobj.update()
+    assert testobj.parent().data == ()
+    assert capsys.readouterr().out == ('called QMessageBox.information with args `AlbumsMatcher`'
+                                       ' `Enter at least the name or press `Cancel``\n')
 
 
 # tests for compare tracks tab
