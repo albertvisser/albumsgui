@@ -918,7 +918,7 @@ class CompareAlbums(qtw.QWidget):
 
 
 class NewAlbumDialog(qtw.QDialog):
-    """show dialog for adding a new artist
+    """show dialog for adding a new album
     """
     def __init__(self, parent, name='', year=''):
         super().__init__(parent)
@@ -1151,7 +1151,7 @@ class CompareTracks(qtw.QWidget):
     def get_tracks(self):
         """get lists of tracks for the matched albums
         and show them in the treewidgets
-        """
+        """  # shouldn't this return like other methods, i.e. with messages instead of giving them?
         self.c_album = self.albums_list.currentText()
         self.clementine_tracks.clear()
         self.albums_tracks.clear()
@@ -1182,8 +1182,10 @@ class CompareTracks(qtw.QWidget):
         else:
             for ix, item in enumerate(a_tracks):
                 try:
-                    if not (item.startswith(c_tracks[ix][0])
-                            or c_tracks[ix][0].startswith(item)):
+                    # conditie deel 1:  a begint met volledige c
+                    # conditie deel 2:  eerste letter van c is volledige a - waarom dan startswith?
+                    # eigenlijk is de vraag: wat betekent dit precies ('not' is heel verwarrend)
+                    if not (item.startswith(c_tracks[ix][0]) or c_tracks[ix][0].startswith(item)):
                         reimport_possible = True
                 except IndexError:
                     reimport_possible = True
@@ -1228,9 +1230,10 @@ class CompareTracks(qtw.QWidget):
         for ix in range(self.clementine_tracks.topLevelItemCount()):
             item = self.clementine_tracks.topLevelItem(ix)
             tracks.append((ix + 1, item.text(0)))
-        with wait_cursor(self._parent):
-            dmla.update_album_tracknames(self.a_album, tracks)
-        self.refresh_screen(self.artists_list.currentIndex(), self.albums_list.currentIndex())
+        if tracks:
+            with wait_cursor(self._parent):
+                dmla.update_album_tracknames(self.a_album, tracks)
+            self.refresh_screen(self.artists_list.currentIndex(), self.albums_list.currentIndex())
 
     def unlink(self):
         """remove "Clementine recording" from album

@@ -1114,6 +1114,135 @@ called QWidget.setLayout with arg of type <class 'unittests.mockqtwidgets.MockGr
 called LineEdit.setFocus
 """
 cmptrk = """\
+called VBoxLayout.__init__
+called HBoxLayout.__init__
+called GridLayout.__init__
+called Label.__init__ with args ('Selecteer een uitvoerende:', {me})
+called GridLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLabel'> at (0, 0)
+called ComboBox.__init__
+called connect with args ({get_albums},)
+called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockComboBox'>
+called PushButton.__init__ with args ({me},)
+called PushButton.setIcon with arg `down_icon`
+called Size.__init__ with args (20, 20)
+called PushButton.setIconSize with arg of type <class 'unittests.mockqtwidgets.MockSize'>
+called PushButton.setToolTip with arg `Select next artist in list`
+called connect with args ({next_artist},)
+called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockButton'>
+called PushButton.__init__ with args ({me},)
+called PushButton.setIcon with arg `up_icon`
+called Size.__init__ with args (20, 20)
+called PushButton.setIconSize with arg of type <class 'unittests.mockqtwidgets.MockSize'>
+called PushButton.setToolTip with arg `Select previous artist in list`
+called connect with args ({prev_artist},)
+called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockButton'>
+called HBoxLayout.addStretch
+called GridLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'> at (0, 1)
+called HBoxLayout.__init__
+called Label.__init__ with args ('Selecteer een album:', {me})
+called GridLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockLabel'> at (1, 0)
+called ComboBox.__init__
+called ComboBox.setMinimumWidth to `300`
+called connect with args ({get_tracks},)
+called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockComboBox'>
+called PushButton.__init__ with args ({me},)
+called PushButton.setIcon with arg `down_icon`
+called Size.__init__ with args (20, 20)
+called PushButton.setIconSize with arg of type <class 'unittests.mockqtwidgets.MockSize'>
+called PushButton.setToolTip with arg `Select next album in list`
+called connect with args ({next_album},)
+called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockButton'>
+called PushButton.__init__ with args ({me},)
+called PushButton.setIcon with arg `up_icon`
+called Size.__init__ with args (20, 20)
+called PushButton.setIconSize with arg of type <class 'unittests.mockqtwidgets.MockSize'>
+called PushButton.setToolTip with arg `Select previous album in list`
+called connect with args ({prev_album},)
+called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockButton'>
+called HBoxLayout.addStretch
+called GridLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'> at (1, 1)
+called VBoxLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockGrid'>
+called HBoxLayout.__init__
+called VBoxLayout.__init__
+called QTreeWidget.__init__
+called QTreeWidget.setColumnCount with arg `1`
+called QTreeWidget.setHeaderLabels with arg `['Track Name in Clementine']`
+called QTreeWidget.setMouseTracking with arg `True`
+called connect with args ({popuptext},)
+called VBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockTree'>
+called HBoxLayout.__init__
+called HBoxLayout.addStretch
+called PushButton.__init__ with args ('&Help', {me})
+called connect with args ({help},)
+called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockButton'>
+called PushButton.__init__ with args ('&Copy Tracks', {me})
+called connect with args ({copy_tracks},)
+called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockButton'>
+called HBoxLayout.addStretch
+called VBoxLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'>
+called HBoxLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockVBox'>
+called VBoxLayout.__init__
+called QTreeWidget.__init__
+called QTreeWidget.setColumnCount with arg `1`
+called QTreeWidget.setHeaderLabels with arg `['Track Name in Albums']`
+called QTreeWidget.setMouseTracking with arg `True`
+called connect with args ({popuptext},)
+called VBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockTree'>
+called HBoxLayout.__init__
+called HBoxLayout.addStretch
+called PushButton.__init__ with args ('&Unlink Album', {me})
+called connect with args ({unlink},)
+called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockButton'>
+called PushButton.__init__ with args ('&Save Unlinked', {me})
+called connect with args ({save_all},)
+called HBoxLayout.addWidget with arg of type <class 'unittests.mockqtwidgets.MockButton'>
+called HBoxLayout.addStretch
+called VBoxLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'>
+called HBoxLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockVBox'>
+called VBoxLayout.addLayout with arg of type <class 'unittests.mockqtwidgets.MockHBox'>
+called CompareAlbums.setLayout with arg of type <class 'unittests.mockqtwidgets.MockVBox'>
+"""
+cmptrk_act = """\
+called QAction.__init__ with args ('Help', {me})
+called connect with args ({help},)
+called QAction.setShortcut with arg `['F1', 'Ctrl+H']`
+called CompareArtists.addAction
+called QAction.__init__ with args ('Select_Artist', {me})
+called connect with args ({selart},)
+called QAction.setShortcut with arg `['Ctrl+Home']`
+called CompareArtists.addAction
+called QAction.__init__ with args ('Select_Album', {me})
+called connect with args ({selalb},)
+called QAction.setShortcut with arg `['Ctrl+A']`
+called CompareArtists.addAction
+called QAction.__init__ with args ('Next_Artist', {me})
+called connect with args ({nextart},)
+called QAction.setShortcut with arg `['Ctrl+N']`
+called CompareArtists.addAction
+called QAction.__init__ with args ('Prev_Artist', {me})
+called connect with args ({prevart},)
+called QAction.setShortcut with arg `['Ctrl+P']`
+called CompareArtists.addAction
+called QAction.__init__ with args ('Next_Album', {me})
+called connect with args ({nextalb},)
+called QAction.setShortcut with arg `['Ctrl+Shift+N']`
+called CompareArtists.addAction
+called QAction.__init__ with args ('Prev_Album', {me})
+called connect with args ({prevalb},)
+called QAction.setShortcut with arg `['Ctrl+Shift+P']`
+called CompareArtists.addAction
+called QAction.__init__ with args ('Copy', {me})
+called connect with args ({copy},)
+called QAction.setShortcut with arg `['Ctrl+C']`
+called CompareArtists.addAction
+called QAction.__init__ with args ('Unlink', {me})
+called connect with args ({unlink},)
+called QAction.setShortcut with arg `['Ctrl+U']`
+called CompareArtists.addAction
+called QAction.__init__ with args ('Save', {me})
+called connect with args ({save},)
+called QAction.setShortcut with arg `['Ctrl+S']`
+called CompareArtists.addAction
 """
 
 @pytest.fixture
@@ -1160,4 +1289,5 @@ def expected_output():
         'compare_albums_actions': cmpalb_act,
         'new_album': newalb,
         'compare_tracks': cmptrk,
+        'compare_tracks_actions': cmptrk_act,
         }
