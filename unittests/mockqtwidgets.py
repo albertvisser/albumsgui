@@ -396,6 +396,11 @@ class MockTreeItem:
     def text(self, col):
         print(f'called QTreeWidgetItem.text for col {col}')
         return self._text[col]
+    def setData(self, col, role, data):
+        print(f'called QTreeWidgetItem.setData to `{data}` with role {role} for col {col}')
+    def data(self, col, role):
+        print(f'called QTreeWidgetItem.data for col {col} role {role}')
+        return ''
 
 
 class MockTree:

@@ -25,6 +25,14 @@ class MockNewArtistDialog:
         return testee.qtw.QDialog.Rejected
 
 
+class MockNewAlbumDialog:
+    def __init__(self, parent, name, year):
+        print('called NewAlbumDialog.__init__'
+              f' with parent of type `{type(parent)}` and name `{name}`, year `{year}`')
+    def exec_(self):
+        return testee.qtw.QDialog.Rejected
+
+
 class MockCmpArt:
     def __init__(self, arg):
         print(f'called CompareArtists.__init__ with arg `{arg}`')
@@ -1412,26 +1420,50 @@ def test_cmpalb_update_navigation_buttons(monkeypatch, capsys):
                                        'called CompareAlbums.focus_albums\n')
 
 def test_cmpalb_get_albums(monkeypatch, capsys):
+    def mock_read(*args):
+        print('called read_artist_albums with args', *args)
+        return [], []
     testobj = setup_cmpalb(monkeypatch, capsys)
     testobj.get_albums()
     assert capsys.readouterr().out == 'called ComboBox.count\n'
-    return
 
-    monkeypatch.setattr(testobj.artist.list, 'count', lambda *x: 1)
-    monkeypatch.setattr(testobj.artist_list, 'currentText', ...)
-    testobj.artist_map = {}
+    monkeypatch.setattr(testobj.artist_list, 'count', lambda *x: 1)
+    testobj.artist_map = {'.': '..'}
     testobj.albums_map = {}
     monkeypatch.setattr(testee, 'read_artist_albums', mock_read)
-    testobj.albums_to_save = []
+    testobj.albums_to_save = {'.': []}
     monkeypatch.setattr(testee.qtw, 'QTreeWidgetItem', mockqtw.MockTreeItem)
-    monkeypatch.setattr(testee.core.Qt, 'UserRole', ...)
+    monkeypatch.setattr(testee.core.Qt, 'UserRole', 'x')
     testobj.get_albums()
-    assert testobj.c_artist == ''
-    assert testobj._parent.current_data == ''
-    assert testobj.a_artist == ''
+    assert testobj.c_artist == '.'
+    assert testobj._parent.current_data == '.'
+    assert testobj.a_artist == '..'
     assert testobj.lookup == {}
     assert testobj.tracks == {}
-    assert capsys.readouterr().out == ''
+    assert capsys.readouterr().out == ('called ComboBox.currentText\n'
+                                       'called read_artist_albums with args .. .\n'
+                                       'called QTreeWidget.clear\n'
+                                       'called QTreeWidget.clear\n')
+    testobj.albums_to_save = {'.': [('x', 'None', 1, 'q', 'r')]}
+    monkeypatch.setattr(testee, 'read_artist_albums', lambda *x: ([], [('x', 1)]))
+    testobj.get_albums()
+    assert testobj.c_artist == '.'
+    assert testobj._parent.current_data == '.'
+    assert testobj.a_artist == '..'
+    assert testobj.lookup == {'x': ['1']}
+    assert testobj.tracks == {}
+    assert capsys.readouterr().out == ('called ComboBox.currentText\n'
+                                       'called QTreeWidget.clear\n'
+                                       "called QTreeWidgetItem.__init__ with args (['x'],)\n"
+                                       "called QTreeWidgetItem.setData to"
+                                        " `1` with role x for col 0\n"
+                                        "called QTreeWidget.addTopLevelItem with arg of type"
+                                        " `<class 'unittests.mockqtwidgets.MockTreeItem'>`\n"
+                                        "called QTreeWidget.clear\n"
+                                        "called QTreeWidgetItem.__init__ with args"
+                                       " (['x', '', '1'],)\n"
+                                       "called QTreeWidget.addTopLevelItem with arg of type"
+                                       " `<class 'unittests.mockqtwidgets.MockTreeItem'>`\n")
 
 def test_cmpalb_focus_albums(monkeypatch, capsys):
     def mock_text_0(num):
@@ -1495,9 +1527,281 @@ def test_cmpalb_prev_artist(monkeypatch, capsys):
     testobj.prev_artist()
     assert capsys.readouterr().out == ''
 
-def _test_cmpalb_find_album(monkeypatch, capsys):
+def test_cmpalb_find_album(monkeypatch, capsys):
+    def get_text(col):
+        print(f'called TreeWidgetItem.text for column {col}')
+        return 'xix'
+    currentitem = types.SimpleNamespace(text=get_text)
+    def mock_current(*args):
+        print('called TreeWidget.currentItem')
+        return currentitem
+    counter = 0
+    def mock_current_2(*args):
+        nonlocal counter
+        print('called TreeWidget.currentItem')
+        counter += 1
+        if counter == 1:
+            return None
+        return currentitem
+    def mock_focus():
+        print('called CompareAlbums.focus_albums')
+    def mock_add(*args):
+        print('called CompareAlbums.add_album with args', args)
+    def mock_check(*args):
+        print('called CompareAlbums.check_if_new_album with args', arg)
+        return None
+    def mock_prepare(*args):
+        print('called CompareAlbums.prepare_album_for_update with args', args)
+    def mock_list(*args):
+        print('called dmla.list_albums_by_artist with args', args)
+        return []
     testobj = setup_cmpalb(monkeypatch, capsys)
+    testobj.appname = 'app'
+    monkeypatch.setattr(testobj.clementine_albums, 'currentItem', mock_current)
+    monkeypatch.setattr(testobj, 'focus_albums', mock_focus)
+    monkeypatch.setattr(testobj, 'add_album', mock_add)
+    monkeypatch.setattr(testobj, 'check_if_new_album', mock_check)
+    monkeypatch.setattr(testobj, 'prepare_album_for_update', mock_prepare)
+    monkeypatch.setattr(testee.qtw, 'QMessageBox', mockqtw.MockMessageBox)
+    monkeypatch.setattr(testee.qtw, 'QInputDialog', mockqtw.MockInputDialog)
+    monkeypatch.setattr(testee.dmla, 'list_albums_by_artist', mock_list)
+    testobj.c_artist = 'x'
+    testobj.albums_map = {'x': {'xix': 2}}
     testobj.find_album()
+    assert capsys.readouterr().out == ('called TreeWidget.currentItem\n'
+                                       'called TreeWidgetItem.text for column 0\n'
+                                       'called QMessageBox.question with args `app`'
+                                       ' `Album already has a match - do you want to reassign?`'
+                                       ' `12` `4`\n')
+    monkeypatch.setattr(testobj.clementine_albums, 'currentItem', mock_current_2)
+    monkeypatch.setattr(mockqtw.MockMessageBox, 'question', lambda *x: testee.qtw.QMessageBox.Ok)
+    monkeypatch.setattr(testee.qtw, 'QMessageBox', mockqtw.MockMessageBox)
+    testobj.c_artist = 'x'
+    testobj.a_artist = 2
+    testobj.albums_map = {'x': {'xix': 2}}
+    testobj.find_album()
+    assert testobj.albums_map == {'x': {}}
+    assert capsys.readouterr().out == ('called TreeWidget.currentItem\n'
+                                       'called CompareAlbums.focus_albums\n'
+                                       'called TreeWidget.currentItem\n'
+                                       'called TreeWidgetItem.text for column 0\n'
+                                       'called TreeWidgetItem.text for column 0\n'
+                                       "called dmla.list_albums_by_artist with args"
+                                       " ('', 2, 'Titel')\n"
+                                       'called CompareAlbums.add_album with args ()\n')
+    monkeypatch.setattr(testobj.clementine_albums, 'currentItem', mock_current)
+    monkeypatch.setattr(testee.dmla, 'list_albums_by_artist', lambda *x: [('qq', 'rr')])
+    monkeypatch.setattr(testobj, 'check_if_new_album', lambda x: ('a_name', 'albumid'))
+    testobj.find_album()
+    assert testobj.albums_map == {'x': {}}
+    assert capsys.readouterr().out == ('called TreeWidget.currentItem\n'
+                                       'called TreeWidgetItem.text for column 0\n'
+                                       "called InputDialog.getItem with args"
+                                       " ('app', 'Select Album', ['a_name']) {'editable': False}\n"
+                                       'called CompareAlbums.add_album with args ()\n')
+    monkeypatch.setattr(mockqtw.MockInputDialog, 'getItem', lambda *args, **kwargs: ('a_name', True))
+    monkeypatch.setattr(testee.qtw, 'QInputDialog', mockqtw.MockInputDialog)
+    testobj.find_album()
+    assert testobj.albums_map == {'x': {}}
+    assert capsys.readouterr().out == ('called TreeWidget.currentItem\n'
+                                       'called TreeWidgetItem.text for column 0\n'
+                                       "called CompareAlbums.prepare_album_for_update with args"
+                                       f" ({currentitem}, ('a_name', 'albumid'))\n")
+
+def test_cmpalb_check_new_album(monkeypatch, capsys):
+    monkeypatch.setattr(testee, 'build_album_name', lambda x: x.name)
+    testobj = setup_cmpalb(monkeypatch, capsys)
+    testobj.c_artist = 'xx'
+    testobj.albums_map = {}
+    with pytest.raises(KeyError):
+        testobj.check_if_new_album(types.SimpleNamespace(id=1, name='hello')) == ('hello', 1)
+    testobj.albums_map = {'xx': {}}
+    assert testobj.check_if_new_album(types.SimpleNamespace(id=1, name='hello')) == ('hello', 1)
+    testobj.albums_map = {'xx': {'y': ()}}
+    with pytest.raises(IndexError):
+        testobj.check_if_new_album(types.SimpleNamespace(id=1, name='hello')) == ('hello', 1)
+    testobj.albums_map = {'xx': {'y': ('a', 0), 'z': ('b', 1)}}
+    assert testobj.check_if_new_album(types.SimpleNamespace(id=1, name='hello')) is None
+
+def test_cmpalb_prepare_for_update(monkeypatch, capsys):
+    def mock_text(col):
+        print(f'called QTreeWidgetItem.text for col {col}')
+        return '9'
+    def mock_set(col, text):
+        print(f'called QTreeWidgetItem.setText for col {col} with arg `{text}`')
+    def mock_data(col, role):
+        print(f'called QTreeWidgetItem.data for col {col} role {role}')
+        return ''
+    def mock_update(*args):
+        print('called CompareAlbums.update_item with args', args)
+    a_item = types.SimpleNamespace(text=mock_text, setText=mock_set)
+    def mock_find(*args):
+        return [a_item]
+    monkeypatch.setattr(testee.qtw, 'QMessageBox', mockqtw.MockMessageBox)
+    monkeypatch.setattr(testee.core.Qt, 'MatchFixedString', 2)
+    monkeypatch.setattr(testee.core.Qt, 'UserRole', 5)
+    testobj = setup_cmpalb(monkeypatch, capsys)
+    monkeypatch.setattr(testobj, 'update_item', mock_update)
+    monkeypatch.setattr(testobj.albums_albums, 'findItems', mock_find)
+    testobj.appname = 'app'
+    testobj.c_artist = 'x'
+    testobj.albums_to_update = {'x': []}
+    c_item = types.SimpleNamespace(data=mock_data)
+    testobj.prepare_album_for_update(c_item, ('title', 1))
+    assert testobj.albums_to_update == {'x': [('9', '9', 9, False, [])]}
+    assert capsys.readouterr().out == ('called QTreeWidgetItem.data for col 0 role 5\n'
+                                       'called QTreeWidgetItem.text for col 0\n'
+                                       'called QTreeWidgetItem.text for col 1\n'
+                                       'called QTreeWidgetItem.text for col 2\n'
+                                       'called CompareAlbums.update_item with args'
+                                       f" ({a_item}, {c_item})\n")
+    testobj.albums_to_update = {'x': []}
+    c_item = types.SimpleNamespace(data=lambda *x: '9')
+    testobj.prepare_album_for_update(c_item, ('title', 1))
+    assert testobj.albums_to_update == {'x': [('9', '9', 9, False, [])]}
+    assert capsys.readouterr().out == ('called QTreeWidgetItem.text for col 1\n'
+                                       'called QTreeWidgetItem.text for col 0\n'
+                                       'called QTreeWidgetItem.text for col 1\n'
+                                       'called QTreeWidgetItem.text for col 2\n'
+                                       'called CompareAlbums.update_item with args'
+                                       f" ({a_item}, {c_item})\n")
+    testobj.albums_to_update = {'x': []}
+    c_item = types.SimpleNamespace(data=lambda *x: '8')
+    testobj.prepare_album_for_update(c_item, ('title', 1))
+    assert testobj.albums_to_update == {'x': [('9', '9', 9, False, [])]}
+    assert capsys.readouterr().out == ('called QTreeWidgetItem.text for col 1\n'
+                                       'called QMessageBox.question with args'
+                                       ' `app` `Clementine year (8) differs from Albums year (9),'
+                                       ' replace?` `12` `4`\n'
+                                       'called QTreeWidgetItem.text for col 0\n'
+                                       'called QTreeWidgetItem.text for col 1\n'
+                                       'called QTreeWidgetItem.text for col 2\n'
+                                       'called CompareAlbums.update_item with args'
+                                       f" ({a_item}, {c_item})\n")
+    monkeypatch.setattr(mockqtw.MockMessageBox, 'question', lambda *x: testee.qtw.QMessageBox.Yes)
+    monkeypatch.setattr(testee.qtw, 'QMessageBox', mockqtw.MockMessageBox)
+    testobj.albums_to_update = {'x': []}
+    c_item = types.SimpleNamespace(data=lambda *x: '8')
+    testobj.prepare_album_for_update(c_item, ('title', 1))
+    assert testobj.albums_to_update == {'x': [('9', '9', 9, False, [])]}
+    assert capsys.readouterr().out == ('called QTreeWidgetItem.text for col 1\n'
+                                       'called QTreeWidgetItem.setText for col 1 with arg `8`\n'
+                                       'called QTreeWidgetItem.text for col 0\n'
+                                       'called QTreeWidgetItem.text for col 1\n'
+                                       'called QTreeWidgetItem.text for col 2\n'
+                                       'called CompareAlbums.update_item with args'
+                                       f" ({a_item}, {c_item})\n")
+
+def test_cmpalb_add_album(monkeypatch, capsys):
+    def mock_text(col):
+        print(f'called QTreeWidgetItem.text for col {col}')
+        return 'x'
+    def mock_data(col, role):
+        print(f'called QTreeWidgetItem.data for col {col} role {role}')
+        return '9999'
+    def mock_current():
+        print('called TreeWidget.currentItem')
+        return None
+    #    return types.SimpleNamespace(text=mock_text, data=mock_data)
+    def mock_build(*args):
+        print('called CompareAlbums.build_album_name with args', args)
+        return args[0]
+    def mock_prepare(*args):
+        print('called CompareAlbums.prepare_album_for_saving with args', args)
+    def mock_update(*args):
+        print('called CompareAlbums.update_item with args', args)
+    monkeypatch.setattr(testee, 'NewAlbumDialog', MockNewAlbumDialog)
+    monkeypatch.setattr(testee, 'build_album_name', mock_build)
+    monkeypatch.setattr(testee.qtw, 'QMessageBox', mockqtw.MockMessageBox)
+    monkeypatch.setattr(testee.qtw, 'QInputDialog', mockqtw.MockInputDialog)
+    monkeypatch.setattr(testee.core.Qt, 'MatchFixedString', 2)
+    monkeypatch.setattr(testee.core.Qt, 'UserRole', 5)
+    testobj = setup_cmpalb(monkeypatch, capsys)
+    testobj.appname = 'app'
+    monkeypatch.setattr(testobj, 'prepare_album_for_saving', mock_prepare)
+    monkeypatch.setattr(testobj, 'update_item', mock_update)
+    # nog doen: geen currentitem maar dialog levert accepted
+    monkeypatch.setattr(testobj.clementine_albums, 'currentItem', mock_current)
+    testobj.add_album()
+    assert capsys.readouterr().out == ("called TreeWidget.currentItem\n"
+                                       "called NewAlbumDialog.__init__ with parent of type"
+                                       " `<class 'apps.albumsmatcher.CompareAlbums'>`"
+                                       " and name ``, year ``\n")
+    monkeypatch.setattr(MockNewAlbumDialog, 'exec_', lambda *x: testee.qtw.QDialog.Accepted)
+    monkeypatch.setattr(testobj.clementine_albums, 'currentItem', lambda *x: None)
+    testobj.data = ('xx', '1111', 'true/false')
+    testobj.add_album()
+    assert capsys.readouterr().out == ("called NewAlbumDialog.__init__ with parent of type"
+                                       " `<class 'apps.albumsmatcher.CompareAlbums'>`"
+                                       " and name ``, year ``\n"
+                                       "called QTreeWidget.findItems with args ('xx', 2, 0)\n"
+                                       "called QMessageBox.information with args"
+                                       " `app` `Album doesn't exist on the Clementine side`\n")
+    monkeypatch.setattr(testobj.clementine_albums, 'currentItem', mock_current)
+    monkeypatch.setattr(testee, 'NewAlbumDialog', MockNewAlbumDialog)
+    testobj.add_album()
+    assert capsys.readouterr().out == ("called TreeWidget.currentItem\n"
+                                       "called NewAlbumDialog.__init__ with parent of type"
+                                       " `<class 'apps.albumsmatcher.CompareAlbums'>`"
+                                       " and name ``, year ``\n"
+                                       "called QTreeWidget.findItems with args ('xx', 2, 0)\n"
+                                       "called QMessageBox.information with args"
+                                       " `app` `Album doesn't exist on the Clementine side`\n")
+    monkeypatch.setattr(testobj.clementine_albums, 'findItems', lambda *x: 'c_item')
+    testobj.add_album()
+    assert capsys.readouterr().out == ("called TreeWidget.currentItem\n"
+                                       "called NewAlbumDialog.__init__ with parent of type"
+                                       " `<class 'apps.albumsmatcher.CompareAlbums'>`"
+                                       " and name ``, year ``\n"
+                                       "called QTreeWidget.findItems with args ('xx', 2, 0)\n"
+                                       "called CompareAlbums.prepare_album_for_saving with args"
+                                       " ('c', 'xx', '1111', 'true/false')\n"
+                                       "called CompareAlbums.update_item with args (None, 'c')\n")
+    monkeypatch.setattr(testobj.albums_albums, 'findItems', lambda *x: ['a_item'])
+    testobj.add_album()
+    assert capsys.readouterr().out == ("called TreeWidget.currentItem\n"
+                                       "called NewAlbumDialog.__init__ with parent of type"
+                                       " `<class 'apps.albumsmatcher.CompareAlbums'>`"
+                                       " and name ``, year ``\n"
+                                       "called CompareAlbums.build_album_name with args ('a_item',)\n"
+                                       "called InputDialog.getItem with args"
+                                       " ('app', 'Select Album', ['a_item']) {'editable': False}\n"
+                                       "called CompareAlbums.prepare_album_for_saving with args"
+                                       " ('c', 'xx', '1111', 'true/false')\n"
+                                       "called CompareAlbums.update_item with args (None, 'c')\n")
+    monkeypatch.setattr(mockqtw.MockInputDialog, 'getItem', lambda *x, **y: ('a_item', True))
+    monkeypatch.setattr(testee.qtw, 'QInputDialog', mockqtw.MockInputDialog)
+    # breakpoint()
+    testobj.add_album()
+    assert capsys.readouterr().out == ("called TreeWidget.currentItem\n"
+                                       "called NewAlbumDialog.__init__ with parent of type"
+                                       " `<class 'apps.albumsmatcher.CompareAlbums'>`"
+                                       " and name ``, year ``\n"
+                                       "called CompareAlbums.build_album_name with args ('a_item',)\n"
+                                       "called CompareAlbums.update_item with args ('a_item', 'c')\n")
+
+
+def test_cmpalb_prepare_for_saving(monkeypatch, capsys):
+    def mock_list(*args):
+        print('called dmlc.list_tracks_for_album with args', args)
+        return [{'track': 0, 'title': 'xxx'}, {'track': -1, 'title': 'yyy'}]
+    def mock_text(num):
+        print(f'called TreeItem.text with arg `{num}`')
+        return 'name'
+    monkeypatch.setattr(testee.qtw, 'QTreeWidgetItem', mockqtw.MockTreeItem)
+    monkeypatch.setattr(testee.dmlc, 'list_tracks_for_album', mock_list)
+    testobj = setup_cmpalb(monkeypatch, capsys)
+    testobj.c_artist = 'x'
+    testobj.albums_to_save = {'x': []}
+    c_item = types.SimpleNamespace(text=mock_text)
+    testobj.prepare_album_for_saving(c_item, 'albumname', 9999, 'true/false')
+    assert testobj.albums_to_save == {'x': [('albumname', 9999, 'X', 'true/false', [(1, 'xxx')])]}
+    assert capsys.readouterr().out == ("called QTreeWidgetItem.__init__ with args"
+                                       " (['albumname', 9999, '0'],)\n"
+                                       "called QTreeWidget.addTopLevelItem with arg of type"
+                                       " `<class 'unittests.mockqtwidgets.MockTreeItem'>`\n"
+                                       "called TreeItem.text with arg `0`\n"
+                                       "called dmlc.list_tracks_for_album with args ('x', 'name')\n")
 
 def test_cmpalb_update_item(monkeypatch, capsys):
     def mock_build(arg):
@@ -1531,10 +1835,6 @@ def test_cmpalb_update_item(monkeypatch, capsys):
                                        f'called build_album_name with arg `{new_item}`\n'
                                        'called TreeItem.settext with args `1` `X`\n'
                                        'called CompareAlbums.set_modified with arg `True`\n')
-
-def _test_cmpalb_add_album(monkeypatch, capsys):
-    testobj = setup_cmpalb(monkeypatch, capsys)
-    testobj.add_album()
 
 def test_cmpalb_save_all(monkeypatch, capsys):
     def mock_save(*args):
@@ -2082,7 +2382,6 @@ def test_cmptrk_get_tracks(monkeypatch, capsys):
                                        "called QTreeWidget.addTopLevelItem with arg of type"
                                        " `<class 'PyQt5.QtWidgets.QTreeWidgetItem'>`\n"
                                        'called PushButton.setEnabled with arg `False`\n')
-
 
 def test_cmptrk_next_artist(monkeypatch, capsys):
     def mock_update():

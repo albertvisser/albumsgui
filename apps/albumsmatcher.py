@@ -732,8 +732,8 @@ class CompareAlbums(qtw.QWidget):
         self.albums_albums.clear()
         self.lookup = collections.defaultdict(list)
         for item in a_albums:
-            new = qtw.QTreeWidgetItem([x.replace('None', '') for x in item])
-            self.albums_albums.addTopLevelItem(new)
+            new = qtw.QTreeWidgetItem([x.replace('None', '') for x in item])  # kan dit als a_albums
+            self.albums_albums.addTopLevelItem(new)                           # 3-tuples bevat?
             self.lookup[item[0]].append(item[2])
         self.tracks = collections.defaultdict(list)
 
@@ -784,60 +784,48 @@ class CompareAlbums(qtw.QWidget):
                 return
             self.albums_map[self.c_artist].pop(item.text(0))
         # select albums for self.a_artist and remove the ones that are already matched
-        albums = dmla.list_albums_by_artist('', self.a_artist, 'Titel')
         album_list = []
-        for album in albums:
-            test = album.id
-            found = False
-            for a_item in self.albums_map[self.c_artist].values():
-                if a_item[1] == test:
-                    found = True
-                    break
-            if not found:
-                album_list.append((build_album_name(album), album.id))
+        for album in dmla.list_albums_by_artist('', self.a_artist, 'Titel'):
+            test = self.check_if_new_album(album)
+            if test:
+                album_list.append(test)
         if album_list:
             albums = [x[0] for x in album_list]
             selected, ok = qtw.QInputDialog.getItem(self, self.appname, 'Select Album',
                                                     albums, editable=False)
             if ok:
-                a_item = self.albums_albums.findItems(
-                    str(album_list[albums.index(selected)][1]),
-                    core.Qt.MatchFixedString, 2)[0]
-                c_year = str(item.data(0, core.Qt.UserRole))
-                if c_year:
-                    a_year = a_item.text(1)
-                    if c_year != a_year:
-                        ask = f"Clementine year ({c_year}) differs from Albums year ({a_year})"
-                        ok = qtw.QMessageBox.question(self, self.appname, f"{ask}, replace?",
-                                                      qtw.QMessageBox.Yes | qtw.QMessageBox.No,
-                                                      qtw.QMessageBox.Yes)
-                        if ok == qtw.QMessageBox.Yes:
-                            a_item.setText(1, c_year)
-
-                self.albums_to_update[self.c_artist].append(
-                    (a_item.text(0), a_item.text(1), int(a_item.text(2)), False, []))
-                self.update_item(a_item, item)
+                self.prepare_album_for_update(item, album_list[albums.index(selected)])
                 return
         self.add_album()
 
-    def update_item(self, new_item, from_item):
-        """remember changes and make them visible
-        """
-        self.albums_albums.setCurrentItem(new_item)
-        self.albums_albums.scrollToItem(new_item)
-        self.albums_map[self.c_artist][from_item.text(0)] = (build_album_name(new_item),
-                                                             int(new_item.text(2)))
-        ## log('self.albums_map: %s', self.albums_map)
-        from_item.setText(1, 'X')
-        self.set_modified(True)
-        nxt = self.clementine_albums.itemBelow(
-            self.clementine_albums.currentItem())
-        if nxt:
-            self.clementine_albums.setCurrentItem(nxt)
+    def check_if_new_album(self, album):
+        "if album data not already present, return them. Otherwise return None"
+        for a_item in self.albums_map[self.c_artist].values():
+            if a_item[1] == album.id:
+                return None
+        return build_album_name(album), album.id
+
+    def prepare_album_for_update(self, c_item, selected_album):
+        "actions for an album selected from the list"
+        a_item = self.albums_albums.findItems(str(selected_album[1]), core.Qt.MatchFixedString, 2)[0]
+        c_year = str(c_item.data(0, core.Qt.UserRole))
+        if c_year:
+            a_year = a_item.text(1)
+            if c_year != a_year:
+                ask = f"Clementine year ({c_year}) differs from Albums year ({a_year})"
+                ok = qtw.QMessageBox.question(self, self.appname, f"{ask}, replace?",
+                                              qtw.QMessageBox.Yes | qtw.QMessageBox.No,
+                                              qtw.QMessageBox.Yes)
+                if ok == qtw.QMessageBox.Yes:
+                    a_item.setText(1, c_year)
+        self.albums_to_update[self.c_artist].append((a_item.text(0), a_item.text(1),
+                                                     int(a_item.text(2)), False, []))
+        self.update_item(a_item, c_item)
 
     def add_album(self):
-        """if present, enter the copied album's name into name field
+        """actions for an album not yet present in the list
 
+        if present, enter the copied album's name into name field
         better yet, show all albums for the matched artist and choose one
         which means, we have to remember the selected artist, not the name
         """
@@ -856,25 +844,41 @@ class CompareAlbums(qtw.QWidget):
             qtw.QMessageBox.information(self, self.appname,
                                         "Album doesn't exist on the Clementine side")
             return
-
         a_item = None
         results = self.albums_albums.findItems(name, core.Qt.MatchFixedString, 0)
-        data = [build_album_name(x) for x in results]
         if results:
+            data = [build_album_name(x) for x in results]
             selected, ok = qtw.QInputDialog.getItem(self, self.appname, 'Select Album', data,
                                                     editable=False)
             if ok:
                 a_item = results[data.index(selected)]
         if not a_item:
-            a_item = qtw.QTreeWidgetItem([name, year, '0'])
-            self.albums_albums.addTopLevelItem(a_item)
-            tracklist = dmlc.list_tracks_for_album(dmlc.DB, self.c_artist,
-                                                   item.text(0))
-            num = itertools.count(1)
-            self.albums_to_save[self.c_artist].append(
-                (name, year, 'X', is_live,
-                 [(next(num), x['title']) for x in tracklist if x['track'] > -1]))
+            self.prepare_album_for_saving(item, name, year, is_live)
         self.update_item(a_item, item)
+
+    def prepare_album_for_saving(self, c_item, name, year, is_live):
+        "actions for an album that wasn't in the list yet"
+        a_item = qtw.QTreeWidgetItem([name, year, '0'])
+        self.albums_albums.addTopLevelItem(a_item)
+        tracklist = dmlc.list_tracks_for_album(self.c_artist, c_item.text(0))
+        num = itertools.count(1)
+        tracks = [(next(num), x['title']) for x in tracklist if x['track'] > -1]
+        self.albums_to_save[self.c_artist].append((name, year, 'X', is_live, tracks))
+
+    def update_item(self, new_item, from_item):
+        """remember changes and make them visible
+        """
+        self.albums_albums.setCurrentItem(new_item)
+        self.albums_albums.scrollToItem(new_item)
+        self.albums_map[self.c_artist][from_item.text(0)] = (build_album_name(new_item),
+                                                             int(new_item.text(2)))
+        ## log('self.albums_map: %s', self.albums_map)
+        from_item.setText(1, 'X')
+        self.set_modified(True)
+        nxt = self.clementine_albums.itemBelow(
+            self.clementine_albums.currentItem())
+        if nxt:
+            self.clementine_albums.setCurrentItem(nxt)
 
     def save_all(self):
         """save changes (additions) to Albums database
@@ -1188,6 +1192,7 @@ class CompareTracks(qtw.QWidget):
                     if not (item.startswith(c_tracks[ix][0]) or c_tracks[ix][0].startswith(item)):
                         reimport_possible = True
                 except IndexError:
+                    # kan dit (nog) wel als ik eerst op lengte vergelijk? lukt niet in unittest
                     reimport_possible = True
         self.b_copy.setEnabled(reimport_possible)
 
