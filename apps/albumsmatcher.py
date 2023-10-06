@@ -132,8 +132,17 @@ class MainFrame(qtw.QMainWindow):
     def check_oldpage(self, pageno):
         "check if page can be left"
         if self.pages[pageno][1].modified:
-            qtw.QMessageBox.information(self, self.title, checkpage_messages[pageno])
-            return False
+            # qtw.QMessageBox.information(self, self.title, checkpage_messages[pageno])
+            # return False
+            ok = qtw.QMessageBox.question(self, self.title,
+                                          f'{checkpage_messages[pageno]} - save now?',
+                                          qtw.QMessageBox.Yes | qtw.QMessageBox.No |
+                                          qtw.QMessageBox.Cancel,
+                                          qtw.QMessageBox.No)
+            if ok == qtw.QMessageBox.Cancel:
+                return
+            if ok == qtw.QMessageBox.Yes:
+                self.pages[pageno][1].save_all()
         return True
 
     def exit(self):

@@ -407,16 +407,37 @@ def test_main_page_changed(monkeypatch, capsys):
                                        'called QTabWidget.setCurrentIndex with arg `0`\n')
 
 def test_main_check_oldpage(monkeypatch, capsys):
+    counter = 0
+    def mock_question(parent, caption, message, buttons, default):
+        nonlocal counter
+        print('called QMessageBox.question with args'
+              f' `{caption}` `{message}` `{buttons}` `{default}`')
+        counter += 1
+        if counter == 1:
+            return testee.qtw.QMessageBox.Cancel
+        elif counter == 2:
+            return testee.qtw.QMessageBox.Yes
+        return testee.qtw.QMessageBox.No
+    def mock_save():
+        print('called page.save_all')
+    monkeypatch.setattr(testee, 'checkpage_messages', ['xxx', 'yyy', 'zzz'])
+    monkeypatch.setattr(mockqtw.MockMessageBox, 'question', mock_question)
     monkeypatch.setattr(testee.qtw, 'QMessageBox', mockqtw.MockMessageBox)
     testobj = setup_main(monkeypatch, capsys)
-    testobj.pages = {0: ('', types.SimpleNamespace(modified=True)),
-                     1: ('', types.SimpleNamespace(modified=True)),
-                     2: ('', types.SimpleNamespace(modified=True)),
+    testobj.pages = {0: ('', types.SimpleNamespace(modified=True, save_all=mock_save)),
+                     1: ('', types.SimpleNamespace(modified=True, save_all=mock_save)),
+                     2: ('', types.SimpleNamespace(modified=True, save_all=mock_save)),
                      }
-    for ix in range(2):
-        assert not testobj.check_oldpage(ix)
-        assert capsys.readouterr().out == ('called QMessageBox.information with args'
-                                           f' `appname` `{testee.checkpage_messages[ix]}`\n')
+    assert not testobj.check_oldpage(0)
+    assert capsys.readouterr().out == ('called QMessageBox.question with args'
+                                       ' `appname` `xxx - save now?` `14` `8`\n')
+    assert testobj.check_oldpage(1)
+    assert capsys.readouterr().out == ('called QMessageBox.question with args'
+                                       ' `appname` `yyy - save now?` `14` `8`\n'
+                                       'called page.save_all\n')
+    assert testobj.check_oldpage(2)
+    assert capsys.readouterr().out == ('called QMessageBox.question with args'
+                                       ' `appname` `zzz - save now?` `14` `8`\n')
     testobj.pages = {0: ('', types.SimpleNamespace(modified=False))}
     assert testobj.check_oldpage(0)
     assert capsys.readouterr().out == ''
