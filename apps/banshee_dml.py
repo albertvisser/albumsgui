@@ -1,5 +1,6 @@
 """dml for Banshee database
 """
+import pathlib
 import sqlite3
 import pprint
 from .banshee_settings import databases
@@ -49,7 +50,21 @@ def get_album_cover(artist_id=0, album_id=0):
     if not album_id and not artist_id:
         query += ' order by t1.Name, t2.Title'
     data = execute_query(query, tuple(parms))
-    return data[0]
+    basepath = pathlib.Path('~/sqlitedb/banshee-media-art').expanduser()
+    filename = data[0]['ArtworkID'] + '.jpg'
+    test = basepath / filename
+    if test.exists():
+        result = test
+    else:
+        subdirs = [x for x in basepath.iterdir() if x.is_dir()]
+        for path in subdirs:
+            test = path / filename
+            if test.exists():
+                result = test
+                break
+        else:
+            result = filename
+    return str(result)
 
 
 def get_tracks_lists(artist_id=0, album_id=0):
