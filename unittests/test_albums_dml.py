@@ -13,13 +13,18 @@ django.setup()
 import apps.albums_dml as testee
 
 
+@pytest.mark.django_db
 def test_get_artists_lists(monkeypatch, capsys):
     def mock_list_artists():
         print('called dml.list_artists')
-        return [{'id': 2, 'first_name': 'a', 'last_name': 'band'},
-                {'id': 1, 'first_name': '', 'last_name': 'players'}]
+        # return [{'id': 2, 'first_name': 'a', 'last_name': 'band'},
+        #         {'id': 1, 'first_name': '', 'last_name': 'players'}]
+        artist = testee.my.Act.objects.create(first_name='a', last_name='band')
+        artist2 = testee.my.Act.objects.create(last_name='players')
+        artist3 = testee.my.Act.objects.create(first_name='Andy', last_name='Bendy')
+        return (x for x in [artist, artist2, artist3])
     monkeypatch.setattr(testee, 'list_artists', mock_list_artists)
-    assert testee.get_artists_lists() == ([2, 1], ['a band', 'players'])
+    assert testee.get_artists_lists() == ([1, 2, 3], ['a band', 'players', 'Andy Bendy'])
     assert capsys.readouterr().out == 'called dml.list_artists\n'
 
 
@@ -150,12 +155,17 @@ def test_list_album_details():
     assert testee.list_album_details(album.id) == album
 
 
+@pytest.mark.django_db
 def test_get_tracks_lists(monkeypatch, capsys):
     def mock_list_tracks(*args):
         print(f'called dml.list_tracks with args', args)
-        return [{'volgnr': 2, 'name': 'a'}, {'volgnr': 1, 'name': 'b'}]
+        # return [{'volgnr': 2, 'name': 'a'}, {'volgnr': 1, 'name': 'b'}]
+        # album = testee.my.Album.objects.create(artist=artist, name='Number one')
+        track1 = testee.my.Song.objects.create(volgnr=2, name='track 1')
+        track2 = testee.my.Song.objects.create(volgnr=1, name='track 2')
+        return (x for x in [track1, track2])
     monkeypatch.setattr(testee, 'list_tracks', mock_list_tracks)
-    assert testee.get_tracks_lists('x', 'y') == ([2, 1], ['a', 'b'])
+    assert testee.get_tracks_lists('x', 'y') == ([2, 1], ['track 1', 'track 2'])
     assert capsys.readouterr().out == "called dml.list_tracks with args ('y',)\n"
 
 

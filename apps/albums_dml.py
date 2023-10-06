@@ -2,6 +2,7 @@
 """
 import sys
 import os
+import itertools
 import django
 sys.path.append('/home/albert/projects/albums')
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "albums.settings")
@@ -15,8 +16,11 @@ c_type = 'Clementine music player'
 def get_artists_lists():
     "provide artist data for banshee_gui"
     data = list_artists()
-    return ([x["id"] for x in data],
-            [' '.join((x["first_name"], x['last_name'])).lstrip() for x in data])
+    # return [{'id': x.id, 'name': x.get_name()} for x in artist_list]
+    # return ([x["id"] for x in data],
+    #        [' '.join((x["first_name"], x['last_name'])).lstrip() for x in data])
+    ids, names = itertools.tee(data, 2)
+    return [x.id for x in ids], [x.get_name() for x in names]
 
 
 def list_artists(sel=""):
@@ -26,9 +30,7 @@ def list_artists(sel=""):
         artist_list = my.Act.objects.order_by('last_name')
     else:
         artist_list = my.Act.objects.filter(
-            Q(first_name__icontains=sel) | Q(last_name__icontains=sel)).order_by(
-                'last_name')
-    ## return [{'id': x.id, 'name': x.get_name()} for x in artist_list]
+            Q(first_name__icontains=sel) | Q(last_name__icontains=sel)).order_by('last_name')
     return artist_list
 
 
@@ -111,7 +113,9 @@ def get_tracks_lists(artist_id, album_id):
     "provide track data for banshee_gui"
     # artist_id is voor API-compatibiliteit
     data = list_tracks(album_id)
-    return [x["volgnr"] for x in data], [x["name"] for x in data]
+    # return [x["volgnr"] for x in data], [x["name"] for x in data]
+    ids, names = itertools.tee(data, 2)
+    return [x.volgnr for x in ids], [x.name for x in names]
 
 
 def list_tracks(album_id):
