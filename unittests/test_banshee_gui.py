@@ -423,7 +423,9 @@ def test_mainwidget_get_album(monkeypatch, capsys):
     testobj.get_album(1)
     assert capsys.readouterr().out == ('called ComboBox.currentIndex\n'
                                        'ComboBox.itemText for `1`\n'
-                                       'called Label.setText with arg `Feature not implemented`\n')
+                                       'called Label.setText with arg'
+                                       ' `No file associated with this album`\n')
+
 
 def test_mainwidget_exit(monkeypatch, capsys):
     def mock_init(self, *args):

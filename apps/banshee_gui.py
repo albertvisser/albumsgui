@@ -8,7 +8,8 @@ import PyQt5.QtGui as gui
 import apps.banshee_settings as config
 DML = {}
 if 'albums' in config.databases:
-    import apps.albums_dml_sql as dmla
+    # import apps.albums_dml_sql as dmla
+    import apps.albums_dml as dmla
     DML['albums'] = dmla
 if 'banshee' in config.databases:
     import apps.banshee_dml as dmlb
@@ -184,7 +185,7 @@ class MainWidget(qtw.QWidget):
                 else:
                     text = f'Picture {fname} could not be loaded'
             else:
-                text = "Feature not implemented"
+                text = "No file associated with this album"
             if text:
                 self.lbl.setText(text)
             else:
