@@ -111,7 +111,10 @@ class MainWidget(qtw.QWidget):
         vbox.addLayout(hbox)
 
         self.setLayout(vbox)
-        self.ask_db.setCurrentIndex(3)
+        for index in range(self.ask_db.count()):
+            if self.ask_db.itemText(index) == config.default_database:
+                self.ask_db.setCurrentIndex(index)
+                break
         self.ask_artist.setFocus()
 
     def change_db(self, index):

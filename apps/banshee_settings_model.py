@@ -15,3 +15,4 @@ databases = {
 sys.path.append(str(PROJ / 'albums' / 'albums'))
 from settings import DATABASES
 databases['albums'] = DATABASES['default']['NAME']
+default_database = 'strawberry'

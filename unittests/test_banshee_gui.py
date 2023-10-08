@@ -68,8 +68,12 @@ class MockComboBox:
         print('called ComboBox.clear')
     def addItems(self, itemlist):
         print(f'called ComboBox.addItems with arg `{itemlist}`')
+    def count(self):
+        print('called ComboBox.count')
+        return 3
     def itemText(self, number):
-        print(f'ComboBox.itemText for `{number}`')
+        print(f'called ComboBox.itemText for `{number}`')
+        return str(number)
 class MockListBox:
     def __init__(self, *args):
         print('called ListWidget.__init__')
@@ -187,6 +191,8 @@ def test_mainwidget_create_widgets(monkeypatch, capsys):
     monkeypatch.setattr(testee.qtw, 'QListWidget', MockListBox)
     monkeypatch.setattr(testee.qtw, 'QLabel', MockLabel)
     monkeypatch.setattr(testee.qtw, 'QPushButton', MockButton)
+    monkeypatch.setattr(testee.config, 'databases', ['albums', 'banshee', 'clementine', 'strawberry'])
+    monkeypatch.setattr(testee.config, 'default_database', '2')
     testobj = testee.MainWidget()   # create widgets wordt hierin aangeroepen
     assert hasattr(testobj, 'ask_db')
     assert hasattr(testobj, 'ask_album')
@@ -244,7 +250,11 @@ def test_mainwidget_create_widgets(monkeypatch, capsys):
         'called HBoxLayout.addStretch\n'
         'called VBoxLayout.addLayout\n'
         'called QWidget.setLayout\n'
-        'called ComboBox.setCurrentIndex to `3`\n'
+        'called ComboBox.count\n'
+        'called ComboBox.itemText for `0`\n'
+        'called ComboBox.itemText for `1`\n'
+        'called ComboBox.itemText for `2`\n'
+        'called ComboBox.setCurrentIndex to `2`\n'
         'called ComboBox.setFocus\n'
         'called ListWidget.setVisible to `True`\n'
         'called Label.setVisible to `False`\n'
@@ -338,7 +348,7 @@ def test_mainwidget_get_artist(monkeypatch, capsys):
     testobj.get_artist(0)
     assert capsys.readouterr().out == (
             "called ComboBox.currentIndex\n"
-            "ComboBox.itemText for `1`\n"
+            "called ComboBox.itemText for `1`\n"
             "called ComboBox.clear\n"
             "called ComboBox.addItems with arg `['-- choose album --']`\n"
             "called ListWidget.clear\n")
@@ -348,7 +358,7 @@ def test_mainwidget_get_artist(monkeypatch, capsys):
     assert capsys.readouterr().out == (
             "called MainWidget.get_albums_lists for `a`\n"
             "called ComboBox.currentIndex\n"
-            "ComboBox.itemText for `1`\n"
+            "called ComboBox.itemText for `1`\n"
             "called ComboBox.clear\n"
             "called ComboBox.addItems with arg `['-- choose album --', 'A', 'B']`\n"
             "called ListWidget.clear\n")
@@ -384,19 +394,19 @@ def test_mainwidget_get_album(monkeypatch, capsys):
     testobj.show_covers = False
     testobj.get_album(0)
     assert capsys.readouterr().out == ("called ComboBox.currentIndex\n"
-                                       "ComboBox.itemText for `1`\n"
+                                       "called ComboBox.itemText for `1`\n"
                                        "called ListWidget.clear\n"
                                        "called Label.setText with arg ``\n")
     testobj.get_album(1)
     assert capsys.readouterr().out == ("called ComboBox.currentIndex\n"
-                                       "ComboBox.itemText for `1`\n"
+                                       "called ComboBox.itemText for `1`\n"
                                        "called MainWidget.get_tracks_lists for `q`, `a`\n"
                                        "called ListWidget.clear\n"
                                        "called ListWidget.addItems with arg `['A', 'B']`\n")
     testobj.show_covers = True
     testobj.get_album(1)
     assert capsys.readouterr().out == ('called ComboBox.currentIndex\n'
-                                       'ComboBox.itemText for `1`\n'
+                                       'called ComboBox.itemText for `1`\n'
                                        'called MainWidget.get_album_cover for `q`, `a`\n'
                                        'called Pixmap.__init__\n'
                                        'called Pixmap.load for `fname`\n'
@@ -405,7 +415,7 @@ def test_mainwidget_get_album(monkeypatch, capsys):
     monkeypatch.setattr(MockPixmap, 'load', lambda *x: None)
     testobj.get_album(1)
     assert capsys.readouterr().out == ('called ComboBox.currentIndex\n'
-                                       'ComboBox.itemText for `1`\n'
+                                       'called ComboBox.itemText for `1`\n'
                                        'called MainWidget.get_album_cover for `q`, `a`\n'
                                        'called Pixmap.__init__\n'
                                        'called Label.setText with arg'
@@ -415,14 +425,14 @@ def test_mainwidget_get_album(monkeypatch, capsys):
                                    get_album_cover=lambda *x: '(embedded)')})
     testobj.get_album(1)
     assert capsys.readouterr().out == ('called ComboBox.currentIndex\n'
-                                       'ComboBox.itemText for `1`\n'
+                                       'called ComboBox.itemText for `1`\n'
                                        'called Label.setText with arg `Picture is embedded`\n')
     monkeypatch.setattr(testee, 'DML', {
         'x': types.SimpleNamespace(get_tracks_lists=mock_tracks_lists,
                                    get_album_cover=lambda *x: None)})
     testobj.get_album(1)
     assert capsys.readouterr().out == ('called ComboBox.currentIndex\n'
-                                       'ComboBox.itemText for `1`\n'
+                                       'called ComboBox.itemText for `1`\n'
                                        'called Label.setText with arg'
                                        ' `No file associated with this album`\n')
 
