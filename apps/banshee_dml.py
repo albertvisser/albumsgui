@@ -5,6 +5,7 @@ import sqlite3
 import pprint
 from .banshee_settings import databases
 DB = databases['banshee']
+artworkpath = pathlib.Path('~/sqlitedb/banshee-media-art').expanduser()
 
 
 def execute_query(query, parms):
@@ -50,13 +51,12 @@ def get_album_cover(artist_id=0, album_id=0):
     if not album_id and not artist_id:
         query += ' order by t1.Name, t2.Title'
     data = execute_query(query, tuple(parms))
-    basepath = pathlib.Path('~/sqlitedb/banshee-media-art').expanduser()
     filename = data[0]['ArtworkID'] + '.jpg'
-    test = basepath / filename
+    test = artworkpath / filename
     if test.exists():
         result = test
     else:
-        subdirs = [x for x in basepath.iterdir() if x.is_dir()]
+        subdirs = [x for x in artworkpath.iterdir() if x.is_dir()]
         for path in subdirs:
             test = path / filename
             if test.exists():
