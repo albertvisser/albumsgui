@@ -140,7 +140,7 @@ class MainFrame(qtw.QMainWindow):
                                           qtw.QMessageBox.Cancel,
                                           qtw.QMessageBox.No)
             if ok == qtw.QMessageBox.Cancel:
-                return
+                return False
             if ok == qtw.QMessageBox.Yes:
                 self.pages[pageno][1].save_all()
         return True
