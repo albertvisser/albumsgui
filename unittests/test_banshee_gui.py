@@ -5,131 +5,23 @@
 import pytest
 import types
 import apps.banshee_gui as testee
-
-class MockApplication:  # (qtw.QApplication):
-    def __init__(self, *args):
-        print('called application.__init__')
-    def exec_(self):
-        print('called app.exec_')
-
-class MockControl:
-    def setVisible(self, value):
-        print(f'called control.setVisible with args `{type(self)}`, `{value}`')
-
-class MockWidget: # (qtw.QWidget):
-    def __init__(self, *args):
-        print('called widget.__init__')
-        self.tracks_list = MockControl()
-        self.lbl = MockControl()
-    def create_widgets(self):
-        print('called widget.create_widgets, self.initializing is', self.initializing)
-    def show(self):
-        print('called widget.show')
-
-class MockVBox:
-    def __init__(self):
-        print('called VBoxLayout.__init__')
-    def addWidget(self, *args):
-        print('called VBoxLayout.addWidget')
-    def addLayout(self, *args):
-        print('called VBoxLayout.addLayout')
-class MockHBox:
-    def __init__(self):
-        print('called HBoxLayout.__init__')
-    def addWidget(self, *args):
-        print('called HBoxLayout.addWidget')
-    def addLayout(self, *args):
-        print('called HBoxLayout.addLayout')
-    def addStretch(self, *args):
-        print('called HBoxLayout.addStretch')
-class MockGrid:
-    def __init__(self):
-        print('called GridLayout.__init__')
-    def addWidget(self, *args):
-        print('called GridLayout.addWidget')
-    def addLayout(self, *args):
-        print('called GridLayout.addLayout')
-class MockComboBox:
-    def mock_connect(*args):
-        print('called connect with args', args)
-    currentIndexChanged = types.SimpleNamespace(connect=mock_connect)
-    def __init__(self, *args):
-        print('called ComboBox.__init__')
-    def setMinimumWidth(self, number):
-        print(f'called ComboBox.setMinimumWidth to `{number}`')
-    def setCurrentIndex(self, number):
-        print(f'called ComboBox.setCurrentIndex to `{number}`')
-    def currentIndex(self):
-        print('called ComboBox.currentIndex')
-        return 1
-    def setFocus(self):
-        print('called ComboBox.setFocus')
-    def clear(self):
-        print('called ComboBox.clear')
-    def addItems(self, itemlist):
-        print(f'called ComboBox.addItems with arg `{itemlist}`')
-    def count(self):
-        print('called ComboBox.count')
-        return 3
-    def itemText(self, number):
-        print(f'called ComboBox.itemText for `{number}`')
-        return str(number)
-class MockListBox:
-    def __init__(self, *args):
-        print('called ListWidget.__init__')
-    def setVisible(self, value):
-        print(f'called ListWidget.setVisible to `{value}`')
-    def setMinimumWidth(self, number):
-        print(f'called ListWidget.setMinimumWidth to `{number}`')
-    def setMinimumHeight(self, number):
-        print(f'called ListWidget.setMinimumHeight to `{number}`')
-    def clear(self):
-        print('called ListWidget.clear')
-    def addItems(self, itemlist):
-        print(f'called ListWidget.addItems with arg `{itemlist}`')
-class MockLabel:
-    def __init__(self, *args):
-        print('called Label.__init__')
-    def setVisible(self, value):
-        print(f'called Label.setVisible to `{value}`')
-    def setMinimumWidth(self, number):
-        print(f'called Label.setMinimumWidth to `{number}`')
-    def setMinimumHeight(self, number):
-        print(f'called Label.setMinimumHeight to `{number}`')
-    def setText(self, text):
-        print(f'called Label.setText with arg `{text}`')
-    def setPixmap(self, data):
-        print(f'called Label.setPixmap')
-class MockButton:
-    def mock_connect(*args):
-        print('called connect with args', args)
-    clicked = types.SimpleNamespace(connect=mock_connect)
-    def __init__(self, *args):
-        print('called PushButton.__init__')
-class MockPixmap:
-    def __init__(self, *args):
-        print('called Pixmap.__init__')
-    def load(self, fname):
-        print(f'called Pixmap.load for `fname`')
-        return 'ok'
-    def scaled(self, x, y):
-        print(f'called Pixmap.scaled to `{x}`, `{y}`')
-        return 'ok'
+import mockgui.mockqtwidgets as mockqtw
+from unittests.buildscreen_output_fixture import expected_output
 
 
 def test_mainwidget_init(monkeypatch, capsys):
     def mock_app_init(self, *args):
-        print('called QApplication.__init__')
+        print('called Application.__init__')
     def mock_init(self, *args):
-        print('called QWidget.__init__')
+        print('called Widget.__init__')
     def mock_show(self, *args):
-        print('called QWidget.show')
+        print('called Widget.show')
     def mock_list_set(value):
         print(f'called tracklist.setVisible(`{value}`)')
     def mock_label_set(value):
         print(f'called label.setVisible(`{value}`)')
     def mock_create_widgets(self, *args):
-        print('called QWidget.create_widgets, self.initializing is', self.initializing)
+        print('called Widget.create_widgets, self.initializing is', self.initializing)
         self.tracks_list = types.SimpleNamespace(setVisible=mock_list_set)
         self.lbl = types.SimpleNamespace(setVisible=mock_label_set)
     # monkeypatch.setattr(testee.qtw, 'QApplication', MockApplication)
@@ -138,8 +30,8 @@ def test_mainwidget_init(monkeypatch, capsys):
     monkeypatch.setattr(testee.qtw.QWidget, 'show', mock_show)
     monkeypatch.setattr(testee.MainWidget, 'create_widgets', mock_create_widgets)
     # monkeypatch.setattr(testee.qtw, 'QWidget', MockWidget)
-    monkeypatch.setattr(testee, 'config', types.SimpleNamespace(databases=['x', 'clementine',
-                                                                           'banshee', 'strawberry']))
+    monkeypatch.setattr(testee, 'config',
+                        types.SimpleNamespace(databases=['x', 'clementine', 'banshee', 'strawberry']))
     testobj = testee.MainWidget()
     assert testobj.dbnames == ['banshee', 'clementine', 'strawberry', 'x', 'covers (banshee)',
                                'covers (clementine)', 'covers (strawberry)']
@@ -149,20 +41,22 @@ def test_mainwidget_init(monkeypatch, capsys):
     assert not testobj.show_covers
     assert not testobj.initializing
     assert capsys.readouterr().out == (
-        'called QApplication.__init__\ncalled QWidget.__init__\n'
-        'called QWidget.create_widgets, self.initializing is True\n'
+        'called Application.__init__\ncalled Widget.__init__\n'
+        'called Widget.create_widgets, self.initializing is True\n'
         'called tracklist.setVisible(`True`)\ncalled label.setVisible(`False`)\n'
-        'called QWidget.show\n')
+        'called Widget.show\n')
 
 
 class MockMainWidget:
     def __init__(self):
         def mock_app_exec():
-            return 'called QApplication.exec_'
+            return 'called Application.exec_'
         print('called MainWidget.__init__')
         self.app = types.SimpleNamespace(exec_=mock_app_exec)
     def setLayout(self, *args):
-        print('called QWidget.setLayout')
+        print('called Widget.setLayout')
+    def create_widgets(self):
+        print('called widget.create_widgets, self.initializing is', self.initializing)
 
 
 def test_mainwidget_go(monkeypatch, capsys):
@@ -171,26 +65,30 @@ def test_mainwidget_go(monkeypatch, capsys):
     assert capsys.readouterr().out == 'called MainWidget.__init__\n'
     with pytest.raises(SystemExit) as exc:
         testobj.go()
-    assert str(exc.value) == 'called QApplication.exec_'
+    assert str(exc.value) == 'called Application.exec_'
 
 
-def test_mainwidget_create_widgets(monkeypatch, capsys):
+def test_mainwidget_create_widgets(monkeypatch, capsys, expected_output):
     def mock_init(self, *args):
-        print('called QWidget.__init__')
+        print('called Widget.__init__')
     def mock_setlayout(self, *args):
-        print('called QWidget.setLayout')
+        print('called Widget.setLayout')
     def mock_show(self, *args):
-        print('called QWidget.show')
+        print('called Widget.show')
+    def mock_count(self):
+        print('called ComboBox.count')
+        return 3
     monkeypatch.setattr(testee.qtw.QWidget, '__init__', mock_init)
     monkeypatch.setattr(testee.qtw.QWidget, 'setLayout', mock_setlayout)
     monkeypatch.setattr(testee.qtw.QWidget, 'show', mock_show)
-    monkeypatch.setattr(testee.qtw, 'QVBoxLayout', MockVBox)
-    monkeypatch.setattr(testee.qtw, 'QHBoxLayout', MockHBox)
-    monkeypatch.setattr(testee.qtw, 'QGridLayout', MockGrid)
-    monkeypatch.setattr(testee.qtw, 'QComboBox', MockComboBox)
-    monkeypatch.setattr(testee.qtw, 'QListWidget', MockListBox)
-    monkeypatch.setattr(testee.qtw, 'QLabel', MockLabel)
-    monkeypatch.setattr(testee.qtw, 'QPushButton', MockButton)
+    monkeypatch.setattr(testee.qtw, 'QVBoxLayout', mockqtw.MockVBoxLayout)
+    monkeypatch.setattr(testee.qtw, 'QHBoxLayout', mockqtw.MockHBoxLayout)
+    monkeypatch.setattr(testee.qtw, 'QGridLayout', mockqtw.MockGridLayout)
+    monkeypatch.setattr(mockqtw.MockComboBox, 'count', mock_count)
+    monkeypatch.setattr(testee.qtw, 'QComboBox', mockqtw.MockComboBox)
+    monkeypatch.setattr(testee.qtw, 'QListWidget', mockqtw.MockListBox)
+    monkeypatch.setattr(testee.qtw, 'QLabel', mockqtw.MockLabel)
+    monkeypatch.setattr(testee.qtw, 'QPushButton', mockqtw.MockPushButton)
     monkeypatch.setattr(testee.config, 'databases', ['albums', 'banshee', 'clementine', 'strawberry'])
     monkeypatch.setattr(testee.config, 'default_database', '2')
     testobj = testee.MainWidget()   # create widgets wordt hierin aangeroepen
@@ -199,66 +97,8 @@ def test_mainwidget_create_widgets(monkeypatch, capsys):
     assert hasattr(testobj, 'ask_artist')
     assert hasattr(testobj, 'tracks_list')
     assert hasattr(testobj, 'lbl')
-    assert capsys.readouterr().out == (
-        'called QWidget.__init__\n'
-        'called VBoxLayout.__init__\n'
-        'called GridLayout.__init__\n'
-        'called Label.__init__\n'
-        'called GridLayout.addWidget\n'
-        'called HBoxLayout.__init__\n'
-        'called ComboBox.__init__\n'
-        "called ComboBox.addItems with arg `['albums', 'banshee', 'clementine', 'strawberry',"
-        " 'covers (banshee)', 'covers (clementine)', 'covers (strawberry)']`\n"
-        f'called connect with args ({testobj.change_db},)\n'
-        'called HBoxLayout.addWidget\n'
-        'called HBoxLayout.addStretch\n'
-        'called GridLayout.addLayout\n'
-        'called Label.__init__\n'
-        'called GridLayout.addWidget\n'
-        'called ComboBox.__init__\n'
-        'called ComboBox.setMinimumWidth to `260`\n'
-        f'called connect with args ({testobj.get_artist},)\n'
-        'called GridLayout.addWidget\n'
-        'called Label.__init__\n'
-        'called GridLayout.addWidget\n'
-        'called ComboBox.__init__\n'
-        'called ComboBox.setMinimumWidth to `260`\n'
-        f'called connect with args ({testobj.get_album},)\n'
-        'called GridLayout.addWidget\n'
-        'called VBoxLayout.addLayout\n'
-        'called HBoxLayout.__init__\n'
-        'called HBoxLayout.addStretch\n'
-        'called ListWidget.__init__\n'
-        'called ListWidget.setMinimumWidth to `400`\n'
-        'called ListWidget.setMinimumHeight to `300`\n'
-        'called HBoxLayout.addWidget\n'
-        'called HBoxLayout.addStretch\n'
-        'called VBoxLayout.addLayout\n'
-        'called HBoxLayout.__init__\n'
-        'called HBoxLayout.addStretch\n'
-        'called Label.__init__\n'
-        'called Label.setMinimumWidth to `500`\n'
-        'called Label.setMinimumHeight to `500`\n'
-        'called HBoxLayout.addWidget\n'
-        'called HBoxLayout.addStretch\n'
-        'called VBoxLayout.addLayout\n'
-        'called HBoxLayout.__init__\n'
-        'called HBoxLayout.addStretch\n'
-        'called PushButton.__init__\n'
-        f'called connect with args ({testobj.exit},)\n'
-        'called HBoxLayout.addWidget\n'
-        'called HBoxLayout.addStretch\n'
-        'called VBoxLayout.addLayout\n'
-        'called QWidget.setLayout\n'
-        'called ComboBox.count\n'
-        'called ComboBox.itemText for `0`\n'
-        'called ComboBox.itemText for `1`\n'
-        'called ComboBox.itemText for `2`\n'
-        'called ComboBox.setCurrentIndex to `2`\n'
-        'called ComboBox.setFocus\n'
-        'called ListWidget.setVisible to `True`\n'
-        'called Label.setVisible to `False`\n'
-        'called QWidget.show\n')
+    bindings = {'testobj': testobj}
+    assert capsys.readouterr().out == expected_output['bgui_create_widgets'].format(**bindings)
 
 
 def test_mainwidget_change_db(monkeypatch, capsys):
@@ -271,13 +111,13 @@ def test_mainwidget_change_db(monkeypatch, capsys):
     monkeypatch.setattr(testee.MainWidget, 'get_album', mock_get_album)
     testobj = testee.MainWidget()
     assert capsys.readouterr().out == 'called MainWidget.__init__\n'
-    testobj.ask_artist = MockComboBox()
-    testobj.ask_album = MockComboBox()
-    testobj.tracks_list = MockListBox()
-    testobj.lbl = MockLabel()
+    testobj.ask_artist = mockqtw.MockComboBox()
+    testobj.ask_album = mockqtw.MockComboBox()
+    testobj.tracks_list = mockqtw.MockListBox()
+    testobj.lbl = mockqtw.MockLabel()
     assert capsys.readouterr().out == ('called ComboBox.__init__\n'
                                        'called ComboBox.__init__\n'
-                                       'called ListWidget.__init__\n'
+                                       'called List.__init__\n'
                                        'called Label.__init__\n')
     testobj.dbnames = ['x', 'y', 'covers (x)']
     monkeypatch.setattr(testee.config, 'databases', {'x': 'dbx', 'y': 'dby'})
@@ -297,13 +137,13 @@ def test_mainwidget_change_db(monkeypatch, capsys):
     assert capsys.readouterr().out == (
             'called MainWidget.get_artists_lists`\n'
             'called ComboBox.clear\n'
-            "called ComboBox.addItems with arg `['-- choose artist --', 'A', 'B']`\n"
+            "called ComboBox.addItems with arg ['-- choose artist --', 'A', 'B']\n"
             'called ComboBox.clear\n'
-            "called ComboBox.addItems with arg `['-- choose album --']`\n"
-            'called ListWidget.setVisible to `True`\n'
-            'called Label.setVisible to `False`\n'
-            'called ListWidget.clear\n'
-            "called ListWidget.addItems with arg `("
+            "called ComboBox.addItems with arg ['-- choose album --']\n"
+            'called List.setVisible with arg `True`\n'
+            'called Label.setVisible with arg `False`\n'
+            'called List.clear\n'
+            "called List.addItems with arg `("
             "'', 'Kies een uitvoerende uit de bovenste lijst',"
             " '', 'Daarna een album uit de lijst daaronder',"
             " '', 'De tracks worden dan in dit venster getoond.')`\n")
@@ -312,11 +152,11 @@ def test_mainwidget_change_db(monkeypatch, capsys):
     assert capsys.readouterr().out == (
             'called MainWidget.get_artists_lists`\n'
             'called ComboBox.clear\n'
-            "called ComboBox.addItems with arg `['-- choose artist --', 'A', 'B']`\n"
+            "called ComboBox.addItems with arg ['-- choose artist --', 'A', 'B']\n"
             'called ComboBox.clear\n'
-            "called ComboBox.addItems with arg `['-- choose album --']`\n"
-            'called ListWidget.setVisible to `False`\n'
-            'called Label.setVisible to `True`\n'
+            "called ComboBox.addItems with arg ['-- choose album --']\n"
+            'called List.setVisible with arg `False`\n'
+            'called Label.setVisible with arg `True`\n'
             "called Label.setText with arg `\n"
             "Kies een uitvoerende uit de bovenste lijst\n\n"
             "Daarna een album uit de lijst daaronder\n\n"
@@ -332,12 +172,12 @@ def test_mainwidget_get_artist(monkeypatch, capsys):
     monkeypatch.setattr(testee.MainWidget, '__init__', MockMainWidget.__init__)
     testobj = testee.MainWidget()
     assert capsys.readouterr().out == 'called MainWidget.__init__\n'
-    testobj.ask_artist = MockComboBox()
-    testobj.ask_album = MockComboBox()
-    testobj.tracks_list = MockListBox()
+    testobj.ask_artist = mockqtw.MockComboBox()
+    testobj.ask_album = mockqtw.MockComboBox()
+    testobj.tracks_list = mockqtw.MockListBox()
     assert capsys.readouterr().out == ('called ComboBox.__init__\n'
                                        'called ComboBox.__init__\n'
-                                       'called ListWidget.__init__\n')
+                                       'called List.__init__\n')
     testobj.initializing = True
     testobj.dbname = 'x'
     testobj.artist_ids = ['a', 'b']
@@ -348,20 +188,20 @@ def test_mainwidget_get_artist(monkeypatch, capsys):
     testobj.get_artist(0)
     assert capsys.readouterr().out == (
             "called ComboBox.currentIndex\n"
-            "called ComboBox.itemText for `1`\n"
+            "called ComboBox.itemText with value `1`\n"
             "called ComboBox.clear\n"
-            "called ComboBox.addItems with arg `['-- choose album --']`\n"
-            "called ListWidget.clear\n")
+            "called ComboBox.addItems with arg ['-- choose album --']\n"
+            "called List.clear\n")
     testobj.get_artist(1)
     assert testobj.album_ids == ['1', '2']
     assert testobj.album_names == ['A', 'B']
     assert capsys.readouterr().out == (
             "called MainWidget.get_albums_lists for `a`\n"
             "called ComboBox.currentIndex\n"
-            "called ComboBox.itemText for `1`\n"
+            "called ComboBox.itemText with value `1`\n"
             "called ComboBox.clear\n"
-            "called ComboBox.addItems with arg `['-- choose album --', 'A', 'B']`\n"
-            "called ListWidget.clear\n")
+            "called ComboBox.addItems with arg ['-- choose album --', 'A', 'B']\n"
+            "called List.clear\n")
 
 
 def test_mainwidget_get_album(monkeypatch, capsys):
@@ -374,15 +214,15 @@ def test_mainwidget_get_album(monkeypatch, capsys):
     monkeypatch.setattr(testee, 'DML', {
         'x': types.SimpleNamespace(get_tracks_lists=mock_tracks_lists,
                                    get_album_cover=mock_album_cover)})
-    monkeypatch.setattr(testee.gui, 'QPixmap', MockPixmap)
+    monkeypatch.setattr(testee.gui, 'QPixmap', mockqtw.MockPixmap)
     monkeypatch.setattr(testee.MainWidget, '__init__', MockMainWidget.__init__)
     testobj = testee.MainWidget()
     assert capsys.readouterr().out == 'called MainWidget.__init__\n'
-    testobj.ask_album = MockComboBox()
-    testobj.tracks_list = MockListBox()
-    testobj.lbl = MockLabel()
+    testobj.ask_album = mockqtw.MockComboBox()
+    testobj.tracks_list = mockqtw.MockListBox()
+    testobj.lbl = mockqtw.MockLabel()
     assert capsys.readouterr().out == ('called ComboBox.__init__\n'
-                                       'called ListWidget.__init__\n'
+                                       'called List.__init__\n'
                                        'called Label.__init__\n')
     testobj.initializing = True
     testobj.artist = 'q'
@@ -394,28 +234,28 @@ def test_mainwidget_get_album(monkeypatch, capsys):
     testobj.show_covers = False
     testobj.get_album(0)
     assert capsys.readouterr().out == ("called ComboBox.currentIndex\n"
-                                       "called ComboBox.itemText for `1`\n"
-                                       "called ListWidget.clear\n"
+                                       "called ComboBox.itemText with value `1`\n"
+                                       "called List.clear\n"
                                        "called Label.setText with arg ``\n")
     testobj.get_album(1)
     assert capsys.readouterr().out == ("called ComboBox.currentIndex\n"
-                                       "called ComboBox.itemText for `1`\n"
+                                       "called ComboBox.itemText with value `1`\n"
                                        "called MainWidget.get_tracks_lists for `q`, `a`\n"
-                                       "called ListWidget.clear\n"
-                                       "called ListWidget.addItems with arg `['A', 'B']`\n")
+                                       "called List.clear\n"
+                                       "called List.addItems with arg `['A', 'B']`\n")
     testobj.show_covers = True
     testobj.get_album(1)
     assert capsys.readouterr().out == ('called ComboBox.currentIndex\n'
-                                       'called ComboBox.itemText for `1`\n'
+                                       'called ComboBox.itemText with value `1`\n'
                                        'called MainWidget.get_album_cover for `q`, `a`\n'
                                        'called Pixmap.__init__\n'
                                        'called Pixmap.load for `fname`\n'
                                        'called Pixmap.scaled to `500`, `500`\n'
                                        'called Label.setPixmap\n')
-    monkeypatch.setattr(MockPixmap, 'load', lambda *x: None)
+    monkeypatch.setattr(mockqtw.MockPixmap, 'load', lambda *x: None)
     testobj.get_album(1)
     assert capsys.readouterr().out == ('called ComboBox.currentIndex\n'
-                                       'called ComboBox.itemText for `1`\n'
+                                       'called ComboBox.itemText with value `1`\n'
                                        'called MainWidget.get_album_cover for `q`, `a`\n'
                                        'called Pixmap.__init__\n'
                                        'called Label.setText with arg'
@@ -425,31 +265,31 @@ def test_mainwidget_get_album(monkeypatch, capsys):
                                    get_album_cover=lambda *x: '(embedded)')})
     testobj.get_album(1)
     assert capsys.readouterr().out == ('called ComboBox.currentIndex\n'
-                                       'called ComboBox.itemText for `1`\n'
+                                       'called ComboBox.itemText with value `1`\n'
                                        'called Label.setText with arg `Picture is embedded`\n')
     monkeypatch.setattr(testee, 'DML', {
         'x': types.SimpleNamespace(get_tracks_lists=mock_tracks_lists,
                                    get_album_cover=lambda *x: None)})
     testobj.get_album(1)
     assert capsys.readouterr().out == ('called ComboBox.currentIndex\n'
-                                       'called ComboBox.itemText for `1`\n'
+                                       'called ComboBox.itemText with value `1`\n'
                                        'called Label.setText with arg'
                                        ' `No file associated with this album`\n')
 
 
 def test_mainwidget_exit(monkeypatch, capsys):
     def mock_init(self, *args):
-        print('called QWidget.__init__')
+        print('called Widget.__init__')
     def mock_info(self, *args):
         print('called messagebox.information with args', args)
     def mock_close(self, *args):
-        print('called QWidget.close')
+        print('called Widget.close')
     monkeypatch.setattr(testee.MainWidget, '__init__', mock_init)
     monkeypatch.setattr(testee.MainWidget, 'close', mock_close)
     monkeypatch.setattr(testee.qtw.QMessageBox, 'information', mock_info)
     testobj = testee.MainWidget()
-    assert capsys.readouterr().out == 'called QWidget.__init__\n'
+    assert capsys.readouterr().out == 'called Widget.__init__\n'
     testobj.exit()
     assert capsys.readouterr().out == ("called messagebox.information with args ('Exiting...',"
                                        " 'Thank you for calling')\n"
-                                       'called QWidget.close\n')
+                                       'called Widget.close\n')
