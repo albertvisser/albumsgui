@@ -10,6 +10,7 @@ cddb = test_cddb_dml.py
 django = test_albums_dml.py 
 # test_albums_dml_sql.py 
 clementine = test_clementine_dml.py 
+strawberry = test_strawberry_dml.py 
 
 [testees]
 main = apps/albums_gui.py 
