@@ -5,6 +5,7 @@ import collections
 from .banshee_settings import databases
 DB = databases['CDDB']
 Album = collections.namedtuple('Album', ['cddbid', 'title', 'jaar', 'genre'])
+valid_headers = {(0x0D, 0xF0, 0xEF, 0xBE): False, (0x0E, 0xF0, 0xEF, 0xBE): True}
 
 
 def get_artists_lists():
@@ -41,22 +42,13 @@ class CDDBData:
 
     def read(self, fnaam):
         "read the file into memory"
-        ok = False
         with open(fnaam, 'rb') as cddb:
-            try:
-                cddbdata = cddb.read()
-            except IOError:
-                return "Error reading file"
+            cddbdata = cddb.read()
 
         test = struct.unpack('4B', cddbdata[:4])
-        if test[1] == 0xF0 and test[2] == 0xEF and test[3] == 0xBE:
-            if test[0] == 0x0D:
-                self.extra = False
-                ok = True
-            elif test[0] == 0x0E:
-                self.extra = True
-                ok = True
-        if not ok:
+        if test in valid_headers:
+            self.extra = valid_headers[test]
+        else:
             return "Beginning of file does not look ok"
 
         pos = struct.unpack('=L', cddbdata[4:8])[0]
@@ -74,6 +66,7 @@ class CDDBData:
             self.artists[artist].append(albumid)
             self.albums[albumid] = album.title
             self.tracks[albumid] = tracks
+        return ''
 
     # new API functions
     def list_artists(self):

@@ -9,7 +9,7 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "albums.settings")
 django.setup()
 from django.db.models import Q
 import albums.muziek.models as my
-from albums.muziek.helpers import s_keuzes, s_sorts, l_keuzes, l_sorts
+from albums.muziek.helpers import s_keuzes, s_sorts, l_keuzes, l_sorts  # nodig voor albums_gui
 c_type = 'Clementine music player'
 
 
@@ -147,7 +147,7 @@ def update_album_details(album_id, albumdata):
     for name, value in albumdata['details']:
         if name == 'Label/jaar:':
             test = value.split(', ')
-            if len(test) == 2:
+            if len(test) == len(['label', 'jaar']):
                 album.label = test[0]
                 if test[1]:
                     album.release_year = int(test[1])
@@ -229,10 +229,7 @@ def update_artists(changes):
     """
     results = []
     for id, first_name, last_name in changes:
-        if id:
-            item = my.Act.objects.get(pk=id)
-        else:
-            item = my.Act()
+        item = my.Act.objects.get(pk=id) if id else my.Act()
         item.first_name = first_name
         item.last_name = last_name
         item.save()

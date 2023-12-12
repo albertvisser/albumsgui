@@ -37,14 +37,14 @@ def mock_newline(*args):
     return mockqtw.MockHBoxLayout()
 
 def mock_button_strip(*args):
-    print(f'called button_strip with args', args)
+    print('called button_strip with args', args)
     return mockqtw.MockHBoxLayout()
 
 def mock_exitbutton(*args, **kwargs):
     if len(args) == 3:
         print(f'called exitbutton with args {args[0]}, {args[1]}, {type(args[2])}')
     else:
-        print(f'called exitbutton with args', args, kwargs)
+        print('called exitbutton with args', args, kwargs)
     return mockqtw.MockHBoxLayout()
 
 
@@ -60,7 +60,7 @@ class MockMainFrame:
     def do_select(self):
         print('called Main.do_select')
     def do_new(self, **kwargs):
-        print(f'called Main.do_new with args', kwargs)
+        print('called Main.do_new with args', kwargs)
     def do_detail(self):
         print('called Main.do_detail')
     # def do_edit_alg(self, **kwargs):
@@ -389,15 +389,15 @@ def test_main_init(monkeypatch, capsys):
                                        'called MainWindow.show\n'
                                        'called Main.do_start\n'
                                        'called Main.go\n')
-    assert testobj.artist == None
-    assert testobj.album == None
+    assert testobj.artist is None
+    assert testobj.album is None
     assert testobj.albumtype == ''
     assert testobj.searchtype == 1
     assert testobj.search_arg == ''
     assert testobj.sorttype == ''
     assert testobj.old_seltype == 0
     assert testobj.albumdata == {}
-    assert testobj.end == False
+    assert not testobj.end
     assert testobj.albums == []
     assert testobj.windows == []
 

@@ -333,10 +333,9 @@ class Start(qtw.QWidget):
             self.ask_live_sort.setCurrentIndex(2)
             return
         widgets[0].setCurrentIndex(parent.searchtype)
-        if parent.searchtype == 1:
-            if parent.artist:
-                chosen = parent.artistids.index(parent.artist.id)
-                widgets[1].setCurrentIndex(chosen + 1)
+        if parent.searchtype == 1 and parent.artist:
+            chosen = parent.artistids.index(parent.artist.id)
+            widgets[1].setCurrentIndex(chosen + 1)
         if parent.searchtype < 2:
             widgets[2].clear()
         else:
@@ -513,13 +512,12 @@ class Select(qtw.QWidget):
         soort = {'studio': 'albums', 'live': 'concerten'}
         if self.parent().searchtype == 1:
             searchtext = f'Artist = {self.parent().artist.get_name()}'
+        elif self.parent().searchtype:
+            searchtext = '{} contains "{}"'.format(
+                SELCOL[self.parent().albumtype][self.parent().searchtype],
+                self.parent().search_arg)
         else:
-            if self.parent().searchtype:
-                searchtext = '{} contains "{}"'.format(
-                    SELCOL[self.parent().albumtype][self.parent().searchtype],
-                    self.parent().search_arg)
-            else:
-                searchtext = 'geen selectie'
+            searchtext = 'geen selectie'
         self.heading.setText('Lijst {} {} - selectie: {} gesorteerd op {}'.format(
             self.parent().albumtype, soort[self.parent().albumtype],
             searchtext, self.parent().sorttype))
@@ -812,14 +810,14 @@ class EditDetails(qtw.QWidget):
                     win.setCurrentIndex(listdata.index(text) + 1)
             elif caption == 'Label/jaar:':
                 hbox2 = qtw.QHBoxLayout()
-                text = text.split(', ')
-                if len(text) == 1:
-                    text.append('')
-                win_l = qtw.QLineEdit(text[0], self)
+                textparts = text.split(', ')
+                if len(textparts) == 1:
+                    textparts.append('')
+                win_l = qtw.QLineEdit(textparts[0], self)
                 win_l.setMaximumWidth(200)
                 win_l.setMinimumWidth(200)
                 hbox2.addWidget(win_l)
-                win_y = qtw.QLineEdit(text[1], self)
+                win_y = qtw.QLineEdit(textparts[1], self)
                 win_y.setMaximumWidth(80)
                 win_y.setMinimumWidth(80)
                 hbox2.addWidget(win_y)
@@ -872,29 +870,18 @@ class EditDetails(qtw.QWidget):
         # loop over screendata fields to select the field to prefill
         for lbl, win in self.screendata[:2]:
             caption = lbl.text()
+            valid_combos = (('studio', 2, 'Albumtitel:'),
+                            ('studio', 3, 'Produced by:'),
+                            ('studio', 4, 'Credits:'),
+                            ('studio', 5, 'Bezetting:'),
+                            ('live', 2, 'Locatie/datum:'),
+                            ('live', 3, 'Locatie/datum:'),
+                            ('live', 4, 'Bezetting:'))
             if self.parent().searchtype == 1 and caption == 'Uitvoerende:':
-                # win.setCurrentIndex([x for x in self.parent().artists].index(
-                #     self.parent().artist) + 1)
-                win.setCurrentIndex(self.parent().artist_ids.index(
-                    self.parent().search_arg.id) + 1)
-            elif self.parent().searchtype == 2:
-                if self.parent().albumtype == 'studio' and caption == 'Albumtitel:':
-                    win.setText(self.parent().search_arg)
-                elif self.parent().albumtype == 'live' and caption == 'Locatie/datum:':
-                    win.setText(self.parent().search_arg)
-            elif self.parent().searchtype == 3:
-                if self.parent().albumtype == 'studio' and caption == 'Produced by:':
-                    win.setText(self.parent().search_arg)
-                elif self.parent().albumtype == 'live' and caption == 'Locatie/datum:':
-                    win.setText(self.parent().search_arg)
-            elif self.parent().searchtype == 4:
-                if self.parent().albumtype == 'studio' and caption == 'Credits:':
-                    win.setText(self.parent().search_arg)
-                elif self.parent().albumtype == 'live' and caption == 'Bezetting:':
-                    win.setText(self.parent().search_arg)
-            elif self.parent().searchtype == 5:
-                if self.parent().albumtype == 'studio' and caption == 'Bezetting:':
-                    win.setText(self.parent().search_arg)
+                win.setCurrentIndex(self.parent().artist_ids.index(self.parent().search_arg.id) + 1)
+            elif (self.parent().albumtype, self.parent().searchtype, caption) in valid_combos:
+                win.setText(self.parent().search_arg)
+
 
     def refresh_screen(self):
         """bring screen up-to-date
@@ -933,7 +920,7 @@ class EditDetails(qtw.QWidget):
                     is_changed = True
             elif caption == 'Label/jaar:':
                 win_l, win_y = fields[1:]
-                is_changed = self._replace_details(caption, ', '.join((win_l.text(), win_y.text())))
+                is_changed = self._replace_details(caption, f'{win_l.text()}, {win_y.text()}')
             elif caption in ('Credits:', 'Bezetting:', 'Tevens met:'):
                 is_changed = self._replace_details(caption, win.toPlainText())
             else:
@@ -1281,8 +1268,7 @@ class EditRecordings(qtw.QWidget):
                                                 'went wrong, please try again')
             # eigenlijk zou je hierna de data opnieuw moeten ophalen en het scherm opnieuw
             # opbouwen - wat nu alleen gebeurt als je naar het detailscherm gaat
-        else:
-            if not skip_confirm:
+        elif not skip_confirm:
                 qtw.QMessageBox.information(self, 'Albums', 'Nothing changed')
 
         if self.first_time:

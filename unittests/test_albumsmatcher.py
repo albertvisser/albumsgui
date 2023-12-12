@@ -447,7 +447,7 @@ def test_main_exit(monkeypatch, capsys):
         print(f'called Main.check_oldpage with arg `{page}`')
         return True
     def mock_close():
-        print(f'called Main.close')
+        print('called Main.close')
     testobj = setup_main(monkeypatch, capsys)
     testobj.current = 1
     monkeypatch.setattr(testobj, 'check_oldpage', mock_check)
@@ -521,7 +521,7 @@ def test_cmpart_create_widgets(monkeypatch, capsys, expected_output):
 
 def test_cmpart_create_actions(monkeypatch, capsys, expected_output):
     def mock_add(arg):
-        print(f'called CompareArtists.addAction')
+        print('called CompareArtists.addAction')
     monkeypatch.setattr(testee.qtw, 'QAction', mockqtw.MockAction)
     testobj = setup_cmpart(monkeypatch, capsys)
     monkeypatch.setattr(testobj, 'addAction', mock_add)
@@ -675,7 +675,6 @@ def test_cmpart_check_deletable(monkeypatch, capsys):
 def test_cmpart_select_and_go(monkeypatch, capsys):
     def mock_current():
         print('called Tree.currentItem')
-        return None
     monkeypatch.setattr(testee.qtw, 'QMessageBox', mockqtw.MockMessageBox)
     testobj = setup_cmpart(monkeypatch, capsys)
     testobj._parent.nb = mockqtw.MockTabWidget()
@@ -798,7 +797,7 @@ def test_cmpart_update_item(monkeypatch, capsys):
     mockcurrent = mockqtw.MockTreeItem('y')
     assert capsys.readouterr().out == "called TreeItem.__init__ with args ('y',)\n"
     def mock_current():
-        print(f'called Tree.currentItem')
+        print('called Tree.currentItem')
         return mockcurrent
     testobj = setup_cmpart(monkeypatch, capsys)
     monkeypatch.setattr(testobj, 'set_modified', mock_set)
@@ -979,7 +978,7 @@ def test_cmpart_delete_artist(monkeypatch, capsys):
     def mock_settext(*args):
         print('called TreeItem.setText with args', args)
     def mock_find(*args):
-        print(f'called CompareArtists.find_items with args', args)
+        print('called CompareArtists.find_items with args', args)
         return [types.SimpleNamespace(setText=mock_settext)]
     testobj = setup_cmpart(monkeypatch, capsys)
     monkeypatch.setattr(testobj, 'set_modified', mock_set)
@@ -1250,7 +1249,7 @@ def test_cmpalb_create_widgets(monkeypatch, capsys, expected_output):
 
 def test_cmpalb_create_actions(monkeypatch, capsys, expected_output):
     def mock_add(arg):
-        print(f'called CompareArtists.addAction')
+        print('called CompareArtists.addAction')
     monkeypatch.setattr(testee.qtw, 'QAction', mockqtw.MockAction)
     testobj = setup_cmpalb(monkeypatch, capsys)
     monkeypatch.setattr(testobj, 'addAction', mock_add)
@@ -1270,12 +1269,12 @@ def test_cmpalb_refresh_screen(monkeypatch, capsys, expected_output):
     def mock_set(value):
         print(f'called CompareAlbums.set_modified with arg `{value}`')
     def mock_update():
-        print(f'called CompareAlbums.update_navigation_buttons')
+        print('called CompareAlbums.update_navigation_buttons')
     def mock_text(num):
         print(f'called TreeItem.text with arg `{num}`')
         return 'X' if num == 1 else 'qq'
     def mock_settext(*args):
-        print(f'called TreeItem.setText with args', args)
+        print('called TreeItem.setText with args', args)
     def mock_getitem(num):
         print(f'called Tree.topLevelItem with arg `{num}`')
         return types.SimpleNamespace(text=mock_text, setText=mock_settext)
@@ -1513,7 +1512,7 @@ def test_cmpalb_focus_albums(monkeypatch, capsys):
 
 def test_cmpalb_next_artist(monkeypatch, capsys):
     def mock_update():
-        print(f'called CompareAlbums.update_navigation_buttons')
+        print('called CompareAlbums.update_navigation_buttons')
     testobj = setup_cmpalb(monkeypatch, capsys)
     monkeypatch.setattr(testobj, 'update_navigation_buttons', mock_update)
     testobj.next_artist()
@@ -1527,7 +1526,7 @@ def test_cmpalb_next_artist(monkeypatch, capsys):
 
 def test_cmpalb_prev_artist(monkeypatch, capsys):
     def mock_update():
-        print(f'called CompareAlbums.update_navigation_buttons')
+        print('called CompareAlbums.update_navigation_buttons')
     testobj = setup_cmpalb(monkeypatch, capsys)
     monkeypatch.setattr(testobj, 'update_navigation_buttons', mock_update)
     testobj.prev_artist()
@@ -1559,8 +1558,7 @@ def test_cmpalb_find_album(monkeypatch, capsys):
     def mock_add(*args):
         print('called CompareAlbums.add_album with args', args)
     def mock_check(*args):
-        print('called CompareAlbums.check_if_new_album with args', arg)
-        return None
+        print('called CompareAlbums.check_if_new_album with args', args)
     def mock_prepare(*args):
         print('called CompareAlbums.prepare_album_for_update with args', args)
     def mock_list(*args):
@@ -1625,12 +1623,12 @@ def test_cmpalb_check_new_album(monkeypatch, capsys):
     testobj.c_artist = 'xx'
     testobj.albums_map = {}
     with pytest.raises(KeyError):
-        testobj.check_if_new_album(types.SimpleNamespace(id=1, name='hello')) == ('hello', 1)
+        assert testobj.check_if_new_album(types.SimpleNamespace(id=1, name='hello')) == ('hello', 1)
     testobj.albums_map = {'xx': {}}
     assert testobj.check_if_new_album(types.SimpleNamespace(id=1, name='hello')) == ('hello', 1)
     testobj.albums_map = {'xx': {'y': ()}}
     with pytest.raises(IndexError):
-        testobj.check_if_new_album(types.SimpleNamespace(id=1, name='hello')) == ('hello', 1)
+        assert testobj.check_if_new_album(types.SimpleNamespace(id=1, name='hello')) == ('hello', 1)
     testobj.albums_map = {'xx': {'y': ('a', 0), 'z': ('b', 1)}}
     assert testobj.check_if_new_album(types.SimpleNamespace(id=1, name='hello')) is None
 
@@ -1712,7 +1710,6 @@ def test_cmpalb_add_album(monkeypatch, capsys):
         return '9999'
     def mock_current():
         print('called Tree.currentItem')
-        return None
     #    return types.SimpleNamespace(text=mock_text, data=mock_data)
     def mock_build(*args):
         print('called CompareAlbums.build_album_name with args', args)
@@ -2147,7 +2144,7 @@ def test_cmptrk_create_widgets(monkeypatch, capsys, expected_output):
 
 def test_cmptrk_create_actions(monkeypatch, capsys, expected_output):
     def mock_add(arg):
-        print(f'called CompareArtists.addAction')
+        print('called CompareArtists.addAction')
     monkeypatch.setattr(testee.qtw, 'QAction', mockqtw.MockAction)
     testobj = setup_cmptrk(monkeypatch, capsys)
     monkeypatch.setattr(testobj, 'addAction', mock_add)
@@ -2451,7 +2448,7 @@ def test_cmptrk_copy_tracks(monkeypatch, capsys):
         print(f'called Tree.topLevelItem with index {arg}')
         return types.SimpleNamespace(text=mock_text)
     def mock_refresh(*args):
-        print(f'called CompareTracks.refresh_screen with args', args)
+        print('called CompareTracks.refresh_screen with args', args)
     monkeypatch.setattr(testee.dmla, 'update_album_tracknames', mock_update)
     monkeypatch.setattr(testee.core.Qt, 'WaitCursor', 'waitcursor')
     monkeypatch.setattr(testee.gui, 'QCursor', mockqtw.MockCursor)
@@ -2478,7 +2475,7 @@ def test_cmptrk_unlink(monkeypatch, capsys):
     def mock_unlink(*args):
         print('called dmla.unlink_album with args', args)
     def mock_refresh(*args, **kwargs):
-        print(f'called CompareTracks.refresh_screen with args', args, kwargs)
+        print('called CompareTracks.refresh_screen with args', args, kwargs)
     monkeypatch.setattr(testee.dmla, 'unlink_album', mock_unlink)
     testobj = setup_cmptrk(monkeypatch, capsys)
     testobj.artist = 'xx'

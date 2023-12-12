@@ -2,7 +2,6 @@
 """
 import pathlib
 import sqlite3
-import pprint
 from .banshee_settings import databases
 DB = databases['banshee']
 artworkpath = pathlib.Path('~/sqlitedb/banshee-media-art').expanduser()
@@ -16,7 +15,7 @@ def execute_query(query, parms):
         conn.row_factory = sqlite3.Row
         cur = conn.cursor()
         for row in cur.execute(query, parms):
-            result.append({name: row[name] for name in row.keys()})
+            result.append({name: row[name] for name in row})
     return result
 
 

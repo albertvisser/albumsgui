@@ -263,7 +263,7 @@ class CompareArtists(qtw.QWidget):
         self.new_artists = []
         self.new_matches = {}
         self.artist_list_a, self.artist_list_c = read_artists()
-        self.lookup = {' '.join((x, y)).strip(): z for x, y, z in self.artist_list_a}
+        self.lookup = {'{x} {y}'.strip(): z for x, y, z in self.artist_list_a}
         self.finda = {z: (x, y) for x, y, z in self.artist_list_a}
         self.artist_map = self._parent.artist_map or {x: ''
                                                       for x in self.artist_list_c}
@@ -297,11 +297,7 @@ class CompareArtists(qtw.QWidget):
             findstr = ''
             column = 1
         test = self.clementine_artists.findItems(findstr, core.Qt.MatchFixedString, column)
-        if test:
-            item = test[0]
-        else:
-            # item = self.clementine_albums.topLevelItem(0)  # verkeerde widget??
-            item = self.clementine_artists.topLevelItem(0)
+        item = test[0] if test else self.clementine_artists.topLevelItem(0)
         self.clementine_artists.setCurrentItem(item)
 
     def focus_next(self):
@@ -329,6 +325,7 @@ class CompareArtists(qtw.QWidget):
                     break
                 if not forward and index.row() < current.row():
                     break
+            else:
                 item = None
         else:
             item = None
@@ -451,8 +448,8 @@ class CompareArtists(qtw.QWidget):
             return
         fname, lname = self.data
         if not item:
-            result = self.clementine_artists.findItems(' '.join((fname, lname)),
-                                                       core.Qt.MatchFixedString, 0)
+            result = self.clementine_artists.findItems(f'{fname} {lname}', core.Qt.MatchFixedString,
+                                                       0)
             if result:
                 item = result[0]
         if not item:
@@ -733,10 +730,8 @@ class CompareAlbums(qtw.QWidget):
         for item, year in c_albums:
             new = qtw.QTreeWidgetItem([item])
             new.setData(0, core.Qt.UserRole, year)
-            try:
+            with contextlib.suppress(KeyError):
                 new.setText(1, str(self.albums_map[self.c_artist][item][1]))
-            except KeyError:
-                pass
             self.clementine_albums.addTopLevelItem(new)
         self.albums_albums.clear()
         self.lookup = collections.defaultdict(list)
@@ -1283,7 +1278,7 @@ class CompareTracks(qtw.QWidget):
 def build_artist_name(first, last):
     """Build full artist name
     """
-    name = ', '.join((last, first)) if first else last
+    name = f'{last}, {first}' if first else last
     ## return ', '.join((first, last)).strip(',').strip()
     return name
 
@@ -1304,10 +1299,8 @@ def build_album_name(album):
 def save_appdata(appdata):
     """save application data to json file
     """
-    try:
+    with contextlib.suppress(FileNotFoundError):
         shutil.copyfile(str(FNAME), str(FNAME) + '.bak')
-    except FileNotFoundError:
-        pass
     with FNAME.open('w') as _out:
         json.dump(appdata, _out)
 

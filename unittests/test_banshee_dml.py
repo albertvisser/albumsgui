@@ -19,7 +19,7 @@ class MockConnection(testee.sqlite3.Connection):
 
 def test_execute_query(monkeypatch, capsys):
     def mock_connect(*args):
-        print("connecting to database identified by '{}'".format(args[0]))
+        print(f"connecting to database identified by '{args[0]}'")
         return MockConnection(*args)
     monkeypatch.setattr(testee, 'DB', 'db')
     monkeypatch.setattr(testee.sqlite3, 'connect', mock_connect)
@@ -61,12 +61,12 @@ def test_get_album_cover(monkeypatch, capsys):
         print('called path.exists with args', args)
         nonlocal counter
         counter += 1
-        return False if counter == 1 else True
+        return counter != 1  # False if counter == 1 else True
     def mock_is_dir(*args):
         print('called path.is_dir with args', args)
         nonlocal counter
         counter += 1
-        return False if counter <= 2 else True
+        return counter > 2  # False if counter <= 2 else True
     monkeypatch.setattr(testee, 'artworkpath', testee.pathlib.Path('here'))
     monkeypatch.setattr(testee, 'execute_query', mock_execute_query)
     monkeypatch.setattr(testee.pathlib.Path, 'exists', lambda *x: True)

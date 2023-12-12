@@ -1,5 +1,6 @@
 """testroutines voor dml voor CDDB database (winamp 5)
 """
+import types
 import pytest
 import apps.cddb_dml as testee
 
@@ -75,10 +76,77 @@ def test_cddbdata_init(monkeypatch, capsys):
     assert capsys.readouterr().out == 'called CDDBData.read with arg `filenaam`\n'
 
 
-def _test_cddbdata_read(monkeypatch, capsys):
-    # zolang __init__ alleen maar wat attributen initialiseert heeft het weing nut deze te mocken
-    testobj = testee.CDDBData('filenaam')
-    testobj.read(fnaam)
+def test_cddbdata_read(monkeypatch, capsys, tmp_path):
+    counter = 0
+    def mock_unpack(formatcode, data):
+        nonlocal counter
+        print(f'called struct_unpack with args (`{formatcode}`, `{data}`)')
+        counter += 1
+        if counter == 1:
+            return (13, 240, 239, 190)
+        return ((counter - 2) * 12,)
+    def mock_unpack_2(formatcode, data):
+        nonlocal counter
+        print(f'called struct_unpack with args (`{formatcode}`, `{data}`)')
+        counter += 1
+        if counter == 1:
+            return (14, 240, 239, 190)
+        return ((counter - 1) * 12,)
+    def mock_unpack_3(formatcode, data):
+        nonlocal counter
+        print(f'called struct_unpack with args (`{formatcode}`, `{data}`)')
+        counter += 1
+        if counter == 1:
+            return (1, 1, 1, 1)
+        return (counter * 12,)
+    def mock_cdinfo(*args):
+        print('called cdinfo with args', args)
+        return int(args[1] / 12), args[1]
+    def mock_disc(*args):
+        print('called disc with args', args)
+        return 'artist', types.SimpleNamespace(title='album'), 'tracklist'
+    monkeypatch.setattr(testee.struct, 'unpack', mock_unpack)
+    monkeypatch.setattr(testee, 'cdinfo', mock_cdinfo)
+    monkeypatch.setattr(testee, 'disc', mock_disc)
+    (tmp_path / 'albumsguitest').mkdir()
+    cddbfile = (tmp_path / 'albumsguitest' / 'cddbdata')
+    cddbfile.write_text('aaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
+    testobj = testee.CDDBData(str(cddbfile))
+    assert testobj.error == ''
+    assert testobj.artists == {'artist': [0, 1, 2]}
+    assert testobj.albums == {0: 'album', 1: 'album', 2: 'album'}
+    assert testobj.tracks == {0: 'tracklist', 1: 'tracklist', 2: 'tracklist'}
+    assert capsys.readouterr().out == (
+        "called struct_unpack with args (`4B`, `b'aaaa'`)\n"
+        "called struct_unpack with args (`=L`, `b'aaaa'`)\n"
+        "called cdinfo with args (b'aaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 0)\n"
+        "called cdinfo with args (b'aaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 12)\n"
+        "called cdinfo with args (b'aaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 24)\n"
+        "called disc with args (b'aaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 0, False)\n"
+        "called disc with args (b'aaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 12, False)\n"
+        "called disc with args (b'aaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 24, False)\n")
+    counter = 0
+    monkeypatch.setattr(testee.struct, 'unpack', mock_unpack_2)
+    testobj = testee.CDDBData(str(cddbfile))
+    assert testobj.error == ''
+    assert testobj.artists == {'artist': [ 1, 2]}
+    assert testobj.albums == {1: 'album', 2: 'album'}
+    assert testobj.tracks == {1: 'tracklist', 2: 'tracklist'}
+    assert capsys.readouterr().out == (
+        "called struct_unpack with args (`4B`, `b'aaaa'`)\n"
+        "called struct_unpack with args (`=L`, `b'aaaa'`)\n"
+        "called cdinfo with args (b'aaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 12)\n"
+        "called cdinfo with args (b'aaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 24)\n"
+        "called disc with args (b'aaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 12, True)\n"
+        "called disc with args (b'aaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 24, True)\n")
+    counter = 0
+    monkeypatch.setattr(testee.struct, 'unpack', mock_unpack_3)
+    testobj = testee.CDDBData(str(cddbfile))
+    assert testobj.error == 'Beginning of file does not look ok'
+    assert testobj.artists == {}
+    assert testobj.albums == {}
+    assert testobj.tracks == {}
+    assert capsys.readouterr().out == "called struct_unpack with args (`4B`, `b'aaaa'`)\n"
 
 def test_cddbdata_list_artists(monkeypatch, capsys):
     def mock_read(self, arg):

@@ -1,7 +1,6 @@
 """dml for Clementine database
 """
 ## import os
-import pprint
 import sqlite3
 from .banshee_settings import databases
 DB = databases['strawberry']
@@ -14,7 +13,7 @@ def retrieve(query, parms):
         conn.row_factory = sqlite3.Row
         cur = conn.cursor()
         for row in cur.execute(query, parms):
-            result.append({name: row[name] for name in row.keys()})
+            result.append({name: row[name] for name in row})
     return result
 
 
@@ -54,10 +53,7 @@ def get_album_cover(artist_name='', album_name='', all_tracks=False):
     if album_name:
         cond.append('album = ?')
         parms.append(album_name)
-    if all_tracks:
-        query = query.replace('distinct ', '')
-    else:
-        query = query.replace('track, ', '')
+    query = query.replace('distinct ', '') if all_tracks else query.replace('track, ', '')
     if cond:
         query += ' where ' + ' and '.join(cond)
     if not album_name and not artist_name:

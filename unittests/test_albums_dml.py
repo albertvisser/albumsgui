@@ -158,7 +158,7 @@ def test_list_album_details():
 @pytest.mark.django_db
 def test_get_tracks_lists(monkeypatch, capsys):
     def mock_list_tracks(*args):
-        print(f'called dml.list_tracks with args', args)
+        print('called dml.list_tracks with args', args)
         # return [{'volgnr': 2, 'name': 'a'}, {'volgnr': 1, 'name': 'b'}]
         # album = testee.my.Album.objects.create(artist=artist, name='Number one')
         track1 = testee.my.Song.objects.create(volgnr=2, name='track 1')
