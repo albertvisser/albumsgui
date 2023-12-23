@@ -1,4 +1,3 @@
-import pytest
 import apps.banshee_dml as testee
 
 

@@ -196,20 +196,21 @@ def test_update_album_details(monkeypatch, capsys):
     album1 = testee.my.Album.objects.create(artist=artist1, name='One', label='q', release_year=1)
     album2 = testee.my.Album.objects.create(artist=artist1, name='Two', label='q', release_year=1)
     album3 = testee.my.Album.objects.create(artist=artist1, name='Next', label='q', release_year=1)
+    albumcount = len([album1, album2, album3])
     albumdata = {'artist': artist1, 'titel': 'y', 'details': [('Label/jaar:', 'r')]}
     data, ok = testee.update_album_details(album1.id, albumdata)
     assert ok
-    assert testee.my.Album.objects.count() == 3
+    assert testee.my.Album.objects.count() == albumcount  # 3
     assert (data.artist, data.name, data.label, data.release_year) == (artist1, 'y', 'r', 1)
     albumdata = {'artist': artist1, 'titel': 'Two', 'details': [('Label/jaar:', '2')]}
     data, ok = testee.update_album_details(album2.id, albumdata)
     assert ok
-    assert testee.my.Album.objects.count() == 3
+    assert testee.my.Album.objects.count() == albumcount  # 3
     assert (data.artist, data.name, data.label, data.release_year) == (artist1, 'Two', 'q', 2)
     albumdata = {'artist': artist2, 'titel': 'y', 'details': [('Label/jaar:', '')]}
     data, ok = testee.update_album_details(album3.id, albumdata)
     assert ok
-    assert testee.my.Album.objects.count() == 3
+    assert testee.my.Album.objects.count() == albumcount  # 3
     # assert (data.artist, data.name, data.label, data.release_year) == (artist2, 'y', '', 0)
     assert (data.artist, data.name, data.label, data.release_year) == (artist2, 'y', '', 1)
 
@@ -220,7 +221,8 @@ def test_update_album_details(monkeypatch, capsys):
                                                               ('Tevens met:', 'd')]}
     data, ok = testee.update_album_details(0, albumdata)
     assert ok
-    assert testee.my.Album.objects.count() == 4
+    albumcount += 1
+    assert testee.my.Album.objects.count() == albumcount  # 4
     assert isinstance(data, testee.my.Album)
     assert (data.artist, data.name, data.label, data.release_year) == (artist2, 'y', 'z', 9)
     assert (data.produced_by, data.credits, data.bezetting, data.additional) == ('a', 'b', 'c', 'd')
@@ -236,7 +238,7 @@ def test_update_album_tracks():
     myalbum.tracks.add(mytrack1, mytrack2, mytrack3)
     assert testee.update_album_tracks(myalbum.id, [(2, ('a', 'b', 'c')), (3, ('c', 'd', 'e'))])
     data = list(myalbum.tracks.all())
-    assert len(data) == 4
+    assert len(data) == len([1, 2, 3, 5])  # 4
     assert isinstance(data[3], testee.my.Song)
     assert (data[2].name, data[2].written_by, data[2].credits) == ('a', 'b', 'c')
     assert (data[3].volgnr, data[3].name) == (3, 'c')
@@ -253,7 +255,7 @@ def test_update_album_recordings():
     myalbum.opnames.add(myopname1, myopname2, myopname3)
     assert testee.update_album_recordings(myalbum.id, [(2, ('a', 'b')), (3, ('c', 'd'))])
     data = list(myalbum.opnames.all())
-    assert len(data) == 4
+    assert len(data) == len(['q', 'r', 'b', 'c'])  # 4
     assert isinstance(data[3], testee.my.Opname)
     assert (data[2].type, data[2].oms) == ('a', 'b')
     assert (data[3].type, data[3].oms) == ('c', 'd')
@@ -264,10 +266,12 @@ def test_update_artists():
     artist = testee.my.Act.objects.create(last_name='bladibla')
     data = testee.update_artists([(artist.id, 'x', 'y')])[0]
     assert (data.first_name, data.last_name) == ('x', 'y')
-    assert testee.my.Act.objects.count() == 1
+    artistcount = len([artist])
+    assert testee.my.Act.objects.count() == artistcount  # 1
     data = testee.update_artists([(0, 'a', 'b')])[0]
+    artistcount += 1
     assert (data.first_name, data.last_name) == ('a', 'b')
-    assert testee.my.Act.objects.count() == 2
+    assert testee.my.Act.objects.count() == artistcount  # 2
 
 
 @pytest.mark.django_db
@@ -292,13 +296,15 @@ def test_update_albums_by_artist_add_reg(monkeypatch):
     # opname = testee.my.Opname.objects.create(type='z', oms='s')
     opname = testee.my.Opname.objects.create(type='x', oms='s')
     album.opnames.add(opname)
+    opnamecount = len([opname])
     changes = [(album.id, 'One', 1, False, [])]
     # breakpoint()
     result = testee.update_albums_by_artist(artist.id, changes)
+    opnamecount += 1
     assert result == [album]
     assert list(result[0].tracks.all()) == []
     data = list(result[0].opnames.all())
-    assert len(data) == 2
+    assert len(data) == opnamecount  # 2
     assert data[1].type == testee.c_type
 
 
@@ -342,9 +348,11 @@ def test_update_album_tracknames():
     track1 = testee.my.Song.objects.create(volgnr=2, name='One')
     track2 = testee.my.Song.objects.create(volgnr=1, name='Two')
     album.tracks.add(track1, track2)
+    trackcount = len([track1, track2])
     testee.update_album_tracknames(album.id, ((0, 'One'), (1, 'Two'), (2, 'Three')))
+    trackcount += 1
     data = list(album.tracks.all())
-    assert len(data) == 3
+    assert len(data) == trackcount  # 3
     assert (data[0].volgnr, data[0].name) == (0, 'One')
     assert (data[1].volgnr, data[1].name) == (1, 'Two')
     assert (data[2].volgnr, data[2].name) == (2, 'Three')
@@ -358,6 +366,8 @@ def test_unlink_album(monkeypatch):
     opname = testee.my.Opname.objects.create(type='z', oms='s')
     opname2 = testee.my.Opname.objects.create(type='x', oms='s')
     album.opnames.add(opname, opname2)
-    assert album.opnames.count() == 2
+    opnamecount = len([opname, opname2])
+    assert album.opnames.count() == opnamecount  # 2
     testee.unlink_album(album.id)
-    assert album.opnames.count() == 1
+    opnamecount -= 1
+    assert album.opnames.count() == opnamecount  # 1

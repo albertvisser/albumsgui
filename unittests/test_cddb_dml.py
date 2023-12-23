@@ -1,7 +1,6 @@
 """testroutines voor dml voor CDDB database (winamp 5)
 """
 import types
-import pytest
 import apps.cddb_dml as testee
 
 

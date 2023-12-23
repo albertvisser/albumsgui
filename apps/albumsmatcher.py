@@ -263,7 +263,7 @@ class CompareArtists(qtw.QWidget):
         self.new_artists = []
         self.new_matches = {}
         self.artist_list_a, self.artist_list_c = read_artists()
-        self.lookup = {'{x} {y}'.strip(): z for x, y, z in self.artist_list_a}
+        self.lookup = {f'{x} {y}'.strip(): z for x, y, z in self.artist_list_a}
         self.finda = {z: (x, y) for x, y, z in self.artist_list_a}
         self.artist_map = self._parent.artist_map or {x: ''
                                                       for x in self.artist_list_c}

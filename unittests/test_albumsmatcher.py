@@ -329,8 +329,8 @@ def test_main_setup_tabwidget(monkeypatch, capsys):
     testobj = setup_main(monkeypatch, capsys)
     testobj.nb = mockqtw.MockTabWidget()
     result = testobj.setup_tabwidget()
-    assert len(result) == 3
     names = ['artists', 'albums', 'tracks']
+    assert len(result) == len(names)  #  3
     classes = [testee.CompareArtists, testee.CompareAlbums, testee.CompareTracks]
     for ix, item in enumerate(result.values()):
         assert item[0] == names[ix]

@@ -1,4 +1,3 @@
-import pytest
 import apps.clementine_dml as testee
 
 

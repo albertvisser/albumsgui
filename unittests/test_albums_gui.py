@@ -1807,12 +1807,13 @@ def test_edittracks_create_widgets(monkeypatch, capsys, expected_output):
     assert testobj.tracks == 0
     assert capsys.readouterr().out == expected_output['edittracks_2'].format(**bindings)
     testobj.parent().albumdata = {'tracks': {1: {'x': 'y'}, 2: {'a': 'b', 'c': 'd'}}}
+    trackcount = len(testobj.parent().albumdata['tracks'])
     testobj.parent().album = 'x'
     testobj.parent().search_arg = ''
     testobj.create_widgets()
     assert testobj.line == 1      # ophogen wordt bij add_track_fields test geverifieerd
     assert testobj.widgets == []  # uitbreiden wordt bij add_track_fields test geverifieerd
-    assert testobj.tracks == 2
+    assert testobj.tracks == trackcount  # 2
     assert capsys.readouterr().out == expected_output['edittracks_3'].format(**bindings)
 
 def test_edittracks_add_track_fields(monkeypatch, capsys, expected_output):
@@ -1871,10 +1872,11 @@ def test_edittracks_add_new_item(monkeypatch, capsys):
         print(f'called Artists.add_track_fields with arg `{num}`')
     testobj = setup_edittracks(monkeypatch, capsys)
     monkeypatch.setattr(testobj, 'add_track_fields', mock_add)
-    testobj.tracks = 5
+    oldcount = 5
+    testobj.tracks = oldcount
     testobj.scrl = mockqtw.MockScrolledWidget()
     testobj.add_new_item()
-    assert testobj.tracks == 6
+    assert testobj.tracks == oldcount + 1  # 6
     assert capsys.readouterr().out == ('called ScrolledWidget.__init__\n'
                                        'called Artists.add_track_fields with arg `6`\n'
                                        'called ScrolledWidget.verticalScrollBar\n'
@@ -2015,11 +2017,12 @@ def test_editrecs_create_widgets(monkeypatch, capsys, expected_output):
     assert testobj.recs == 0
     assert capsys.readouterr().out == expected_output['editrecs_2'].format(**bindings)
     testobj.parent().albumdata = {'opnames': [(1, ('x', 'y')), (2, ('a', 'b'))]}
+    reccount = len(testobj.parent().albumdata['opnames'])
     testobj.parent().album = 'x'
     testobj.parent().search_arg = ''
     testobj.create_widgets()
     assert testobj.recwins == []  # uitbreiden wordt bij add_track_fields test geverifieerd
-    assert testobj.recs == 2
+    assert testobj.recs == reccount  # 2
     assert capsys.readouterr().out == expected_output['editrecs_3'].format(**bindings)
 
 def test_editrecs_add_rec_fields(monkeypatch, capsys, expected_output):
@@ -2072,10 +2075,11 @@ def test_editrecs_add_new_item(monkeypatch, capsys):
         print(f'called Artists.add_rec_fields with arg `{num}`')
     testobj = setup_editrecs(monkeypatch, capsys)
     monkeypatch.setattr(testobj, 'add_rec_fields', mock_add)
-    testobj.recs = 5
+    oldcount = 5
+    testobj.recs = oldcount
     testobj.scrl = mockqtw.MockScrolledWidget()
     testobj.add_new_item()
-    assert testobj.recs == 6
+    assert testobj.recs == oldcount + 1  # 6
     assert capsys.readouterr().out == ('called ScrolledWidget.__init__\n'
                                        'called Artists.add_rec_fields with arg `6`\n'
                                        'called ScrolledWidget.verticalScrollBar\n'
@@ -2197,10 +2201,11 @@ def test_artists_create_widgets(monkeypatch, capsys, expected_output):
     artist2 = types.SimpleNamespace(id=3, first_name='b', last_name='a')
     artist3 = types.SimpleNamespace(id=2, first_name='x', last_name='y')
     testobj.parent().artists = [artist1, artist2, artist3]
+    artistcount = len(testobj.parent().artists)
     monkeypatch.setattr(testobj, 'add_artist_line', mock_add)
     testobj.create_widgets()
     assert testobj.artist_list == [artist1, artist2, artist3]
-    assert testobj.last_artistid == 3
+    assert testobj.last_artistid == artistcount
     bindings = {'testobj': testobj,
                 'filter': testobj.filter,
                 'exit': testobj.exit}
@@ -2315,10 +2320,11 @@ def test_artists_new(monkeypatch, capsys):
         print(f'called Artists.add_artist_line with arg `{num}`')
     testobj = setup_artists(monkeypatch, capsys)
     monkeypatch.setattr(testobj, 'add_artist_line', mock_add)
-    testobj.last_artistid = 5
+    highest = 5
+    testobj.last_artistid = highest
     testobj.scrl = mockqtw.MockScrolledWidget()
     testobj.new()
-    assert testobj.last_artistid == 6
+    assert testobj.last_artistid == highest + 1  # 6
     assert capsys.readouterr().out == ('called ScrolledWidget.__init__\n'
                                        'called Artists.add_artist_line with arg `6`\n'
                                        'called ScrolledWidget.verticalScrollBar\n'
