@@ -804,7 +804,7 @@ called MainWindow.setWindowTitle to `AlbumsMatcher`
 called MainWindow.move with args (300, 50)
 called MainWindow.resize with args (600, 650)
 called TabWidget.__init__
-called connect with args ({page_changed},)
+called TabWidget.connect with args {page_changed} ()
 called Frame.__init__
 called VBox.__init__
 called HBox.__init__
