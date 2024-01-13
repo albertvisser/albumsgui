@@ -1833,8 +1833,9 @@ def test_edittracks_add_track_fields(monkeypatch, capsys, expected_output):
     assert capsys.readouterr().out == 'called Grid.__init__\n'
     testobj.widgets = []
     testobj.line = 0
+    linecount = 2
     testobj.add_track_fields(1)
-    assert testobj.line == 2
+    assert testobj.line == linecount
     assert len(testobj.widgets) == 1
     assert isinstance(testobj.widgets[0][0], testee.qtw.QLineEdit)
     assert isinstance(testobj.widgets[0][1], testee.qtw.QLineEdit)
@@ -1844,7 +1845,7 @@ def test_edittracks_add_track_fields(monkeypatch, capsys, expected_output):
     testobj.widgets = []
     testobj.line = 0
     testobj.add_track_fields(2, trackname='x', author='y', text='z')
-    assert testobj.line == 2
+    assert testobj.line == linecount
     assert len(testobj.widgets) == 1
     assert isinstance(testobj.widgets[0][0], testee.qtw.QLineEdit)
     assert isinstance(testobj.widgets[0][1], testee.qtw.QLineEdit)

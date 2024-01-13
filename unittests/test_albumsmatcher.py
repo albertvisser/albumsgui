@@ -546,6 +546,8 @@ def test_cmpart_refresh_screen(monkeypatch, capsys, expected_output):
         print(f'called focus_artist with arg `{arg}`')
     def mock_set(value):
         print(f'called set_modified with arg `{value}`')
+    artistcount = len(mock_read()[1])
+    assert capsys.readouterr().out == 'called read_artists\n'
     monkeypatch.setattr(testee, 'read_artists', mock_read)
     testobj = setup_cmpart(monkeypatch, capsys)
     monkeypatch.setattr(testobj, 'focus_artist', mock_focus)
@@ -557,7 +559,7 @@ def test_cmpart_refresh_screen(monkeypatch, capsys, expected_output):
     assert testobj.lookup == {'x y': '1', 'a b': '2'}
     assert testobj.finda == {'1': ('x', 'y '), '2': ('a', 'b')}
     assert testobj.artist_map == {'xx': '', 'yy': ''}
-    assert testobj.max_artist == 2
+    assert testobj.max_artist == artistcount  # 2
     assert testobj.artist_buffer == ''
     assert capsys.readouterr().out == expected_output['compare_artists_refresh_1']
 
@@ -571,7 +573,7 @@ def test_cmpart_refresh_screen(monkeypatch, capsys, expected_output):
     assert testobj.finda == {'1': ('x', 'y '), '2': ('a', 'b')}
     # assert testobj.artist_map == {'xx': '1', 'yy': '2'}
     assert testobj.artist_map == {'qq': '1', 'yy': '2', 'xx': ''}
-    assert testobj.max_artist == 2
+    assert testobj.max_artist == artistcount  # 2
     assert testobj.artist_buffer == ''
     assert capsys.readouterr().out == expected_output['compare_artists_refresh_2']
 
