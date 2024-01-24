@@ -40,6 +40,7 @@ def list_albums(artist_name):
     return list(retrieve("select distinct album, year from songs where artist = ? "
                          "and unavailable = '0';", (artist_name,)))
 
+
 def get_album_cover(artist_name='', album_name='', all_tracks=False):
     """produce list of album covers
     all_tracks biedt de mogelijkheid om de per track vastgelegde covers te bekijken,
