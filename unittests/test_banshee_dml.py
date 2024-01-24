@@ -1,23 +1,41 @@
+"""unittests for ./apps/banshee_dml.py
+"""
 import apps.banshee_dml as testee
 
 
 class MockCursor(testee.sqlite3.Cursor):
+    """stub for sqlite3.Cursor
+    """
     def execute(self, *args):
+        """stub
+        """
         print('executing', *args)
         return ({'x': 'a', 'y': 'b'},)
 
 
 class MockConnection(testee.sqlite3.Connection):
+    """stub for sqlite3.Connetion
+    """
     def cursor(self, *args, **kwargs):
+        """stub
+        """
         return MockCursor(self, *args, **kwargs)
     def commit(self, *args):
+        """stub
+        """
         print('executing commit')
     def close(self, *args):
+        """stub
+        """
         print('executing close')
 
 
 def test_execute_query(monkeypatch, capsys):
+    """unittest for banshee_dml.execute_query
+    """
     def mock_connect(*args):
+        """stub
+        """
         print(f"connecting to database identified by '{args[0]}'")
         return MockConnection(*args)
     monkeypatch.setattr(testee, 'DB', 'db')
@@ -30,7 +48,11 @@ def test_execute_query(monkeypatch, capsys):
 
 
 def test_get_artists_lists(monkeypatch, capsys):
+    """unittest for banshee_dml.get_artists_lists
+    """
     def mock_execute_query(query, parms):
+        """stub
+        """
         print(f'called execute_query with args `{query}` `{parms}`')
         return [{'ArtistID': 2, 'Name': 'A'}, {'ArtistID': 1, 'Name': 'B'}]
     monkeypatch.setattr(testee, 'execute_query', mock_execute_query)
@@ -40,7 +62,11 @@ def test_get_artists_lists(monkeypatch, capsys):
 
 
 def test_get_albums_lists(monkeypatch, capsys):
+    """unittest for banshee_dml.get_albums_lists
+    """
     def mock_execute_query(query, parms):
+        """stub
+        """
         print(f'called execute_query with args `{query}` `{parms}`')
         return [{'AlbumID': 2, 'Title': 'A'}, {'AlbumID': 1, 'Title': 'B'}]
     monkeypatch.setattr(testee, 'execute_query', mock_execute_query)
@@ -50,18 +76,28 @@ def test_get_albums_lists(monkeypatch, capsys):
 
 
 def test_get_album_cover(monkeypatch, capsys):
+    """unittest for banshee_dml.get_album_cover
+    """
     def mock_execute_query(query, parms):
+        """stub
+        """
         print(f'called execute_query with args `{query}` `{parms}`')
         return [{'Name': 'X', 'Title': 'Y', 'ArtworkID': 'xxx'}]
     def mock_iterdir(*args):
+        """stub
+        """
         return [testee.pathlib.Path('here/where'), testee.pathlib.Path('here/there')]
     counter = 0
     def mock_exists(*args):
+        """stub
+        """
         print('called path.exists with args', args)
         nonlocal counter
         counter += 1
         return counter != 1  # False if counter == 1 else True
     def mock_is_dir(*args):
+        """stub
+        """
         print('called path.is_dir with args', args)
         nonlocal counter
         counter += 1
@@ -98,7 +134,11 @@ def test_get_album_cover(monkeypatch, capsys):
 
 
 def test_get_tracks_lists(monkeypatch, capsys):
+    """unittest for banshee_dml.get_tracks_lists
+    """
     def mock_execute_query(query, parms):
+        """stub
+        """
         print(f'called execute_query with args `{query}` `{parms}`')
         return [{'TrackNumber': 1, 'Title': 'A'}, {'TrackNumber': 2, 'Title': 'B'}]
     monkeypatch.setattr(testee, 'execute_query', mock_execute_query)

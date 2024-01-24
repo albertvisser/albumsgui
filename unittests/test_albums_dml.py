@@ -1,4 +1,4 @@
-"""Data manipulation routines for albums_gui
+"""unittests for ./apps/albums_dml.py
 """
 import sys
 import os
@@ -15,7 +15,11 @@ import apps.albums_dml as testee
 
 @pytest.mark.django_db
 def test_get_artists_lists(monkeypatch, capsys):
+    """unittest for albums_dml.get_artists_lists
+    """
     def mock_list_artists():
+        """stub
+        """
         print('called dml.list_artists')
         # return [{'id': 2, 'first_name': 'a', 'last_name': 'band'},
         #         {'id': 1, 'first_name': '', 'last_name': 'players'}]
@@ -30,6 +34,8 @@ def test_get_artists_lists(monkeypatch, capsys):
 
 @pytest.mark.django_db
 def test_list_artists():
+    """unittest for albums_dml.list_artists
+    """
     artist = testee.my.Act.objects.create(first_name='a', last_name='band')
     artist2 = testee.my.Act.objects.create(last_name='players')
     artist3 = testee.my.Act.objects.create(first_name='Andy', last_name='Bendy')
@@ -38,7 +44,11 @@ def test_list_artists():
 
 
 def test_get_albums_lists(monkeypatch, capsys):
+    """unittest for albums_dml.get_albums_lists
+    """
     def mock_list_albums(arg):
+        """stub
+        """
         print(f'called dml.list_albums with arg `{arg}`')
         return [{'id': 2, 'name': 'a'}, {'id': 1, 'name': 'b'}]
     monkeypatch.setattr(testee, 'list_albums', mock_list_albums)
@@ -48,6 +58,8 @@ def test_get_albums_lists(monkeypatch, capsys):
 
 @pytest.mark.django_db
 def test_list_albums():
+    """unittest for albums_dml.list_albums
+    """
     artist = testee.my.Act.objects.create(last_name='bladibla')
     album1 = testee.my.Album.objects.create(artist=artist, name='Number one')
     album2 = testee.my.Album.objects.create(artist=artist, name='Number two')
@@ -57,16 +69,26 @@ def test_list_albums():
 
 @pytest.mark.django_db
 def test_list_albums_by_artist(monkeypatch, capsys):
+    """unittest for albums_dml.list_albums_by_artist
+    """
     def mock_exclude(self, **args):
+        """stub
+        """
         print('called exclude() on queryset with args', args)
         return self
     def mock_filter(self, **args):
+        """stub
+        """
         print('called filter() on queryset with args', args)
         return self
     def mock_all(self):
+        """stub
+        """
         print('called all() on queryset')
         return self
     def mock_order_by(self, *args):
+        """stub
+        """
         print('called order_by() on queryset with args', args)
         return self
     monkeypatch.setattr(testee.django.db.models.query.QuerySet, 'exclude', mock_exclude)
@@ -98,16 +120,26 @@ def test_list_albums_by_artist(monkeypatch, capsys):
 
 @pytest.mark.django_db
 def test_list_albums_by_search(monkeypatch, capsys):
+    """unittest for albums_dml.list_albums_by_search
+    """
     def mock_exclude(self, **args):
+        """stub
+        """
         print('called exclude() on queryset with args', args)
         return self
     def mock_filter(self, **args):
+        """stub
+        """
         print('called filter() on queryset with args', args)
         return self
     def mock_all(self):
+        """stub
+        """
         print('called all() on queryset')
         return self
     def mock_order_by(self, *args):
+        """stub
+        """
         print('called order_by() on queryset with args', args)
         return self
     monkeypatch.setattr(testee.django.db.models.query.QuerySet, 'exclude', mock_exclude)
@@ -150,6 +182,8 @@ def test_list_albums_by_search(monkeypatch, capsys):
 
 @pytest.mark.django_db
 def test_list_album_details():
+    """unittest for albums_dml.list_album_details
+    """
     artist = testee.my.Act.objects.create(last_name='bladibla')
     album = testee.my.Album.objects.create(artist=artist, name='Number one')
     assert testee.list_album_details(album.id) == album
@@ -157,7 +191,11 @@ def test_list_album_details():
 
 @pytest.mark.django_db
 def test_get_tracks_lists(monkeypatch, capsys):
+    """unittest for albums_dml.get_tracks_lists
+    """
     def mock_list_tracks(*args):
+        """stub
+        """
         print('called dml.list_tracks with args', args)
         # return [{'volgnr': 2, 'name': 'a'}, {'volgnr': 1, 'name': 'b'}]
         # album = testee.my.Album.objects.create(artist=artist, name='Number one')
@@ -171,6 +209,8 @@ def test_get_tracks_lists(monkeypatch, capsys):
 
 @pytest.mark.django_db
 def test_list_tracks():
+    """unittest for albums_dml.list_tracks
+    """
     artist = testee.my.Act.objects.create(last_name='bladibla')
     album = testee.my.Album.objects.create(artist=artist, name='Number one')
     track1 = testee.my.Song.objects.create(volgnr=2, name='track 1')
@@ -181,6 +221,8 @@ def test_list_tracks():
 
 @pytest.mark.django_db
 def test_list_recordings():
+    """unittest for albums_dml.list_recordings
+    """
     artist = testee.my.Act.objects.create(last_name='bladibla')
     album = testee.my.Album.objects.create(artist=artist, name='Number one')
     opname1 = testee.my.Opname.objects.create(type='x', oms='opname 1')
@@ -190,7 +232,9 @@ def test_list_recordings():
 
 
 @pytest.mark.django_db
-def test_update_album_details(monkeypatch, capsys):
+def test_update_album_details():
+    """unittest for albums_dml.update_album_details
+    """
     artist1 = testee.my.Act.objects.create(last_name='bladibla')
     artist2 = testee.my.Act.objects.create(last_name='gargl')
     album1 = testee.my.Album.objects.create(artist=artist1, name='One', label='q', release_year=1)
@@ -230,6 +274,8 @@ def test_update_album_details(monkeypatch, capsys):
 
 @pytest.mark.django_db
 def test_update_album_tracks():
+    """unittest for albums_dml.update_album_tracks
+    """
     myartist = testee.my.Act.objects.create(last_name='bladibla')
     myalbum = testee.my.Album.objects.create(artist=myartist, name='x', label='q', release_year=1)
     mytrack1 = testee.my.Song.objects.create(volgnr=5)
@@ -247,6 +293,8 @@ def test_update_album_tracks():
 
 @pytest.mark.django_db
 def test_update_album_recordings():
+    """unittest for albums_dml.update_album_recordings
+    """
     myartist = testee.my.Act.objects.create(last_name='bladibla')
     myalbum = testee.my.Album.objects.create(artist=myartist, name='x', label='q', release_year=1)
     myopname1 = testee.my.Opname.objects.create(type='x', oms='q')
@@ -263,6 +311,8 @@ def test_update_album_recordings():
 
 @pytest.mark.django_db
 def test_update_artists():
+    """unittest for albums_dml.update_artists
+    """
     artist = testee.my.Act.objects.create(last_name='bladibla')
     data = testee.update_artists([(artist.id, 'x', 'y')])[0]
     assert (data.first_name, data.last_name) == ('x', 'y')
@@ -276,6 +326,8 @@ def test_update_artists():
 
 @pytest.mark.django_db
 def test_update_albums_by_artist_no_changes(monkeypatch):
+    """unittest for albums_dml.update_albums_by_artist: no changes
+    """
     monkeypatch.setattr(testee, 'c_type', 'z')
     artist = testee.my.Act.objects.create(last_name='bladibla')
     album = testee.my.Album.objects.create(artist=artist, name='One', label='q', release_year=1)
@@ -285,11 +337,13 @@ def test_update_albums_by_artist_no_changes(monkeypatch):
     changes = [(album.id, 'One', 1, False, [(1, 'track')])]
     result = testee.update_albums_by_artist(artist.id, changes)
     assert result == [album]
-    assert list(result[0].tracks.all()) == []
+    assert not list(result[0].tracks.all())
 
 
 @pytest.mark.django_db
 def test_update_albums_by_artist_add_reg(monkeypatch):
+    """unittest for albums_dml.update_albums_by_artist: add opname
+    """
     monkeypatch.setattr(testee, 'c_type', 'z')
     artist = testee.my.Act.objects.create(last_name='bladibla')
     album = testee.my.Album.objects.create(artist=artist, name='One', label='q', release_year=1)
@@ -302,7 +356,7 @@ def test_update_albums_by_artist_add_reg(monkeypatch):
     result = testee.update_albums_by_artist(artist.id, changes)
     opnamecount += 1
     assert result == [album]
-    assert list(result[0].tracks.all()) == []
+    assert not list(result[0].tracks.all())
     data = list(result[0].opnames.all())
     assert len(data) == opnamecount  # 2
     assert data[1].type == testee.c_type
@@ -310,6 +364,8 @@ def test_update_albums_by_artist_add_reg(monkeypatch):
 
 @pytest.mark.django_db
 def test_update_albums_by_artist_changes(monkeypatch):
+    """unittest for albums_dml.update_albums_by_artist: changes
+    """
     monkeypatch.setattr(testee, 'c_type', 'z')
     artist = testee.my.Act.objects.create(last_name='bladibla')
     album = testee.my.Album.objects.create(artist=artist, name='One', label='q', release_year=1)
@@ -319,12 +375,14 @@ def test_update_albums_by_artist_changes(monkeypatch):
     result = testee.update_albums_by_artist(artist.id, changes)
     assert result == [album]
     assert (result[0].name, result[0].label, result[0].release_year) == ('Not One', 'q', 2)
-    assert list(result[0].tracks.all()) == []
+    assert not list(result[0].tracks.all())
     assert list(result[0].opnames.all()) == [opname]
 
 
 @pytest.mark.django_db
 def test_update_albums_by_artist_new_album(monkeypatch):
+    """unittest for albums_dml.update_albums_by_artist: new album
+    """
     monkeypatch.setattr(testee, 'c_type', 'z')
     artist = testee.my.Act.objects.create(last_name='bladibla')
     changes = [(0, 'One', 1, False, [(1, 'track')])]
@@ -342,6 +400,8 @@ def test_update_albums_by_artist_new_album(monkeypatch):
 
 @pytest.mark.django_db
 def test_update_album_tracknames():
+    """unittest for albums_dml.update_album_tracknames
+    """
     # but this routine shuffles track *numbers*, not names
     artist = testee.my.Act.objects.create(last_name='bladibla')
     album = testee.my.Album.objects.create(artist=artist, name='this')
@@ -360,6 +420,8 @@ def test_update_album_tracknames():
 
 @pytest.mark.django_db
 def test_unlink_album(monkeypatch):
+    """unittest for albums_dml.unlink_album
+    """
     monkeypatch.setattr(testee, 'c_type', 'z')
     artist = testee.my.Act.objects.create(last_name='bladibla')
     album = testee.my.Album.objects.create(artist=artist, name='One', label='q', release_year=1)

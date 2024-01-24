@@ -1,3 +1,5 @@
+"""fixture function for output predictions
+"""
 import pytest
 
 start_all = """\

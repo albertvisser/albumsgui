@@ -1,3 +1,5 @@
+"""unittests for ./apps/banshee_gui.py
+"""
 # testen van de conditionele imports kan misschien door banshee_gui niet meteen te importeren
 # maar als onderdeel van een testfunctie nadat je een specifieke inhoud voor banshee_settings
 # hebt klaargezet
@@ -10,17 +12,31 @@ from unittests.buildscreen_output_fixture import expected_output
 
 
 def test_mainwidget_init(monkeypatch, capsys):
+    """unittest for banshee_gui.MainWidget.init
+    """
     def mock_app_init(self, *args):
+        """stub
+        """
         print('called Application.__init__')
     def mock_init(self, *args):
+        """stub
+        """
         print('called Widget.__init__')
     def mock_show(self, *args):
+        """stub
+        """
         print('called Widget.show')
     def mock_list_set(value):
+        """stub
+        """
         print(f'called tracklist.setVisible(`{value}`)')
     def mock_label_set(value):
+        """stub
+        """
         print(f'called label.setVisible(`{value}`)')
     def mock_create_widgets(self, *args):
+        """stub
+        """
         print('called Widget.create_widgets, self.initializing is', self.initializing)
         self.tracks_list = types.SimpleNamespace(setVisible=mock_list_set)
         self.lbl = types.SimpleNamespace(setVisible=mock_label_set)
@@ -48,18 +64,28 @@ def test_mainwidget_init(monkeypatch, capsys):
 
 
 class MockMainWidget:
+    """stub
+    """
     def __init__(self):
         def mock_app_exec():
+            """stub
+            """
             return 'called Application.exec_'
         print('called MainWidget.__init__')
         self.app = types.SimpleNamespace(exec_=mock_app_exec)
     def setLayout(self, *args):
+        """stub
+        """
         print('called Widget.setLayout')
     def create_widgets(self):
+        """stub
+        """
         print('called widget.create_widgets, self.initializing is', self.initializing)
 
 
 def test_mainwidget_go(monkeypatch, capsys):
+    """unittest for banshee_gui.MainWidget.go
+    """
     monkeypatch.setattr(testee.MainWidget, '__init__', MockMainWidget.__init__)
     testobj = testee.MainWidget()
     assert capsys.readouterr().out == 'called MainWidget.__init__\n'
@@ -69,13 +95,23 @@ def test_mainwidget_go(monkeypatch, capsys):
 
 
 def test_mainwidget_create_widgets(monkeypatch, capsys, expected_output):
+    """unittest for banshee_gui.MainWidget.create_widgets
+    """
     def mock_init(self, *args):
+        """stub
+        """
         print('called Widget.__init__')
     def mock_setlayout(self, *args):
+        """stub
+        """
         print('called Widget.setLayout')
     def mock_show(self, *args):
+        """stub
+        """
         print('called Widget.show')
     def mock_count(self):
+        """stub
+        """
         print('called ComboBox.count')
         return 3
     monkeypatch.setattr(testee.qtw.QWidget, '__init__', mock_init)
@@ -102,10 +138,16 @@ def test_mainwidget_create_widgets(monkeypatch, capsys, expected_output):
 
 
 def test_mainwidget_change_db(monkeypatch, capsys):
+    """unittest for banshee_gui.MainWidget.change_db
+    """
     def mock_artists_lists():
+        """stub
+        """
         print('called MainWidget.get_artists_lists`')
         return ['1', '2'], ['A', 'B']
     def mock_get_album(self, arg):
+        """stub
+        """
         print(f'called MainWidget.get_album with arg `{arg}`')
     monkeypatch.setattr(testee.MainWidget, '__init__', MockMainWidget.__init__)
     monkeypatch.setattr(testee.MainWidget, 'get_album', mock_get_album)
@@ -164,7 +206,11 @@ def test_mainwidget_change_db(monkeypatch, capsys):
 
 
 def test_mainwidget_get_artist(monkeypatch, capsys):
+    """unittest for banshee_gui.MainWidget.get_artist
+    """
     def mock_albums_lists(artist):
+        """stub
+        """
         print(f'called MainWidget.get_albums_lists for `{artist}`')
         return ['1', '2'], ['A', 'B']
     monkeypatch.setattr(testee, 'DML', {'x':
@@ -205,10 +251,16 @@ def test_mainwidget_get_artist(monkeypatch, capsys):
 
 
 def test_mainwidget_get_album(monkeypatch, capsys):
+    """unittest for banshee_gui.MainWidget.get_album
+    """
     def mock_tracks_lists(artist, album):
+        """stub
+        """
         print(f'called MainWidget.get_tracks_lists for `{artist}`, `{album}`')
         return ['1', '2'], ['A', 'B']
     def mock_album_cover(artist, album):
+        """stub
+        """
         print(f'called MainWidget.get_album_cover for `{artist}`, `{album}`')
         return 'X'
     monkeypatch.setattr(testee, 'DML', {
@@ -278,11 +330,19 @@ def test_mainwidget_get_album(monkeypatch, capsys):
 
 
 def test_mainwidget_exit(monkeypatch, capsys):
+    """unittest for banshee_gui.MainWidget.exit
+    """
     def mock_init(self, *args):
+        """stub
+        """
         print('called Widget.__init__')
     def mock_info(self, *args):
+        """stub
+        """
         print('called messagebox.information with args', args)
     def mock_close(self, *args):
+        """stub
+        """
         print('called Widget.close')
     monkeypatch.setattr(testee.MainWidget, '__init__', mock_init)
     monkeypatch.setattr(testee.MainWidget, 'close', mock_close)

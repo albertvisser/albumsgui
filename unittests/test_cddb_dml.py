@@ -1,10 +1,14 @@
-"""testroutines voor dml voor CDDB database (winamp 5)
+"""unittests for ./apps/cddb_dml.py
+
+testroutines voor dml voor CDDB database (winamp 5)
 """
 import types
 import apps.cddb_dml as testee
 
 
 def test_readstr():
+    """unittest for cddb_dml.readstr
+    """
     data = b'\x41\x48\x41\x00\x41\x41\x48\x00'
     assert testee.readstr(data, 0) == ('AHA', 4)
     assert testee.readstr(data, 1) == ('HA', 4)
@@ -14,14 +18,20 @@ def test_readstr():
 
 
 def test_disc(monkeypatch, capsys):
+    """unittest for cddb_dml.disc
+    """
     counter = 0
     def mock_read(data, pos):
+        """stub
+        """
         nonlocal counter
         print(f'called readstr with args `{data}`, `{pos}`')
         counter += 1
         return [(), ('one', 2), ('two', 3), ('three', 4), ('four', 5),
                 ('five', 6), ('six', 7), ('seven', 8)][counter]
     def mock_unpack(*args):
+        """stub
+        """
         print('called struct.unpack with args', args)
         return 2, 4
     monkeypatch.setattr(testee, 'readstr', mock_read)
@@ -53,7 +63,11 @@ def test_disc(monkeypatch, capsys):
 
 
 def test_cdinfo(monkeypatch, capsys):
+    """unittest for cddb_dml.cdinfo
+    """
     def mock_unpack(*args):
+        """stub
+        """
         print('called struct.unpack with args', args)
         return 'cdid', 1
     monkeypatch.setattr(testee.struct, 'unpack', mock_unpack)
@@ -62,7 +76,11 @@ def test_cdinfo(monkeypatch, capsys):
 
 
 def test_cddbdata_init(monkeypatch, capsys):
+    """unittest for cddb_dml.cddbdata_init
+    """
     def mock_read(self, arg):
+        """stub
+        """
         print(f'called CDDBData.read with arg `{arg}`')
         return 'error_or_empty_string'
     monkeypatch.setattr(testee.CDDBData, 'read', mock_read)
@@ -76,8 +94,12 @@ def test_cddbdata_init(monkeypatch, capsys):
 
 
 def test_cddbdata_read(monkeypatch, capsys, tmp_path):
+    """unittest for cddb_dml.cddbdata_read
+    """
     counter = 0
     def mock_unpack(formatcode, data):
+        """stub
+        """
         nonlocal counter
         print(f'called struct_unpack with args (`{formatcode}`, `{data}`)')
         counter += 1
@@ -85,6 +107,8 @@ def test_cddbdata_read(monkeypatch, capsys, tmp_path):
             return (13, 240, 239, 190)
         return ((counter - 2) * 12,)
     def mock_unpack_2(formatcode, data):
+        """stub
+        """
         nonlocal counter
         print(f'called struct_unpack with args (`{formatcode}`, `{data}`)')
         counter += 1
@@ -92,6 +116,8 @@ def test_cddbdata_read(monkeypatch, capsys, tmp_path):
             return (14, 240, 239, 190)
         return ((counter - 1) * 12,)
     def mock_unpack_3(formatcode, data):
+        """stub
+        """
         nonlocal counter
         print(f'called struct_unpack with args (`{formatcode}`, `{data}`)')
         counter += 1
@@ -99,16 +125,20 @@ def test_cddbdata_read(monkeypatch, capsys, tmp_path):
             return (1, 1, 1, 1)
         return (counter * 12,)
     def mock_cdinfo(*args):
+        """stub
+        """
         print('called cdinfo with args', args)
         return int(args[1] / 12), args[1]
     def mock_disc(*args):
+        """stub
+        """
         print('called disc with args', args)
         return 'artist', types.SimpleNamespace(title='album'), 'tracklist'
     monkeypatch.setattr(testee.struct, 'unpack', mock_unpack)
     monkeypatch.setattr(testee, 'cdinfo', mock_cdinfo)
     monkeypatch.setattr(testee, 'disc', mock_disc)
     (tmp_path / 'albumsguitest').mkdir()
-    cddbfile = (tmp_path / 'albumsguitest' / 'cddbdata')
+    cddbfile = tmp_path / 'albumsguitest' / 'cddbdata'
     cddbfile.write_text('aaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
     testobj = testee.CDDBData(str(cddbfile))
     assert testobj.error == ''
@@ -128,7 +158,7 @@ def test_cddbdata_read(monkeypatch, capsys, tmp_path):
     monkeypatch.setattr(testee.struct, 'unpack', mock_unpack_2)
     testobj = testee.CDDBData(str(cddbfile))
     assert testobj.error == ''
-    assert testobj.artists == {'artist': [ 1, 2]}
+    assert testobj.artists == {'artist': [1, 2]}
     assert testobj.albums == {1: 'album', 2: 'album'}
     assert testobj.tracks == {1: 'tracklist', 2: 'tracklist'}
     assert capsys.readouterr().out == (
@@ -148,7 +178,11 @@ def test_cddbdata_read(monkeypatch, capsys, tmp_path):
     assert capsys.readouterr().out == "called struct_unpack with args (`4B`, `b'aaaa'`)\n"
 
 def test_cddbdata_list_artists(monkeypatch, capsys):
+    """unittest for cddb_dml.cddbdata_list_artists
+    """
     def mock_read(self, arg):
+        """stub
+        """
         print(f'called CDDBData.read with arg `{arg}`')
     monkeypatch.setattr(testee.CDDBData, 'read', mock_read)
     testobj = testee.CDDBData('filenaam')
@@ -157,7 +191,11 @@ def test_cddbdata_list_artists(monkeypatch, capsys):
     assert capsys.readouterr().out == 'called CDDBData.read with arg `filenaam`\n'
 
 def test_cddbdata_list_albums(monkeypatch, capsys):
+    """unittest for cddb_dml.cddbdata_list_albums
+    """
     def mock_read(self, arg):
+        """stub
+        """
         print(f'called CDDBData.read with arg `{arg}`')
     monkeypatch.setattr(testee.CDDBData, 'read', mock_read)
     testobj = testee.CDDBData('filenaam')
@@ -167,7 +205,11 @@ def test_cddbdata_list_albums(monkeypatch, capsys):
     assert capsys.readouterr().out == 'called CDDBData.read with arg `filenaam`\n'
 
 def test_cddbdata_list_tracks(monkeypatch, capsys):
+    """unittest for cddb_dml.cddbdata_list_tracks
+    """
     def mock_read(self, arg):
+        """stub
+        """
         print(f'called CDDBData.read with arg `{arg}`')
     monkeypatch.setattr(testee.CDDBData, 'read', mock_read)
     testobj = testee.CDDBData('filenaam')
@@ -177,40 +219,58 @@ def test_cddbdata_list_tracks(monkeypatch, capsys):
 
 
 def test_get_artists_lists(monkeypatch, capsys):
+    """unittest for cddb_dml.get_artists_lists
+    """
     def mock_init(self, *args):
+        """stub
+        """
         print('called CDDBData.__init__ with args', args)
     def mock_list(self):
+        """stub
+        """
         print('called CDDBData.list_artists')
         return ['x', 'y']
     monkeypatch.setattr(testee, 'DB', 'connect-string')
-    monkeypatch.setattr(testee.CDDBData,'__init__', mock_init)
-    monkeypatch.setattr(testee.CDDBData,'list_artists', mock_list)
+    monkeypatch.setattr(testee.CDDBData, '__init__', mock_init)
+    monkeypatch.setattr(testee.CDDBData, 'list_artists', mock_list)
     assert testee.get_artists_lists() == (['x', 'y'], ['x', 'y'])
     assert capsys.readouterr().out == ("called CDDBData.__init__ with args ('connect-string',)\n"
                                        "called CDDBData.list_artists\n")
 
 def test_get_albums_lists(monkeypatch, capsys):
+    """unittest for cddb_dml.get_albums_lists
+    """
     def mock_init(self, *args):
+        """stub
+        """
         print('called CDDBData.__init__ with args', args)
     def mock_list(self, *args):
+        """stub
+        """
         print('called CDDBData.list_albums with args', args)
         return [['x', 'xxx'], ['y', 'yyy']]
     monkeypatch.setattr(testee, 'DB', 'connect-string')
-    monkeypatch.setattr(testee.CDDBData,'__init__', mock_init)
-    monkeypatch.setattr(testee.CDDBData,'list_albums', mock_list)
+    monkeypatch.setattr(testee.CDDBData, '__init__', mock_init)
+    monkeypatch.setattr(testee.CDDBData, 'list_albums', mock_list)
     assert testee.get_albums_lists('qqq') == (['x', 'y'], ['xxx', 'yyy'])
     assert capsys.readouterr().out == ("called CDDBData.__init__ with args ('connect-string',)\n"
                                        "called CDDBData.list_albums with args ('qqq',)\n")
 
 def test_get_tracks_lists(monkeypatch, capsys):
+    """unittest for cddb_dml.get_tracks_lists
+    """
     def mock_init(self, *args):
+        """stub
+        """
         print('called CDDBData.__init__ with args', args)
     def mock_list(self, *args):
+        """stub
+        """
         print('called CDDBData.list_tracks with args', args)
         return ['xxx', 'yyy', 'zzz']
     monkeypatch.setattr(testee, 'DB', 'connect-string')
-    monkeypatch.setattr(testee.CDDBData,'__init__', mock_init)
-    monkeypatch.setattr(testee.CDDBData,'list_tracks', mock_list)
+    monkeypatch.setattr(testee.CDDBData, '__init__', mock_init)
+    monkeypatch.setattr(testee.CDDBData, 'list_tracks', mock_list)
     assert testee.get_tracks_lists('qqq', 'rrr') == ([0, 1, 2], ['xxx', 'yyy', 'zzz'])
     assert capsys.readouterr().out == ("called CDDBData.__init__ with args ('connect-string',)\n"
                                        "called CDDBData.list_tracks with args ('rrr',)\n")
