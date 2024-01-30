@@ -434,16 +434,14 @@ def test_main_setup_tabwidget(monkeypatch, capsys):
         assert isinstance(item[1], classes[ix])
         assert item[1].first_time
         assert item[1]._parent == testobj
-    assert capsys.readouterr().out == ('called TabWidget.__init__\n'
-                                       f'called CompareArtists.__init__ with arg `{testobj}`\n'
-                                       f'called CompareAlbums.__init__ with arg `{testobj}`\n'
-                                       f'called CompareTracks.__init__ with arg `{testobj}`\n'
-                                       f"called TabWidget.addTab with args ({result[0][1]},"
-                                       " 'Artists')\n"
-                                       f"called TabWidget.addTab with args ({result[1][1]},"
-                                       " 'Albums')\n"
-                                       f"called TabWidget.addTab with args ({result[2][1]},"
-                                       " 'Tracks')\n")
+    assert capsys.readouterr().out == (
+            'called TabWidget.__init__\n'
+            f'called CompareArtists.__init__ with arg `{testobj}`\n'
+            f'called CompareAlbums.__init__ with arg `{testobj}`\n'
+            f'called CompareTracks.__init__ with arg `{testobj}`\n'
+            f"called TabWidget.addTab with args `{result[0][1]}` `Artists`\n"
+            f"called TabWidget.addTab with args `{result[1][1]}` `Albums`\n"
+            f"called TabWidget.addTab with args `{result[2][1]}` `Tracks`\n")
 
 def test_main_page_changed(monkeypatch, capsys):
     """unittest for albumsmatcher.Main.page_changed

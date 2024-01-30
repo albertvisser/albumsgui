@@ -223,7 +223,7 @@ called HBox.addSpacing
 called VBox.addLayout with arg of type <class 'mockgui.mockqtwidgets.MockHBoxLayout'>
 """
 select_end_data = """\
-called Frame.setLayout with arg of type `<class 'mockgui.mockqtwidgets.MockVBoxLayout'>`
+called Frame.setLayout with arg of type <class 'mockgui.mockqtwidgets.MockVBoxLayout'>
 called ScrollArea.setWidget with arg of type `<class 'mockgui.mockqtwidgets.MockFrame'>`
 called VBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockScrollArea'>
 called HBox.__init__
@@ -296,7 +296,7 @@ called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockLabel'>
 called Grid.addLayout with arg of type <class 'mockgui.mockqtwidgets.MockHBoxLayout'> at (1, 0, 1, 1)
 called Label.__init__ with args ('b', {me})
 called Grid.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockLabel'> at (1, 1, 1, 2)
-called Frame.setLayout with arg of type `<class 'mockgui.mockqtwidgets.MockGridLayout'>`
+called Frame.setLayout with arg of type <class 'mockgui.mockqtwidgets.MockGridLayout'>
 called ScrollArea.setWidget with arg of type `<class 'mockgui.mockqtwidgets.MockFrame'>`
 called Grid.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockScrollArea'> at (5, 0, 1, 3)
 called newline with arg of type <class 'apps.albums_gui.Detail'>
@@ -328,7 +328,7 @@ called Label.__init__ with args ('x (y)', {me})
 called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockLabel'>
 called HBox.addStretch
 called VBox.addLayout with arg of type <class 'mockgui.mockqtwidgets.MockHBoxLayout'>
-called Frame.setLayout with arg of type `<class 'mockgui.mockqtwidgets.MockVBoxLayout'>`
+called Frame.setLayout with arg of type <class 'mockgui.mockqtwidgets.MockVBoxLayout'>
 called ScrollArea.setWidget with arg of type `<class 'mockgui.mockqtwidgets.MockFrame'>`
 called Grid.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockScrollArea'> at (8, 0, 1, 3)
 called newline with arg of type <class 'apps.albums_gui.Detail'>
@@ -358,7 +358,7 @@ called Label.__init__ with args ('r', {me})
 called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockLabel'>
 called HBox.addStretch
 called VBox.addLayout with arg of type <class 'mockgui.mockqtwidgets.MockHBoxLayout'>
-called Frame.setLayout with arg of type `<class 'mockgui.mockqtwidgets.MockVBoxLayout'>`
+called Frame.setLayout with arg of type <class 'mockgui.mockqtwidgets.MockVBoxLayout'>
 called ScrollArea.setWidget with arg of type `<class 'mockgui.mockqtwidgets.MockFrame'>`
 called Grid.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockScrollArea'> at (11, 0, 1, 3)
 called newline with arg of type <class 'apps.albums_gui.Detail'>
@@ -614,7 +614,7 @@ called Grid.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockEditorW
 edittracks_all_end_1 = """\
 called VBox.addLayout with arg of type <class 'mockgui.mockqtwidgets.MockGridLayout'>
 called VBox.addStretch
-called Frame.setLayout with arg of type `<class 'mockgui.mockqtwidgets.MockVBoxLayout'>`
+called Frame.setLayout with arg of type <class 'mockgui.mockqtwidgets.MockVBoxLayout'>
 called ScrollArea.setWidget with arg of type `<class 'mockgui.mockqtwidgets.MockFrame'>`
 called ScrollArea.setWidgetResizable with arg `True`
 called VBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockScrollArea'>
@@ -686,7 +686,7 @@ called HBox.addStretch
 called VBox.insertLayout with arg1 {insertpos} and arg2 of type <class 'mockgui.mockqtwidgets.MockHBoxLayout'>
 """
 editrecs_all_end_1 = """\
-called Frame.setLayout with arg of type `<class 'mockgui.mockqtwidgets.MockVBoxLayout'>`
+called Frame.setLayout with arg of type <class 'mockgui.mockqtwidgets.MockVBoxLayout'>
 called ScrollArea.setWidget with arg of type `<class 'mockgui.mockqtwidgets.MockFrame'>`
 called ScrollArea.setWidgetResizable with arg `True`
 called VBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockScrollArea'>
@@ -745,7 +745,7 @@ called Artists.add_artist_line with args (2, 'x', 'y')
 """
 artists_all_end = """\
 called VBox.addStretch
-called Frame.setLayout with arg of type `<class 'mockgui.mockqtwidgets.MockVBoxLayout'>`
+called Frame.setLayout with arg of type <class 'mockgui.mockqtwidgets.MockVBoxLayout'>
 called ScrollArea.setWidget with arg of type `<class 'mockgui.mockqtwidgets.MockFrame'>`
 called ScrollArea.setWidgetResizable with arg `True`
 called VBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockScrollArea'>
@@ -806,7 +806,7 @@ called MainWindow.setWindowTitle to `AlbumsMatcher`
 called MainWindow.move with args (300, 50)
 called MainWindow.resize with args (600, 650)
 called TabWidget.__init__
-called TabWidget.connect with args {page_changed} ()
+called Signal.connect with args ({page_changed},)
 called Frame.__init__
 called VBox.__init__
 called HBox.__init__
@@ -819,7 +819,7 @@ called Signal.connect with args ({exit},)
 called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockPushButton'>
 called HBox.addStretch
 called VBox.addLayout with arg of type <class 'mockgui.mockqtwidgets.MockHBoxLayout'>
-called Frame.setLayout with arg of type `<class 'mockgui.mockqtwidgets.MockVBoxLayout'>`
+called Frame.setLayout with arg of type <class 'mockgui.mockqtwidgets.MockVBoxLayout'>
 called MainWidget.setCentralWindow with arg of type `<class 'mockgui.mockqtwidgets.MockFrame'>`
 called Action.__init__ with args ('Exit', {me})
 called Signal.connect with args ({exit},)
