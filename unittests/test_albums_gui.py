@@ -456,31 +456,31 @@ def test_button_strip(monkeypatch, capsys):
     assert capsys.readouterr().out == (
             'called HBox.__init__\n'
             'called HBox.addStretch\n'
-            f"called PushButton.__init__ with args ('Afbreken', {handler})\n"
+            f"called PushButton.__init__ with args ('Afbreken', {handler}) {{}}\n"
             f"called Signal.connect with args ({handler.parent().do_detail},)\n"
             "called HBox.addWidget with arg of type"
             " <class 'mockgui.mockqtwidgets.MockPushButton'>\n"
-            f"called PushButton.__init__ with args ('Uitvoeren', {handler})\n"
+            f"called PushButton.__init__ with args ('Uitvoeren', {handler}) {{}}\n"
             f"called Signal.connect with args ({handler.submit},)\n"
             "called HBox.addWidget with arg of type"
             " <class 'mockgui.mockqtwidgets.MockPushButton'>\n"
-            f"called PushButton.__init__ with args ('Uitvoeren en terug', {handler})\n"
+            f"called PushButton.__init__ with args ('Uitvoeren en terug', {handler}) {{}}\n"
             f"called Signal.connect with args ({handler.submit_and_back},)\n"
             "called HBox.addWidget with arg of type"
             " <class 'mockgui.mockqtwidgets.MockPushButton'>\n"
-            f"called PushButton.__init__ with args ('Wijzigingen doorvoeren', {handler})\n"
+            f"called PushButton.__init__ with args ('Wijzigingen doorvoeren', {handler}) {{}}\n"
             f"called Signal.connect with args ({handler.submit},)\n"
             "called HBox.addWidget with arg of type"
             " <class 'mockgui.mockqtwidgets.MockPushButton'>\n"
-            f"called PushButton.__init__ with args ('Nieuwe opvoeren', {handler})\n"
+            f"called PushButton.__init__ with args ('Nieuwe opvoeren', {handler}) {{}}\n"
             f"called Signal.connect with args ({handler.new},)\n"
             "called HBox.addWidget with arg of type"
             " <class 'mockgui.mockqtwidgets.MockPushButton'>\n"
-            f"called PushButton.__init__ with args ('Terug naar Selectie', {handler})\n"
+            f"called PushButton.__init__ with args ('Terug naar Selectie', {handler}) {{}}\n"
             f"called Signal.connect with args ({handler.parent().do_select},)\n"
             "called HBox.addWidget with arg of type"
             " <class 'mockgui.mockqtwidgets.MockPushButton'>\n"
-            f"called PushButton.__init__ with args ('Terug naar Startscherm', {handler})\n"
+            f"called PushButton.__init__ with args ('Terug naar Startscherm', {handler}) {{}}\n"
             f"called Signal.connect with args ({handler.parent().do_start},)\n"
             "called HBox.addWidget with arg of type"
             " <class 'mockgui.mockqtwidgets.MockPushButton'>\n"
@@ -506,7 +506,7 @@ def test_exitbutton(monkeypatch, capsys):
     assert capsys.readouterr().out == (
             'called HBox.__init__\n'
             'called HBox.addStretch\n'
-            f"called PushButton.__init__ with args ('E&xit', {handler})\n"
+            f"called PushButton.__init__ with args ('E&xit', {handler}) {{}}\n"
             f"called Signal.connect with args ({handler.submit},)\n"
             "called HBox.addWidget with arg of type"
             " <class 'mockgui.mockqtwidgets.MockPushButton'>\n"
@@ -517,7 +517,7 @@ def test_exitbutton(monkeypatch, capsys):
             'called HBox.__init__\n'
             'called HBox.addStretch\n'
             "called HBox.addWidget with arg of type <class 'str'>\n"
-            f"called PushButton.__init__ with args ('E&xit', {handler})\n"
+            f"called PushButton.__init__ with args ('E&xit', {handler}) {{}}\n"
             f"called Signal.connect with args ({handler.submit},)\n"
             "called HBox.addWidget with arg of type"
             " <class 'mockgui.mockqtwidgets.MockPushButton'>\n"
@@ -1082,7 +1082,7 @@ def test_start_select_2(monkeypatch, capsys):
     # assert testobj.parent().search_arg == ''
     assert testobj.parent().albumtype == 'live'
     assert testobj.parent().sorttype == 'current text'
-    assert capsys.readouterr().out == ('called MessageBox.information with args'
+    assert capsys.readouterr().out == (f'called MessageBox.information with args `{testobj}`'
                                        ' `Albums` `Selecteer een uitvoerende`\n')
 
 def test_start_select_3(monkeypatch, capsys):
@@ -1121,7 +1121,7 @@ def test_start_select_3(monkeypatch, capsys):
     assert testobj.parent().searchtype == 3
     assert testobj.parent().albumtype == 'studio'
     assert testobj.parent().sorttype == 'current text'
-    assert capsys.readouterr().out == ('called MessageBox.information with args'
+    assert capsys.readouterr().out == (f'called MessageBox.information with args `{testobj}`'
                                        ' `Albums` `Geef een zoekargument op`\n')
 
 def test_start_new_album(monkeypatch, capsys):
@@ -1834,12 +1834,12 @@ def test_edit_refresh_screen(monkeypatch, capsys):
     monkeypatch.setattr(testobj.parent(), 'do_detail', lambda *x: x)
     testobj.first_time = False
     testobj.refresh_screen()
-    assert capsys.readouterr().out == ('called Label.setText with arg `heading`\n'
-                                       "called PushButton.__init__ with args ('X',)\n"
-                                       "called PushButton.__init__ with args"
-                                       " ('Uitvoeren en terug',)\n"
-                                       'called PushButton.setText with arg `Naar Details`\n'
-                                       f'called Signal.connect with args ({testobj.parent().do_detail},)\n')
+    assert capsys.readouterr().out == (
+            'called Label.setText with arg `heading`\n'
+            "called PushButton.__init__ with args ('X',) {}\n"
+            "called PushButton.__init__ with args ('Uitvoeren en terug',) {}\n"
+            'called PushButton.setText with arg `Naar Details`\n'
+            f'called Signal.connect with args ({testobj.parent().do_detail},)\n')
 
 def test_edit_submit(monkeypatch, capsys):
     """unittest for albums_gui.EditDetails.submit
@@ -1871,7 +1871,7 @@ def test_edit_submit(monkeypatch, capsys):
     testobj.first_time = True
     testobj.submit()
     assert not testobj.first_time
-    assert capsys.readouterr().out == ('called MessageBox.information with args'
+    assert capsys.readouterr().out == (f'called MessageBox.information with args `{testobj}`'
                                        ' `Albums` `Nothing changed`\n'
                                        'called EditDetails.refresh_screen\n')
     monkeypatch.setattr(mockqtw.MockComboBox, 'currentText', lambda *x: 'cb_text')
@@ -1939,11 +1939,10 @@ def test_edit_submit(monkeypatch, capsys):
     assert testobj.parent().albumdata['artist'] == testobj.parent().artist == 'bbb'
     assert testobj.parent().albumdata['titel'] == ''
     assert testobj.parent().album == 'yy'
-    assert capsys.readouterr().out == ('called LineEdit.text\n'
-                                       "called dmla.update_album_details with args"
-                                       " ('xx', {'artist': 'bbb', 'titel': ''})\n"
-                                       'called MessageBox.information with args'
-                                       ' `Albums` `Details updated`\n')
+    assert capsys.readouterr().out == (
+            'called LineEdit.text\n'
+            "called dmla.update_album_details with args ('xx', {'artist': 'bbb', 'titel': ''})\n"
+            f'called MessageBox.information with args `{testobj}` `Albums` `Details updated`\n')
 
     testobj.parent().artists = ['aaa', 'bbb']
     testobj.parent().albums = ['xx']
@@ -1974,7 +1973,7 @@ def test_edit_submit(monkeypatch, capsys):
     assert capsys.readouterr().out == ("called Label.__init__ with args ('Uitvoerende:',)\n"
                                        "called ComboBox.__init__\n")
     testobj.submit(goback=True)
-    assert capsys.readouterr().out == ('called MessageBox.information with args'
+    assert capsys.readouterr().out == (f'called MessageBox.information with args `{testobj}`'
                                        ' `Albums` `Nothing changed`\n')
 
     testobj.parent().albumdata = {'titel': ''}
@@ -1984,7 +1983,7 @@ def test_edit_submit(monkeypatch, capsys):
                                        "called LineEdit.__init__\n")
     testobj.submit(goback=True)
     assert capsys.readouterr().out == ('called LineEdit.text\n'
-                                       'called MessageBox.information with args'
+                                       f'called MessageBox.information with args `{testobj}`'
                                        ' `Albums` `Nothing changed`\n')
 
     testobj.parent().album = types.SimpleNamespace(id='xx')
@@ -2013,7 +2012,7 @@ def test_edit_submit(monkeypatch, capsys):
     assert testobj.parent().albumdata['artist'] == testobj.parent().artist == 'bbb'
     assert testobj.parent().albumdata['titel'] == ''
     assert capsys.readouterr().out == ('called LineEdit.text\n'
-                                       'called MessageBox.information with args'
+                                       f'called MessageBox.information with args `{testobj}`'
                                        ' `Albums` `Something went wrong, please try again`\n')
 
 def test_edit_replace_details(monkeypatch, capsys):
@@ -2281,7 +2280,7 @@ def test_edittracks_submit(monkeypatch, capsys):
     testobj.first_time = True
     testobj.submit()
     assert not testobj.first_time
-    assert capsys.readouterr().out == ('called MessageBox.information with args'
+    assert capsys.readouterr().out == (f'called MessageBox.information with args `{testobj}`'
                                        ' `Albums` `Nothing changed`\n'
                                        'called EditDetails.refresh_screen\n')
     testobj.widgets = [(mockqtw.MockLineEdit('', testobj), mockqtw.MockLineEdit('', testobj),
@@ -2298,7 +2297,7 @@ def test_edittracks_submit(monkeypatch, capsys):
                                        'called Editor.toPlainText\n'
                                        'called dmla.update_album_tracks with args'
                                        " (1, [(1, ('', '', 'editor text'))])\n"
-                                       'called MessageBox.information with args'
+                                       f'called MessageBox.information with args `{testobj}`'
                                        ' `Albums` `Tracks updated`\n')
     testobj.widgets = [(mockqtw.MockLineEdit('x', testobj), mockqtw.MockLineEdit('y', testobj),
                         mockqtw.MockEditorWidget('z', testobj))]
@@ -2312,7 +2311,7 @@ def test_edittracks_submit(monkeypatch, capsys):
     assert capsys.readouterr().out == ('called LineEdit.text\n'
                                        'called LineEdit.text\n'
                                        'called Editor.toPlainText\n'
-                                       'called MessageBox.information with args'
+                                       f'called MessageBox.information with args `{testobj}`'
                                        ' `Albums` `Nothing changed`\n')
     testobj.parent().albumdata = {'tracks': {1: ('a', 'b', 'c')}}
     testobj.parent().album = types.SimpleNamespace(id=1)
@@ -2331,7 +2330,7 @@ def test_edittracks_submit(monkeypatch, capsys):
     assert capsys.readouterr().out == ('called LineEdit.text\n'
                                        'called LineEdit.text\n'
                                        'called Editor.toPlainText\n'
-                                       'called MessageBox.information with args'
+                                       f'called MessageBox.information with args `{testobj}`'
                                        ' `Albums` `Something went wrong, please try again`\n')
 
 def test_edittracks_submit_and_back(monkeypatch, capsys):
@@ -2522,7 +2521,7 @@ def test_editrecs_submit(monkeypatch, capsys):
     testobj.first_time = True
     testobj.submit()
     assert not testobj.first_time
-    assert capsys.readouterr().out == ('called MessageBox.information with args'
+    assert capsys.readouterr().out == (f'called MessageBox.information with args `{testobj}`'
                                        ' `Albums` `Nothing changed`\n'
                                        'called EditDetails.refresh_screen\n')
     testobj.recwins = [(mockqtw.MockComboBox(testobj), mockqtw.MockLineEdit('', testobj))]
@@ -2538,7 +2537,7 @@ def test_editrecs_submit(monkeypatch, capsys):
                                        'called LineEdit.text\n'
                                        'called dmla.update_album_recordings with args'
                                        " (1, [(0, ('current text', ''))])\n"
-                                       'called MessageBox.information with args'
+                                       f'called MessageBox.information with args `{testobj}`'
                                        ' `Albums` `Recordings updated`\n')
     testobj.recwins = [(mockqtw.MockComboBox(testobj), mockqtw.MockLineEdit('y', testobj))]
     newvalue = 'x'
@@ -2552,7 +2551,7 @@ def test_editrecs_submit(monkeypatch, capsys):
     testobj.submit()
     assert testobj.parent().albumdata == {'opnames': [('x', 'y')]}
     assert capsys.readouterr().out == ('called LineEdit.text\n'
-                                       'called MessageBox.information with args'
+                                       f'called MessageBox.information with args `{testobj}`'
                                        ' `Albums` `Nothing changed`\n')
     testobj.parent().albumdata = {'opnames': [('a', 'b')]}
     testobj.parent().album = types.SimpleNamespace(id=1)
@@ -2567,7 +2566,7 @@ def test_editrecs_submit(monkeypatch, capsys):
     testobj.submit()
     assert testobj.parent().albumdata == {'opnames': []}
     assert capsys.readouterr().out == ('called LineEdit.text\n'
-                                       'called MessageBox.information with args'
+                                       f'called MessageBox.information with args `{testobj}`'
                                        ' `Albums` `Something went wrong, please try again`\n')
 
 def test_editrecs_submit_and_back(monkeypatch, capsys):
@@ -2731,7 +2730,7 @@ def test_artists_submit(monkeypatch, capsys):
     assert capsys.readouterr().out == ('called Cursor with arg waitcursor\n'
                                        'called Application.setOverrideCursor with arg of type'
                                        " <class 'mockgui.mockqtwidgets.MockCursor'>\n"
-                                       'called MessageBox.information with args'
+                                       f'called MessageBox.information with args `{testobj}`'
                                        ' `Albums` `Nothing changed`\n'
                                        'called Application.restoreOverrideCursor\n'
                                        'called Main.get_all_artists\n'

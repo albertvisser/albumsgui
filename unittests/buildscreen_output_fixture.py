@@ -47,8 +47,8 @@ called ComboBox.setMaximumWidth with arg `200`
 called ComboBox.setMinimumWidth with arg `200`
 called Grid.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockComboBox'> at (5, 1)
 called HBox.__init__
-called PushButton.__init__ with args ('Selectie uitvoeren', {me})
-called PushButton.__init__ with args ('Nieuw album opvoeren', {me})
+called PushButton.__init__ with args ('Selectie uitvoeren', {me}) {{}}
+called PushButton.__init__ with args ('Nieuw album opvoeren', {me}) {{}}
 called Signal.connect with args ({select_album},)
 called Signal.connect with args ({new_album},)
 called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockPushButton'>
@@ -98,8 +98,8 @@ called ComboBox.setMaximumWidth with arg `200`
 called ComboBox.setMinimumWidth with arg `200`
 called Grid.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockComboBox'> at (12, 1)
 called HBox.__init__
-called PushButton.__init__ with args ('Selectie uitvoeren', {me})
-called PushButton.__init__ with args ('Nieuw album opvoeren', {me})
+called PushButton.__init__ with args ('Selectie uitvoeren', {me}) {{}}
+called PushButton.__init__ with args ('Nieuw album opvoeren', {me}) {{}}
 called Signal.connect with args ({select_concert},)
 called Signal.connect with args ({new_concert},)
 called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockPushButton'>
@@ -116,8 +116,8 @@ called Label.__init__ with args ('Uitvoerende Artiesten', {me})
 called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockLabel'>
 called Grid.addLayout with arg of type <class 'mockgui.mockqtwidgets.MockHBoxLayout'> at (15, 0, 1, 3)
 called HBox.__init__
-called PushButton.__init__ with args ('Lijst tonen/wijzigen', {me})
-called PushButton.__init__ with args ('Nieuwe opvoeren', {me})
+called PushButton.__init__ with args ('Lijst tonen/wijzigen', {me}) {{}}
+called PushButton.__init__ with args ('Nieuwe opvoeren', {me}) {{}}
 called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockPushButton'>
 called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockPushButton'>
 called Signal.connect with args ({view_artists},)
@@ -127,7 +127,7 @@ called Grid.addLayout with arg of type <class 'mockgui.mockqtwidgets.MockHBoxLay
 called newline with arg of type <class 'apps.albums_gui.Start'>
 called HBox.__init__
 called Grid.addLayout with arg of type <class 'mockgui.mockqtwidgets.MockHBoxLayout'> at (17, 0, 1, 3)
-called PushButton.__init__ with args ('&Import Data', {me})
+called PushButton.__init__ with args ('&Import Data', {me}) {{}}
 called Signal.connect with args ({start_imp},)
 called exitbutton with args {me}, {exit}, <class 'mockgui.mockqtwidgets.MockPushButton'>
 called HBox.__init__
@@ -154,7 +154,7 @@ called ComboBox.addItems with arg ['X', 'Y']
 called ComboBox.setMaximumWidth with arg `200`
 called ComboBox.setMinimumWidth with arg `200`
 called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockComboBox'>
-called PushButton.__init__ with args ('Go', {me})
+called PushButton.__init__ with args ('Go', {me}) {{}}
 called PushButton.setMaximumWidth with arg `40`
 called Signal.connect with args ({other_artist},)
 called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockPushButton'>
@@ -165,7 +165,7 @@ select_other_type_button = """\
 called HBox.__init__
 called Label.__init__ with args ('of naar een soortgelijke selectie voor ', {me})
 called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockLabel'>
-called PushButton.__init__ with args ('', {me})
+called PushButton.__init__ with args ('', {me}) {{}}
 called Signal.connect with args ({other_albumtype},)
 called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockPushButton'>
 called HBox.addStretch
@@ -179,7 +179,7 @@ called LineEdit.__init__
 called LineEdit.setMaximumWidth with arg `200`
 called LineEdit.setMinimumWidth with arg `200`
 called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockLineEdit'>
-called PushButton.__init__ with args ('Go', {me})
+called PushButton.__init__ with args ('Go', {me}) {{}}
 called PushButton.setMaximumWidth with arg `40`
 called Signal.connect with args ({other_search},)
 called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockPushButton'>
@@ -203,7 +203,7 @@ called HBox.__init__
 called Label.__init__ with args ('1', {me})
 called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockLabel'>
 called HBox.addStretch
-called PushButton.__init__ with args ('Go', {me})
+called PushButton.__init__ with args ('Go', {me}) {{}}
 called PushButton.setMaximumWidth with arg `40`
 called Signal.connect with args ({todetail},)
 called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockPushButton'>
@@ -215,7 +215,7 @@ called HBox.__init__
 called Label.__init__ with args ('2', {me})
 called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockLabel'>
 called HBox.addStretch
-called PushButton.__init__ with args ('Go', {me})
+called PushButton.__init__ with args ('Go', {me}) {{}}
 called PushButton.setMaximumWidth with arg `40`
 called Signal.connect with args ({todetail},)
 called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockPushButton'>
@@ -224,12 +224,13 @@ called VBox.addLayout with arg of type <class 'mockgui.mockqtwidgets.MockHBoxLay
 """
 select_end_data = """\
 called Frame.setLayout with arg of type <class 'mockgui.mockqtwidgets.MockVBoxLayout'>
+called ScrollArea.__init__ with args ()
 called ScrollArea.setWidget with arg of type `<class 'mockgui.mockqtwidgets.MockFrame'>`
 called VBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockScrollArea'>
 called HBox.__init__
 called Label.__init__ with args ('Of', {me})
 called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockLabel'>
-called PushButton.__init__ with args ('voer een nieuw item op bij deze selectie', {me})
+called PushButton.__init__ with args ('voer een nieuw item op bij deze selectie', {me}) {{}}
 called Signal.connect with args ({add_new_to_sel},)
 called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockPushButton'>
 called HBox.addStretch
@@ -263,7 +264,7 @@ called ComboBox.addItems with arg ['xxx', 'yyy']
 called ComboBox.setMaximumWidth with arg `200`
 called ComboBox.setMinimumWidth with arg `200`
 called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockComboBox'>
-called PushButton.__init__ with args ('Go', {me})
+called PushButton.__init__ with args ('Go', {me}) {{}}
 called PushButton.setMaximumWidth with arg `40`
 called Signal.connect with args ({other_album},)
 called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockPushButton'>
@@ -275,7 +276,7 @@ called Grid.addLayout with arg of type <class 'mockgui.mockqtwidgets.MockHBoxLay
 called HBox.__init__
 called Label.__init__ with args ('Detailgegevens:', {me})
 called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockLabel'>
-called PushButton.__init__ with args ('wijzigen', {me})
+called PushButton.__init__ with args ('wijzigen', {me}) {{}}
 called Signal.connect with args ({edit_alg},)
 called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockPushButton'>
 called HBox.addStretch
@@ -297,6 +298,7 @@ called Grid.addLayout with arg of type <class 'mockgui.mockqtwidgets.MockHBoxLay
 called Label.__init__ with args ('b', {me})
 called Grid.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockLabel'> at (1, 1, 1, 2)
 called Frame.setLayout with arg of type <class 'mockgui.mockqtwidgets.MockGridLayout'>
+called ScrollArea.__init__ with args ()
 called ScrollArea.setWidget with arg of type `<class 'mockgui.mockqtwidgets.MockFrame'>`
 called Grid.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockScrollArea'> at (5, 0, 1, 3)
 called newline with arg of type <class 'apps.albums_gui.Detail'>
@@ -305,7 +307,7 @@ called Grid.addLayout with arg of type <class 'mockgui.mockqtwidgets.MockHBoxLay
 called HBox.__init__
 called Label.__init__ with args ('Tracks:', {me})
 called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockLabel'>
-called PushButton.__init__ with args ('wijzigen', {me})
+called PushButton.__init__ with args ('wijzigen', {me}) {{}}
 called Signal.connect with args ({edit_trk},)
 called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockPushButton'>
 called HBox.addStretch
@@ -329,6 +331,7 @@ called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockLabel'>
 called HBox.addStretch
 called VBox.addLayout with arg of type <class 'mockgui.mockqtwidgets.MockHBoxLayout'>
 called Frame.setLayout with arg of type <class 'mockgui.mockqtwidgets.MockVBoxLayout'>
+called ScrollArea.__init__ with args ()
 called ScrollArea.setWidget with arg of type `<class 'mockgui.mockqtwidgets.MockFrame'>`
 called Grid.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockScrollArea'> at (8, 0, 1, 3)
 called newline with arg of type <class 'apps.albums_gui.Detail'>
@@ -337,7 +340,7 @@ called Grid.addLayout with arg of type <class 'mockgui.mockqtwidgets.MockHBoxLay
 called HBox.__init__
 called Label.__init__ with args ('Opnames:', {me})
 called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockLabel'>
-called PushButton.__init__ with args ('wijzigen', {me})
+called PushButton.__init__ with args ('wijzigen', {me}) {{}}
 called Signal.connect with args ({edit_rec},)
 called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockPushButton'>
 called HBox.addStretch
@@ -359,6 +362,7 @@ called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockLabel'>
 called HBox.addStretch
 called VBox.addLayout with arg of type <class 'mockgui.mockqtwidgets.MockHBoxLayout'>
 called Frame.setLayout with arg of type <class 'mockgui.mockqtwidgets.MockVBoxLayout'>
+called ScrollArea.__init__ with args ()
 called ScrollArea.setWidget with arg of type `<class 'mockgui.mockqtwidgets.MockFrame'>`
 called Grid.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockScrollArea'> at (11, 0, 1, 3)
 called newline with arg of type <class 'apps.albums_gui.Detail'>
@@ -615,11 +619,12 @@ edittracks_all_end_1 = """\
 called VBox.addLayout with arg of type <class 'mockgui.mockqtwidgets.MockGridLayout'>
 called VBox.addStretch
 called Frame.setLayout with arg of type <class 'mockgui.mockqtwidgets.MockVBoxLayout'>
+called ScrollArea.__init__ with args ()
 called ScrollArea.setWidget with arg of type `<class 'mockgui.mockqtwidgets.MockFrame'>`
 called ScrollArea.setWidgetResizable with arg `True`
 called VBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockScrollArea'>
 called HBox.__init__
-called PushButton.__init__ with args ('Nieuw track', {me})
+called PushButton.__init__ with args ('Nieuw track', {me}) {{}}
 called Signal.connect with args ({add_new_item},)
 called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockPushButton'>
 called HBox.addStretch
@@ -687,11 +692,12 @@ called VBox.insertLayout with arg1 {insertpos} and arg2 of type <class 'mockgui.
 """
 editrecs_all_end_1 = """\
 called Frame.setLayout with arg of type <class 'mockgui.mockqtwidgets.MockVBoxLayout'>
+called ScrollArea.__init__ with args ()
 called ScrollArea.setWidget with arg of type `<class 'mockgui.mockqtwidgets.MockFrame'>`
 called ScrollArea.setWidgetResizable with arg `True`
 called VBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockScrollArea'>
 called HBox.__init__
-called PushButton.__init__ with args ('Nieuwe opname', {me})
+called PushButton.__init__ with args ('Nieuwe opname', {me}) {{}}
 called Signal.connect with args ({add_new_item},)
 called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockPushButton'>
 called HBox.addStretch
@@ -726,7 +732,7 @@ called Label.__init__ with args ('Artiestenlijst - gefilterd op', {testobj})
 called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockLabel'>
 called LineEdit.__init__
 called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockLineEdit'>
-called PushButton.__init__ with args ('&Go', {testobj})
+called PushButton.__init__ with args ('&Go', {testobj}) {{}}
 called Signal.connect with args ({filter},)
 called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockPushButton'>
 called VBox.addLayout with arg of type <class 'mockgui.mockqtwidgets.MockHBoxLayout'>
@@ -746,6 +752,7 @@ called Artists.add_artist_line with args (2, 'x', 'y')
 artists_all_end = """\
 called VBox.addStretch
 called Frame.setLayout with arg of type <class 'mockgui.mockqtwidgets.MockVBoxLayout'>
+called ScrollArea.__init__ with args ()
 called ScrollArea.setWidget with arg of type `<class 'mockgui.mockqtwidgets.MockFrame'>`
 called ScrollArea.setWidgetResizable with arg `True`
 called VBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockScrollArea'>
@@ -785,10 +792,10 @@ called Label.__init__ with args ('Names wil be shown sorted on last name',)
 called Grid.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockLabel'> at (2, 0, 1, 2)
 called HBox.__init__
 called HBox.addStretch
-called PushButton.__init__ with args ('Cancel', {testobj})
+called PushButton.__init__ with args ('Cancel', {testobj}) {{}}
 called Signal.connect with args ({reject},)
 called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockPushButton'>
-called PushButton.__init__ with args ('Update', {testobj})
+called PushButton.__init__ with args ('Update', {testobj}) {{}}
 called Signal.connect with args ({update},)
 called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockPushButton'>
 called HBox.addStretch
@@ -814,7 +821,7 @@ called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockTabWidg
 called VBox.addLayout with arg of type <class 'mockgui.mockqtwidgets.MockHBoxLayout'>
 called HBox.__init__
 called HBox.addStretch
-called PushButton.__init__ with args ('E&xit', {parent})
+called PushButton.__init__ with args ('E&xit', {parent}) {{}}
 called Signal.connect with args ({exit},)
 called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockPushButton'>
 called HBox.addStretch
@@ -837,7 +844,7 @@ called Tree.setColumnCount with arg `2`
 called Tree.header
 called Header.__init__
 called Header.setStretchLastSection with arg False
-called Header.setSectionResixeMode for col 0 mode stretch
+called Header.setSectionResizeMode for col 0 mode stretch
 called Tree.setColumnWidth with args 1, 50
 called Tree.setHeaderLabels with arg `['Artist', 'Match']`
 called Tree.setMouseTracking with arg `True`
@@ -850,31 +857,31 @@ called Header.__init__
 called Header.setStretchLastSection with arg False
 called Tree.setColumnWidth with args 0, 80
 called Tree.setColumnWidth with args 2, 50
-called Header.setSectionResixeMode for col 1 mode stretch
+called Header.setSectionResizeMode for col 1 mode stretch
 called Tree.setHeaderLabels with arg `['First Name', 'Last Name', 'Id']`
 called Tree.setMouseTracking with arg `True`
 called Signal.connect with args ({popuptext},)
 called Signal.connect with args ({check_deletable},)
-called PushButton.__init__ with args ('&Help', {me})
+called PushButton.__init__ with args ('&Help', {me}) {{}}
 called Signal.connect with args ({help},)
-called PushButton.__init__ with args ({me},)
+called PushButton.__init__ with args ({me},) {{}}
 called PushButton.setIcon with arg `next_icon`
 called Size.__init__ with args (12, 12)
 called PushButton.setIconSize with arg of type <class 'mockgui.mockqtwidgets.MockSize'>
 called PushButton.setToolTip with arg `Go to next unmatched artist`
 called Signal.connect with args ({focus_next},)
-called PushButton.__init__ with args ({me},)
+called PushButton.__init__ with args ({me},) {{}}
 called PushButton.setIcon with arg `prev_icon`
 called Size.__init__ with args (12, 12)
 called PushButton.setIconSize with arg of type <class 'mockgui.mockqtwidgets.MockSize'>
 called PushButton.setToolTip with arg `Go to previous unmatched artist`
 called Signal.connect with args ({focus_prev},)
-called PushButton.__init__ with args ('&Check Artist', {me})
+called PushButton.__init__ with args ('&Check Artist', {me}) {{}}
 called Signal.connect with args ({find_artist},)
-called PushButton.__init__ with args ('&Delete', {me})
+called PushButton.__init__ with args ('&Delete', {me}) {{}}
 called Signal.connect with args ({delete_artist},)
 called PushButton.setEnabled with arg `False`
-called PushButton.__init__ with args ('&Save All', {me})
+called PushButton.__init__ with args ('&Save All', {me}) {{}}
 called Signal.connect with args ({save_all},)
 called HBox.__init__
 called VBox.__init__
@@ -964,10 +971,10 @@ called LineEdit.setMaximumWidth with arg `200`
 called Grid.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockLineEdit'> at (1, 1)
 called HBox.__init__
 called HBox.addStretch
-called PushButton.__init__ with args ('&Cancel', {me})
+called PushButton.__init__ with args ('&Cancel', {me}) {{}}
 called Signal.connect with args ({reject},)
 called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockPushButton'>
-called PushButton.__init__ with args ('&Update', {me})
+called PushButton.__init__ with args ('&Update', {me}) {{}}
 called Signal.connect with args ({update},)
 called PushButton.setDefault with arg `True`
 called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockPushButton'>
@@ -984,14 +991,14 @@ called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockLabel'>
 called ComboBox.__init__
 called Signal.connect with args ({get_albums},)
 called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockComboBox'>
-called PushButton.__init__ with args ({me},)
+called PushButton.__init__ with args ({me},) {{}}
 called PushButton.setIcon with arg `down_icon`
 called Size.__init__ with args (20, 20)
 called PushButton.setIconSize with arg of type <class 'mockgui.mockqtwidgets.MockSize'>
 called PushButton.setToolTip with arg `Select next artist in list`
 called Signal.connect with args ({next_artist},)
 called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockPushButton'>
-called PushButton.__init__ with args ({me},)
+called PushButton.__init__ with args ({me},) {{}}
 called PushButton.setIcon with arg `up_icon`
 called Size.__init__ with args (20, 20)
 called PushButton.setIconSize with arg of type <class 'mockgui.mockqtwidgets.MockSize'>
@@ -1008,16 +1015,16 @@ called Tree.header
 called Header.__init__
 called Header.setStretchLastSection with arg False
 called Tree.setColumnWidth with args 1, 60
-called Header.setSectionResixeMode for col 0 mode stretch
+called Header.setSectionResizeMode for col 0 mode stretch
 called Tree.setHeaderLabels with arg `['Album Name in Clementine', 'Match']`
 called Tree.setMouseTracking with arg `True`
 called Signal.connect with args ({popuptext},)
 called VBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockTreeWidget'>
 called HBox.__init__
 called HBox.addStretch
-called PushButton.__init__ with args ('&Help', {me})
+called PushButton.__init__ with args ('&Help', {me}) {{}}
 called Signal.connect with args ({help},)
-called PushButton.__init__ with args ('&Check Album', {me})
+called PushButton.__init__ with args ('&Check Album', {me}) {{}}
 called Signal.connect with args ({find_album},)
 called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockPushButton'>
 called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockPushButton'>
@@ -1032,14 +1039,14 @@ called Header.__init__
 called Header.setStretchLastSection with arg False
 called Tree.setColumnWidth with args 1, 60
 called Tree.setColumnWidth with args 2, 60
-called Header.setSectionResixeMode for col 0 mode stretch
+called Header.setSectionResizeMode for col 0 mode stretch
 called Tree.setHeaderLabels with arg `['Album Name in Albums', 'Year', 'Id']`
 called Tree.setMouseTracking with arg `True`
 called Signal.connect with args ({popuptext},)
 called VBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockTreeWidget'>
 called HBox.__init__
 called HBox.addStretch
-called PushButton.__init__ with args ('&Save All', {me})
+called PushButton.__init__ with args ('&Save All', {me}) {{}}
 called Signal.connect with args ({save_all},)
 called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockPushButton'>
 called HBox.addStretch
@@ -1103,10 +1110,10 @@ called HBox.addStretch
 called Grid.addLayout with arg of type <class 'mockgui.mockqtwidgets.MockHBoxLayout'> at (2, 0, 1, 2)
 called HBox.__init__
 called HBox.addStretch
-called PushButton.__init__ with args ('&Cancel', {me})
+called PushButton.__init__ with args ('&Cancel', {me}) {{}}
 called Signal.connect with args ({reject},)
 called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockPushButton'>
-called PushButton.__init__ with args ('&Update', {me})
+called PushButton.__init__ with args ('&Update', {me}) {{}}
 called Signal.connect with args ({update},)
 called PushButton.setDefault with arg `True`
 called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockPushButton'>
@@ -1124,14 +1131,14 @@ called Grid.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockLabel'>
 called ComboBox.__init__
 called Signal.connect with args ({get_albums},)
 called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockComboBox'>
-called PushButton.__init__ with args ({me},)
+called PushButton.__init__ with args ({me},) {{}}
 called PushButton.setIcon with arg `down_icon`
 called Size.__init__ with args (20, 20)
 called PushButton.setIconSize with arg of type <class 'mockgui.mockqtwidgets.MockSize'>
 called PushButton.setToolTip with arg `Select next artist in list`
 called Signal.connect with args ({next_artist},)
 called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockPushButton'>
-called PushButton.__init__ with args ({me},)
+called PushButton.__init__ with args ({me},) {{}}
 called PushButton.setIcon with arg `up_icon`
 called Size.__init__ with args (20, 20)
 called PushButton.setIconSize with arg of type <class 'mockgui.mockqtwidgets.MockSize'>
@@ -1147,14 +1154,14 @@ called ComboBox.__init__
 called ComboBox.setMinimumWidth with arg `300`
 called Signal.connect with args ({get_tracks},)
 called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockComboBox'>
-called PushButton.__init__ with args ({me},)
+called PushButton.__init__ with args ({me},) {{}}
 called PushButton.setIcon with arg `down_icon`
 called Size.__init__ with args (20, 20)
 called PushButton.setIconSize with arg of type <class 'mockgui.mockqtwidgets.MockSize'>
 called PushButton.setToolTip with arg `Select next album in list`
 called Signal.connect with args ({next_album},)
 called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockPushButton'>
-called PushButton.__init__ with args ({me},)
+called PushButton.__init__ with args ({me},) {{}}
 called PushButton.setIcon with arg `up_icon`
 called Size.__init__ with args (20, 20)
 called PushButton.setIconSize with arg of type <class 'mockgui.mockqtwidgets.MockSize'>
@@ -1174,10 +1181,10 @@ called Signal.connect with args ({popuptext},)
 called VBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockTreeWidget'>
 called HBox.__init__
 called HBox.addStretch
-called PushButton.__init__ with args ('&Help', {me})
+called PushButton.__init__ with args ('&Help', {me}) {{}}
 called Signal.connect with args ({help},)
 called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockPushButton'>
-called PushButton.__init__ with args ('&Copy Tracks', {me})
+called PushButton.__init__ with args ('&Copy Tracks', {me}) {{}}
 called Signal.connect with args ({copy_tracks},)
 called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockPushButton'>
 called HBox.addStretch
@@ -1192,10 +1199,10 @@ called Signal.connect with args ({popuptext},)
 called VBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockTreeWidget'>
 called HBox.__init__
 called HBox.addStretch
-called PushButton.__init__ with args ('&Unlink Album', {me})
+called PushButton.__init__ with args ('&Unlink Album', {me}) {{}}
 called Signal.connect with args ({unlink},)
 called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockPushButton'>
-called PushButton.__init__ with args ('&Save Unlinked', {me})
+called PushButton.__init__ with args ('&Save Unlinked', {me}) {{}}
 called Signal.connect with args ({save_all},)
 called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockPushButton'>
 called HBox.addStretch
@@ -1290,7 +1297,7 @@ called HBox.addStretch
 called VBox.addLayout with arg of type <class 'mockgui.mockqtwidgets.MockHBoxLayout'>
 called HBox.__init__
 called HBox.addStretch
-called PushButton.__init__ with args ('E&xit', {testobj})
+called PushButton.__init__ with args ('E&xit', {testobj}) {{}}
 called Signal.connect with args ({testobj.exit},)
 called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockPushButton'>
 called HBox.addStretch

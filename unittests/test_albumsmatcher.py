@@ -513,7 +513,7 @@ def test_main_page_changed(monkeypatch, capsys):
     testobj.page_changed()
     assert capsys.readouterr().out == ('called TabWidget.currentIndex\n'
                                        'called TabWidget.currentWidget\n'
-                                       'called MessageBox.information with args'
+                                       f'called MessageBox.information with args `{testobj}`'
                                        ' `appname` `message`\n'
                                        'called TabWidget.setCurrentIndex with arg `0`\n')
 
@@ -733,7 +733,7 @@ def test_cmpart_set_modified(monkeypatch, capsys):
     """
     testobj = setup_cmpart(monkeypatch, capsys)
     testobj.save_button = mockqtw.MockPushButton('')
-    assert capsys.readouterr().out == "called PushButton.__init__ with args ('',)\n"
+    assert capsys.readouterr().out == "called PushButton.__init__ with args ('',) {}\n"
     testobj.set_modified(True)
     assert testobj.modified
     assert capsys.readouterr().out == 'called PushButton.setEnabled with arg `True`\n'
@@ -794,14 +794,14 @@ def test_cmpart_focus_item(monkeypatch, capsys):
     testobj.focus_item()
     assert capsys.readouterr().out == ('called Tree.setFocus\n'
                                        "called Tree.findItems with args ('', 1, 1)\n"
-                                       'called MessageBox.information with args'
+                                       f'called MessageBox.information with args `{testobj}`'
                                        ' `appname` `No more unmatched items this way`\n')
     monkeypatch.setattr(testobj.clementine_artists, 'findItems', lambda *x: ['xx'])
     monkeypatch.setattr(testobj.clementine_artists, 'indexFromItem',
                         lambda x: types.SimpleNamespace(row=lambda: 0))
     testobj.focus_item()
     assert capsys.readouterr().out == ('called Tree.setFocus\n'
-                                       'called MessageBox.information with args'
+                                       f'called MessageBox.information with args `{testobj}`'
                                        ' `appname` `No more unmatched items this way`\n')
     currentindex = types.SimpleNamespace(row=lambda: 1)
     monkeypatch.setattr(testobj.clementine_artists, 'indexFromItem',
@@ -815,7 +815,7 @@ def test_cmpart_focus_item(monkeypatch, capsys):
                         lambda x: types.SimpleNamespace(row=lambda: 1))
     testobj.focus_item(forward=False)
     assert capsys.readouterr().out == ('called Tree.setFocus\n'
-                                       'called MessageBox.information with args'
+                                       f'called MessageBox.information with args `{testobj}`'
                                        ' `appname` `No more unmatched items this way`\n')
     monkeypatch.setattr(testobj.clementine_artists, 'currentIndex',
                         lambda: types.SimpleNamespace(row=lambda: 1))
@@ -833,7 +833,7 @@ def test_cmpart_check_deletable(monkeypatch, capsys):
     """
     testobj = setup_cmpart(monkeypatch, capsys)
     testobj.delete_button = mockqtw.MockPushButton('')
-    assert capsys.readouterr().out == "called PushButton.__init__ with args ('',)\n"
+    assert capsys.readouterr().out == "called PushButton.__init__ with args ('',) {}\n"
     testobj.new_artists = []
     testobj.check_deletable()
     assert capsys.readouterr().out == 'called PushButton.setEnabled with arg `False`\n'
@@ -862,7 +862,7 @@ def test_cmpart_select_and_go(monkeypatch, capsys):
     testobj.appname = 'appname'
     testobj.select_and_go()
     assert capsys.readouterr().out == ("called TreeItem.text for col 0\n"
-                                       "called MessageBox.information with args"
+                                       f"called MessageBox.information with args `{testobj}`"
                                        " `appname` `Not possible - artist hasn't been matched yet`\n")
     testobj.artist_map = {'x': 'y'}
     testobj.select_and_go()
@@ -911,7 +911,7 @@ def test_cmpart_find_artist(monkeypatch, capsys):
     assert testobj._parent.current_data == 'some_text'
     assert testobj.artist_map == {'some_text': 'x'}
     assert capsys.readouterr().out == ('called currentItem.text with arg `0`\n'
-                                       'called MessageBox.question with args `appname`'
+                                       f'called MessageBox.question with args `{testobj}` `appname`'
                                        ' `Artist already has a match - do you want to reassign?`'
                                        ' `12` `8`\n')
 
@@ -925,7 +925,7 @@ def test_cmpart_find_artist(monkeypatch, capsys):
     assert testobj._parent.current_data == 'some_text'
     assert testobj.artist_map == {'some_text': ''}
     assert capsys.readouterr().out == ('called currentItem.text with arg `0`\n'
-                                       'called InputDialog.getItem with args'
+                                       f'called InputDialog.getItem with args {testobj}'
                                        " ('appname', 'Select Artist', []) {'editable': False}\n"
                                        'called CompareArtists.add_artist\n')
     monkeypatch.setattr(mockqtw.MockInputDialog, 'getItem', lambda *x, **y: ('y', True))
@@ -1097,7 +1097,7 @@ def test_cmpart_add_artist(monkeypatch, capsys):
                                        f"`{type(testobj)}` and name ``\n"
                                        "called Tree.findItems with args"
                                        " ('f_name l_name', 1, 0)\n"
-                                       "called MessageBox.information with args"
+                                       f"called MessageBox.information with args `{testobj}`"
                                        " `appname` `Artist doesn't exist on the Clementine side`\n")
     # test3a: no artistbuffer, present on the clementine side but not on the albums side
     testobj.artist_buffer = None
@@ -1144,7 +1144,7 @@ def test_cmpart_add_artist(monkeypatch, capsys):
                                        f"`{type(testobj)}` and name `some_name`\n"
                                        "called Tree.findItems with args ('l_name', 1, 1)\n"
                                        "called build_artist_name with args ('0', '1')\n"
-                                       "called InputDialog.getItem with args"
+                                       f"called InputDialog.getItem with args {testobj}"
                                        " ('appname', 'Select Artist', ['0, 1']) {'editable': False}\n"
                                        "called TreeItem.__init__ with args"
                                        " (['f_name', 'l_name', '1'],)\n"
@@ -1159,7 +1159,7 @@ def test_cmpart_add_artist(monkeypatch, capsys):
                                        f"`{type(testobj)}` and name `some_name`\n"
                                        "called Tree.findItems with args ('0, 1', 1, 1)\n"
                                        "called build_artist_name with args ('0', '1')\n"
-                                       "called InputDialog.getItem with args"
+                                       f"called InputDialog.getItem with args {testobj}"
                                        " ('appname', 'Select Artist', ['0, 1']) {'editable': False}\n"
                                        "called TreeItem.__init__ with args"
                                        " (['f_name', '0, 1', '2'],)\n"
@@ -1211,7 +1211,7 @@ def test_cmpart_delete_artist(monkeypatch, capsys):
     monkeypatch.setattr(testee.qtw, 'QMessageBox', mockqtw.MockMessageBox)
     testobj.appname = 'appname'
     testobj.delete_artist()
-    assert capsys.readouterr().out == ('called MessageBox.question with args'
+    assert capsys.readouterr().out == (f'called MessageBox.question with args `{testobj}`'
                                        ' `appname` `Ok to delete artist `1, 0`?` `3` `1`\n')
 
     monkeypatch.setattr(mockqtw.MockMessageBox, 'question', lambda *x: testee.qtw.QMessageBox.Ok)
@@ -1324,7 +1324,8 @@ def test_cmpart_help(monkeypatch, capsys):
     monkeypatch.setattr(testee, 'workflows', {'cmpart': 'wf'})
     testobj = setup_cmpart(monkeypatch, capsys)
     testobj.help()
-    assert capsys.readouterr().out == "called MessageBox.information with args `appname` `wf`\n"
+    assert capsys.readouterr().out == ("called MessageBox.information with args"
+                                       f" `{testobj}` `appname` `wf`\n")
 
 
 # tests for New Artist Dialog
@@ -1420,8 +1421,9 @@ def test_newart_update(monkeypatch, capsys):
     monkeypatch.setattr(mockqtw.MockLineEdit, 'text', mock_text_niks)
     testobj.update()
     assert testobj.parent().data == ()
-    assert capsys.readouterr().out == ('called MessageBox.information with args `AlbumsMatcher`'
-                                       ' `Enter at least one name or press `Cancel``\n')
+    assert capsys.readouterr().out == (
+            f'called MessageBox.information with args `{testobj}` `AlbumsMatcher`'
+            ' `Enter at least one name or press `Cancel``\n')
 
     counter = 0
     testobj.parent().data = ()
@@ -1660,7 +1662,7 @@ def test_cmpalb_set_modified(monkeypatch, capsys):
     """
     testobj = setup_cmpalb(monkeypatch, capsys)
     testobj.save_button = mockqtw.MockPushButton()
-    assert capsys.readouterr().out == 'called PushButton.__init__ with args ()\n'
+    assert capsys.readouterr().out == 'called PushButton.__init__ with args () {}\n'
     testobj.set_modified(True)
     assert testobj.modified is True
     assert capsys.readouterr().out == 'called PushButton.setEnabled with arg `True`\n'
@@ -1681,8 +1683,8 @@ def test_cmpalb_update_navigation_buttons(monkeypatch, capsys):
     testobj.prev_artist_button = mockqtw.MockPushButton()
     testobj.next_artist_button = mockqtw.MockPushButton()
     assert capsys.readouterr().out == ('called ComboBox.__init__\n'
-                                       'called PushButton.__init__ with args ()\n'
-                                       'called PushButton.__init__ with args ()\n')
+                                       'called PushButton.__init__ with args () {}\n'
+                                       'called PushButton.__init__ with args () {}\n')
     monkeypatch.setattr(testobj.artist_list, 'currentIndex', lambda: 0)
     testobj.c_artists = []
     testobj.update_navigation_buttons()
@@ -1913,7 +1915,7 @@ def test_cmpalb_find_album(monkeypatch, capsys):
     testobj.find_album()
     assert capsys.readouterr().out == ('called Tree.currentItem\n'
                                        'called TreeItem.text for column 0\n'
-                                       'called MessageBox.question with args `app`'
+                                       f'called MessageBox.question with args `{testobj}` `app`'
                                        ' `Album already has a match - do you want to reassign?`'
                                        ' `12` `4`\n')
     monkeypatch.setattr(testobj.clementine_albums, 'currentItem', mock_current_2)
@@ -1939,7 +1941,7 @@ def test_cmpalb_find_album(monkeypatch, capsys):
     assert testobj.albums_map == {'x': {}}
     assert capsys.readouterr().out == ('called Tree.currentItem\n'
                                        'called TreeItem.text for column 0\n'
-                                       "called InputDialog.getItem with args"
+                                       f"called InputDialog.getItem with args {testobj}"
                                        " ('app', 'Select Album', ['a_name']) {'editable': False}\n"
                                        'called CompareAlbums.add_album with args ()\n')
     monkeypatch.setattr(mockqtw.MockInputDialog, 'getItem', lambda *args, **kwargs: ('a_name', True))
@@ -2027,7 +2029,7 @@ def test_cmpalb_prepare_for_update(monkeypatch, capsys):
     testobj.prepare_album_for_update(c_item, ('title', 1))
     assert testobj.albums_to_update == {'x': [('9', '9', 9, False, [])]}
     assert capsys.readouterr().out == ('called TreeItem.text for col 1\n'
-                                       'called MessageBox.question with args'
+                                       f'called MessageBox.question with args `{testobj}`'
                                        ' `app` `Clementine year (8) differs from Albums year (9),'
                                        ' replace?` `12` `4`\n'
                                        'called TreeItem.text for col 0\n'
@@ -2105,7 +2107,7 @@ def test_cmpalb_add_album(monkeypatch, capsys):
                                        " `<class 'apps.albumsmatcher.CompareAlbums'>`"
                                        " and name ``, year ``\n"
                                        "called Tree.findItems with args ('xx', 2, 0)\n"
-                                       "called MessageBox.information with args"
+                                       f"called MessageBox.information with args `{testobj}`"
                                        " `app` `Album doesn't exist on the Clementine side`\n")
     monkeypatch.setattr(testobj.clementine_albums, 'currentItem', mock_current)
     monkeypatch.setattr(testee, 'NewAlbumDialog', MockNewAlbumDialog)
@@ -2115,7 +2117,7 @@ def test_cmpalb_add_album(monkeypatch, capsys):
                                        " `<class 'apps.albumsmatcher.CompareAlbums'>`"
                                        " and name ``, year ``\n"
                                        "called Tree.findItems with args ('xx', 2, 0)\n"
-                                       "called MessageBox.information with args"
+                                       f"called MessageBox.information with args `{testobj}`"
                                        " `app` `Album doesn't exist on the Clementine side`\n")
     monkeypatch.setattr(testobj.clementine_albums, 'findItems', lambda *x: 'c_item')
     testobj.add_album()
@@ -2134,7 +2136,7 @@ def test_cmpalb_add_album(monkeypatch, capsys):
                                        " `<class 'apps.albumsmatcher.CompareAlbums'>`"
                                        " and name ``, year ``\n"
                                        "called CompareAlbums.build_album_name with args ('a_item',)\n"
-                                       "called InputDialog.getItem with args"
+                                       f"called InputDialog.getItem with args {testobj}"
                                        " ('app', 'Select Album', ['a_item']) {'editable': False}\n"
                                        "called CompareAlbums.prepare_album_for_saving with args"
                                        " ('c', 'xx', '1111', 'true/false')\n"
@@ -2334,7 +2336,8 @@ def test_cmpalb_help(monkeypatch, capsys):
     monkeypatch.setattr(testee, 'workflows', {'cmpalb': 'wf'})
     testobj = setup_cmpalb(monkeypatch, capsys)
     testobj.help()
-    assert capsys.readouterr().out == "called MessageBox.information with args `appname` `wf`\n"
+    assert capsys.readouterr().out == (
+            f"called MessageBox.information with args `{testobj}` `appname` `wf`\n")
 
 
 # tests for new album dialog
@@ -2441,8 +2444,9 @@ def test_newalb_update(monkeypatch, capsys):
     monkeypatch.setattr(mockqtw.MockCheckBox, 'isChecked', lambda *x: True)
     testobj.update()
     assert testobj.parent().data == ()
-    assert capsys.readouterr().out == ('called MessageBox.information with args `AlbumsMatcher`'
-                                       ' `Enter at least the name or press `Cancel``\n')
+    assert capsys.readouterr().out == (
+            f'called MessageBox.information with args `{testobj}` `AlbumsMatcher`'
+            ' `Enter at least the name or press `Cancel``\n')
 
     counter = 0
     testobj.parent().data = ()
@@ -2456,8 +2460,9 @@ def test_newalb_update(monkeypatch, capsys):
     monkeypatch.setattr(mockqtw.MockLineEdit, 'text', mock_text_year)
     testobj.update()
     assert testobj.parent().data == ()
-    assert capsys.readouterr().out == ('called MessageBox.information with args `AlbumsMatcher`'
-                                       ' `Enter at least the name or press `Cancel``\n')
+    assert capsys.readouterr().out == (
+            f'called MessageBox.information with args `{testobj}` `AlbumsMatcher`'
+            ' `Enter at least the name or press `Cancel``\n')
 
 
 # tests for compare tracks tab
@@ -2618,7 +2623,7 @@ def test_cmptrk_refresh_screen(monkeypatch, capsys):
         raise ValueError
     testobj = setup_cmptrk(monkeypatch, capsys)
     testobj.b_save = mockqtw.MockPushButton()
-    assert capsys.readouterr().out == 'called PushButton.__init__ with args ()\n'
+    assert capsys.readouterr().out == 'called PushButton.__init__ with args () {}\n'
     testobj._parent.artist_map = {}
     testobj._parent.albums_map = {}
     assert testobj.refresh_screen() == 'Please match some artists and albums first'
@@ -2694,10 +2699,10 @@ def test_cmptrk_update_navigation_buttons(monkeypatch, capsys):
     testobj.prev_artist_button = mockqtw.MockPushButton()
     testobj.next_album_button = mockqtw.MockPushButton()
     testobj.prev_album_button = mockqtw.MockPushButton()
-    assert capsys.readouterr().out == ('called PushButton.__init__ with args ()\n'
-                                       'called PushButton.__init__ with args ()\n'
-                                       'called PushButton.__init__ with args ()\n'
-                                       'called PushButton.__init__ with args ()\n')
+    assert capsys.readouterr().out == ('called PushButton.__init__ with args () {}\n'
+                                       'called PushButton.__init__ with args () {}\n'
+                                       'called PushButton.__init__ with args () {}\n'
+                                       'called PushButton.__init__ with args () {}\n')
     monkeypatch.setattr(testobj.artists_list, 'currentIndex', lambda *x: 0)
     monkeypatch.setattr(testobj.albums_list, 'currentIndex', lambda *x: 0)
     testobj.c_artists = ['x', 'y']
@@ -2745,7 +2750,7 @@ def test_cmptrk_get_tracks(monkeypatch, capsys):
     monkeypatch.setattr(testee.qtw.QMessageBox, 'information', mock_infobox)
     testobj = setup_cmptrk(monkeypatch, capsys)
     testobj.b_copy = mockqtw.MockPushButton()
-    assert capsys.readouterr().out == 'called PushButton.__init__ with args ()\n'
+    assert capsys.readouterr().out == 'called PushButton.__init__ with args () {}\n'
     testobj.a_album = 'x'
     testobj.get_tracks()
     assert testobj.c_album == 'current text'
@@ -3014,4 +3019,5 @@ def test_cmptrk_help(monkeypatch, capsys):
     monkeypatch.setattr(testee, 'workflows', {'cmptrk': 'wf'})
     testobj = setup_cmptrk(monkeypatch, capsys)
     testobj.help()
-    assert capsys.readouterr().out == "called MessageBox.information with args `appname` `wf`\n"
+    assert capsys.readouterr().out == (
+            f"called MessageBox.information with args `{testobj}` `appname` `wf`\n")
