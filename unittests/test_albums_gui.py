@@ -933,7 +933,7 @@ def test_start_refresh_screen(monkeypatch, capsys):
     testobj.parent().albumtype = 'studio'
     testobj.parent().searchtype = 1
     testobj.parent().sorttype = 'x'
-    testobj.parent().artistids = [2, 1]
+    testobj.parent().artist_ids = [2, 1]
     testobj.parent().artist = types.SimpleNamespace(id=1)
     testobj.refresh_screen()
     assert capsys.readouterr().out == ("called ComboBox.addItems with arg ['twee', 'een']\n"

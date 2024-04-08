@@ -16,18 +16,19 @@ SORTTXT = {'studio': ['Niet sorteren', 'Uitvoerende', 'Titel', 'Jaar'],
            'live': ['Niet sorteren', 'Uitvoerende', 'Locatie', 'Datum']}
 SORTCOL = {'studio': ['', 'artist', 'titel', 'jaar'],
            'live': ['', 'artist', 'locatie', 'datum']}
-RECTYPES = ('Cassette',       # dmla.my.o_soort
-            'Tape',
-            'CD: Enkel',
-            'CD: Dubbel',
-            'Vinyl: 1LP',
-            'Vinyl: 2LP',
-            'Vinyl: 3LP',
-            'Vinyl: single',
-            'Vinyl: 12" single',
-            'MP3 directory',
-            'Banshee music player',
-            'Clementine music player')
+# RECTYPES = ('Cassette',
+#             'Tape',
+#             'CD: Enkel',
+#             'CD: Dubbel',
+#             'Vinyl: 1LP',
+#             'Vinyl: 2LP',
+#             'Vinyl: 3LP',
+#             'Vinyl: single',
+#             'Vinyl: 12" single',
+#             'MP3 directory',
+#             'Banshee music player',
+#             'Clementine music player')
+RECTYPES = dmla.my.o_soort
 
 
 class MainFrame(qtw.QMainWindow):
@@ -334,7 +335,7 @@ class Start(qtw.QWidget):
             return
         widgets[0].setCurrentIndex(parent.searchtype)
         if parent.searchtype == 1 and parent.artist:
-            chosen = parent.artistids.index(parent.artist.id)
+            chosen = parent.artist_ids.index(parent.artist.id)
             widgets[1].setCurrentIndex(chosen + 1)
         if parent.searchtype < 2:
             widgets[2].clear()
