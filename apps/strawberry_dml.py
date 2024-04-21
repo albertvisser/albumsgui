@@ -13,7 +13,7 @@ def retrieve(query, parms):
         conn.row_factory = sqlite3.Row
         cur = conn.cursor()
         for row in cur.execute(query, parms):
-            result.append({name: row[name] for name in row})
+            result.append({name: row[name] for name in row.keys()})
     return result
 
 
