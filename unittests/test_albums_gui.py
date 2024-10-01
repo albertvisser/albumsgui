@@ -230,10 +230,10 @@ class MockNewArtist:
     """
     def __init__(self, parent):
         print('called NewArtistDialog')
-    def exec_(self):
+    def exec(self):
         """stub
         """
-        return testee.qtw.QDialog.Accepted
+        return testee.qtw.QDialog.DialogCode.Accepted
     def refresh_screen(self):
         """stub
         """
@@ -576,7 +576,7 @@ def test_main_go(monkeypatch, capsys):
     testobj = setup_main(monkeypatch, capsys)
     with pytest.raises(SystemExit):
         testobj.go()
-    assert capsys.readouterr().out == 'called Application.exec_\n'
+    assert capsys.readouterr().out == 'called Application.exec\n'
 
 def test_main_get_all_artists(monkeypatch, capsys):
     """unittest for albums_gui.Main.get_all_artists
@@ -722,7 +722,7 @@ def test_main_do_new(monkeypatch, capsys):
     assert capsys.readouterr().out == ('called NewArtistDialog\n'
                                        'called Main.get_all_artists\n'
                                        'called.Main.do_select\n')
-    monkeypatch.setattr(MockNewArtist, 'exec_', lambda *x: testee.qtw.QDialog.Rejected)
+    monkeypatch.setattr(MockNewArtist, 'exec', lambda *x: testee.qtw.QDialog.DialogCode.Rejected)
     monkeypatch.setattr(testee, 'NewArtistDialog', MockNewArtist)
     testobj.do_new()
     assert capsys.readouterr().out == ('called NewArtistDialog\n')
@@ -2056,7 +2056,7 @@ def test_edit_add_another(monkeypatch, capsys):
                                        "called MessageBox.setEscapeButton with arg `1`\n"
                                        "called create_next_button with arg of type"
                                        " <class 'mockgui.mockqtwidgets.MockMessageBox'>\n"
-                                       "called MessageBox.exec_\n"
+                                       "called MessageBox.exec\n"
                                        "called MessageBox.clickedButton\n")
     monkeypatch.setattr(testee, 'create_next_button', mock_create_2)
     testobj.add_another()
@@ -2066,7 +2066,7 @@ def test_edit_add_another(monkeypatch, capsys):
                                        f" 'parent': {testobj}}}\n"
                                        "called MessageBox.setDefaultButton with arg `1`\n"
                                        "called MessageBox.setEscapeButton with arg `1`\n"
-                                       "called MessageBox.exec_\n"
+                                       "called MessageBox.exec\n"
                                        "called MessageBox.clickedButton\n"
                                        "called Main.do_new with args {'keep_sel': True}\n")
 
@@ -2249,12 +2249,12 @@ def test_edittracks_add_new_item(monkeypatch, capsys):
     oldcount = 5
     testobj.tracks = oldcount
     testobj.scrl = mockqtw.MockScrolledWidget()
+    testobj.bar = mockqtw.MockScrollBar()
     testobj.add_new_item()
     assert testobj.tracks == oldcount + 1  # 6
     assert capsys.readouterr().out == ('called ScrolledWidget.__init__\n'
+                                       'called ScrollBar.__init__\n'
                                        'called Artists.add_track_fields with arg `6`\n'
-                                       'called ScrolledWidget.verticalScrollBar\n'
-                                       'called Scrollbar.__init__\n'
                                        'called Scrollbar.maximum\n'
                                        'called Scrollbar.setMaximum with value `167`\n'
                                        'called Scrollbar.maximum\n'
@@ -2490,12 +2490,12 @@ def test_editrecs_add_new_item(monkeypatch, capsys):
     oldcount = 5
     testobj.recs = oldcount
     testobj.scrl = mockqtw.MockScrolledWidget()
+    testobj.bar = mockqtw.MockScrollBar()
     testobj.add_new_item()
     assert testobj.recs == oldcount + 1  # 6
     assert capsys.readouterr().out == ('called ScrolledWidget.__init__\n'
+                                       'called ScrollBar.__init__\n'
                                        'called Artists.add_rec_fields with arg `6`\n'
-                                       'called ScrolledWidget.verticalScrollBar\n'
-                                       'called Scrollbar.__init__\n'
                                        'called Scrollbar.maximum\n'
                                        'called Scrollbar.setMaximum with value `135`\n'
                                        'called Scrollbar.maximum\n'
@@ -2720,49 +2720,51 @@ def test_artists_submit(monkeypatch, capsys):
         """
         print('called dmla.update_artists with args', args)
         return True
-    monkeypatch.setattr(testee.core.Qt, 'WaitCursor', 'waitcursor')
+    # monkeypatch.setattr(testee.core.Qt.CursorShape, 'WaitCursor', 'waitcursor')
     monkeypatch.setattr(testee.gui, 'QCursor', mockqtw.MockCursor)
     monkeypatch.setattr(testee.dmla, 'update_artists', mock_update)
     monkeypatch.setattr(testee.qtw, 'QMessageBox', mockqtw.MockMessageBox)
     testobj = setup_artists(monkeypatch, capsys)
     testobj.fields = ()
     testobj.submit()
-    assert capsys.readouterr().out == ('called Cursor with arg waitcursor\n'
-                                       'called Application.setOverrideCursor with arg of type'
-                                       " <class 'mockgui.mockqtwidgets.MockCursor'>\n"
-                                       f'called MessageBox.information with args `{testobj}`'
-                                       ' `Albums` `Nothing changed`\n'
-                                       'called Application.restoreOverrideCursor\n'
-                                       'called Main.get_all_artists\n'
-                                       'called Main.do_select\n')
+    assert capsys.readouterr().out == (
+            f'called Cursor.__init__ with arg {testee.core.Qt.CursorShape.WaitCursor}\n'
+            'called Application.setOverrideCursor with arg of type'
+            " <class 'mockgui.mockqtwidgets.MockCursor'>\n"
+            f'called MessageBox.information with args `{testobj}` `Albums` `Nothing changed`\n'
+            'called Application.restoreOverrideCursor\n'
+            'called Main.get_all_artists\n'
+            'called Main.do_select\n')
     testobj.parent().artists = ()
     testobj.fields = [(mockqtw.MockLineEdit('x'), mockqtw.MockLineEdit('y'))]
     assert capsys.readouterr().out == ('called LineEdit.__init__\n'
                                        'called LineEdit.__init__\n')
     testobj.submit()
-    assert capsys.readouterr().out == ('called Cursor with arg waitcursor\n'
-                                       'called Application.setOverrideCursor with arg of type'
-                                       " <class 'mockgui.mockqtwidgets.MockCursor'>\n"
-                                       'called LineEdit.text\n'
-                                       'called LineEdit.text\n'
-                                       "called dmla.update_artists with args ([(0, 'x', 'y')],)\n"
-                                       'called Application.restoreOverrideCursor\n'
-                                       'called Main.get_all_artists\n'
-                                       'called Main.do_select\n')
+    assert capsys.readouterr().out == (
+            f'called Cursor.__init__ with arg {testee.core.Qt.CursorShape.WaitCursor}\n'
+            'called Application.setOverrideCursor with arg of type'
+            " <class 'mockgui.mockqtwidgets.MockCursor'>\n"
+            'called LineEdit.text\n'
+            'called LineEdit.text\n'
+            "called dmla.update_artists with args ([(0, 'x', 'y')],)\n"
+            'called Application.restoreOverrideCursor\n'
+            'called Main.get_all_artists\n'
+            'called Main.do_select\n')
     testobj.parent().artists = [types.SimpleNamespace(id=1, first_name='a', last_name='b')]
     testobj.fields = [(mockqtw.MockLineEdit('x'), mockqtw.MockLineEdit('y'))]
     assert capsys.readouterr().out == ('called LineEdit.__init__\n'
                                        'called LineEdit.__init__\n')
     testobj.submit()
-    assert capsys.readouterr().out == ('called Cursor with arg waitcursor\n'
-                                       'called Application.setOverrideCursor with arg of type'
-                                       " <class 'mockgui.mockqtwidgets.MockCursor'>\n"
-                                       'called LineEdit.text\n'
-                                       'called LineEdit.text\n'
-                                       "called dmla.update_artists with args ([(1, 'x', 'y')],)\n"
-                                       'called Application.restoreOverrideCursor\n'
-                                       'called Main.get_all_artists\n'
-                                       'called Main.do_select\n')
+    assert capsys.readouterr().out == (
+            f'called Cursor.__init__ with arg {testee.core.Qt.CursorShape.WaitCursor}\n'
+            'called Application.setOverrideCursor with arg of type'
+            " <class 'mockgui.mockqtwidgets.MockCursor'>\n"
+            'called LineEdit.text\n'
+            'called LineEdit.text\n'
+            "called dmla.update_artists with args ([(1, 'x', 'y')],)\n"
+            'called Application.restoreOverrideCursor\n'
+            'called Main.get_all_artists\n'
+            'called Main.do_select\n')
 
 def test_artists_new(monkeypatch, capsys):
     """unittest for albums_gui.Artists.new
@@ -2776,12 +2778,12 @@ def test_artists_new(monkeypatch, capsys):
     highest = 5
     testobj.last_artistid = highest
     testobj.scrl = mockqtw.MockScrolledWidget()
+    testobj.bar = mockqtw.MockScrollBar()
     testobj.new()
     assert testobj.last_artistid == highest + 1  # 6
     assert capsys.readouterr().out == ('called ScrolledWidget.__init__\n'
+                                       'called ScrollBar.__init__\n'
                                        'called Artists.add_artist_line with arg `6`\n'
-                                       'called ScrolledWidget.verticalScrollBar\n'
-                                       'called Scrollbar.__init__\n'
                                        'called Scrollbar.maximum\n'
                                        'called Scrollbar.setMaximum with value `133`\n'
                                        'called Scrollbar.maximum\n'

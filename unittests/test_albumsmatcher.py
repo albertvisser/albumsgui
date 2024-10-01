@@ -27,10 +27,10 @@ class MockNewArtistDialog:
     def __init__(self, parent, name):
         print('called NewArtistDialog.__init__'
               f' with parent of type `{type(parent)}` and name `{name}`')
-    def exec_(self):
+    def exec(self):
         """stub
         """
-        return testee.qtw.QDialog.Rejected
+        return testee.qtw.QDialog.DialogCode.Rejected
 
 
 class MockNewAlbumDialog:
@@ -39,10 +39,10 @@ class MockNewAlbumDialog:
     def __init__(self, parent, name, year):
         print('called NewAlbumDialog.__init__'
               f' with parent of type `{type(parent)}` and name `{name}`, year `{year}`')
-    def exec_(self):
+    def exec(self):
         """stub
         """
-        return testee.qtw.QDialog.Rejected
+        return testee.qtw.QDialog.DialogCode.Rejected
 
 
 class MockCmpArt:
@@ -294,16 +294,17 @@ def test_popuptext(capsys):
 def test_wait_cursor(monkeypatch, capsys):
     """unittest for albumsmatcher.wait_cursor
     """
-    monkeypatch.setattr(testee.core.Qt, 'WaitCursor', 'waitcursor')
+    # monkeypatch.setattr(testee.core.Qt.CursorShape, 'WaitCursor', 'waitcursor')
     monkeypatch.setattr(testee.gui, 'QCursor', mockqtw.MockCursor)
     win = types.SimpleNamespace(app=mockqtw.MockApplication())
     assert capsys.readouterr().out == "called Application.__init__\n"
     with testee.wait_cursor(win):  # testen als contextmanager
         pass
-    assert capsys.readouterr().out == ("called Cursor with arg waitcursor\n"
-                                       "called Application.setOverrideCursor with arg of type"
-                                       " <class 'mockgui.mockqtwidgets.MockCursor'>\n"
-                                       "called Application.restoreOverrideCursor\n")
+    assert capsys.readouterr().out == (
+            f"called Cursor.__init__ with arg {testee.core.Qt.CursorShape.WaitCursor}\n"
+            "called Application.setOverrideCursor with arg of type"
+            " <class 'mockgui.mockqtwidgets.MockCursor'>\n"
+            "called Application.restoreOverrideCursor\n")
 
 
 # tests for main application class
@@ -357,7 +358,7 @@ def test_main_init(monkeypatch, capsys, expected_output):
     monkeypatch.setattr(testee.qtw, 'QVBoxLayout', mockqtw.MockVBoxLayout)
     monkeypatch.setattr(testee.qtw, 'QHBoxLayout', mockqtw.MockHBoxLayout)
     monkeypatch.setattr(testee.qtw, 'QPushButton', mockqtw.MockPushButton)
-    monkeypatch.setattr(testee.qtw, 'QAction', mockqtw.MockAction)
+    monkeypatch.setattr(testee.gui, 'QAction', mockqtw.MockAction)
     monkeypatch.setattr(testee.MainFrame, 'check_for_data', mock_check)
     monkeypatch.setattr(testee.MainFrame, 'setup_tabwidget', mock_settabs)
     monkeypatch.setattr(testee.MainFrame, 'go', mock_go)
@@ -396,7 +397,7 @@ def test_main_go(monkeypatch, capsys):
     assert capsys.readouterr().out == ''
     with pytest.raises(SystemExit):
         testobj.go('')
-    assert capsys.readouterr().out == 'called Application.exec_\n'
+    assert capsys.readouterr().out == 'called Application.exec\n'
 
 def test_main_check_for_data(monkeypatch, capsys):
     """unittest for albumsmatcher.Main.check_for_data
@@ -665,7 +666,7 @@ def test_cmpart_create_actions(monkeypatch, capsys, expected_output):
         """stub
         """
         print('called CompareArtists.addAction')
-    monkeypatch.setattr(testee.qtw, 'QAction', mockqtw.MockAction)
+    monkeypatch.setattr(testee.gui, 'QAction', mockqtw.MockAction)
     testobj = setup_cmpart(monkeypatch, capsys)
     monkeypatch.setattr(testobj, 'addAction', mock_add)
     testobj.clementine_artists = mockqtw.MockTreeWidget()
@@ -746,7 +747,7 @@ def test_cmpart_focus_artist(monkeypatch, capsys):
     """
     testobj = setup_cmpart(monkeypatch, capsys)
 
-    monkeypatch.setattr(testee.core.Qt, 'MatchFixedString', 1)
+    monkeypatch.setattr(testee.core.Qt, 'MatchFlag', types.SimpleNamespace(MatchFixedString=1))
     testobj.focus_artist('artist')
     assert capsys.readouterr().out == ('called Tree.setFocus\n'
                                        "called Tree.findItems with args ('artist', 1, 0)\n"
@@ -790,7 +791,7 @@ def test_cmpart_focus_item(monkeypatch, capsys):
     testobj = setup_cmpart(monkeypatch, capsys)
     monkeypatch.setattr(testobj.clementine_artists, 'currentIndex',
                         lambda: types.SimpleNamespace(row=lambda: 0))
-    monkeypatch.setattr(testee.core.Qt, 'MatchFixedString', 1)
+    monkeypatch.setattr(testee.core.Qt, 'MatchFlag', types.SimpleNamespace(MatchFixedString=1))
     testobj.focus_item()
     assert capsys.readouterr().out == ('called Tree.setFocus\n'
                                        "called Tree.findItems with args ('', 1, 1)\n"
@@ -919,7 +920,7 @@ def test_cmpart_find_artist(monkeypatch, capsys):
     monkeypatch.setattr(testee.qtw, 'QMessageBox', mockqtw.MockMessageBox)
     monkeypatch.setattr(testobj, 'determine_search_arg_and_find', lambda *x: '1')
     testobj.artist_map = {'some_text': 'x'}
-    monkeypatch.setattr(testee.core.Qt, 'MatchFixedString', 1)
+    monkeypatch.setattr(testee.core.Qt, 'MatchFlag', types.SimpleNamespace(MatchFixedString=1))
     monkeypatch.setattr(testobj.albums_artists, 'findItems', lambda *x: ['xx'])
     testobj.find_artist()
     assert testobj._parent.current_data == 'some_text'
@@ -1075,7 +1076,7 @@ def test_cmpart_add_artist(monkeypatch, capsys):
     monkeypatch.setattr(testee.qtw, 'QTreeWidgetItem', mockqtw.MockTreeItem)
     monkeypatch.setattr(testee, 'NewArtistDialog', MockNewArtistDialog)
     monkeypatch.setattr(testee, 'build_artist_name', mock_build)
-    monkeypatch.setattr(testee.core.Qt, 'MatchFixedString', 1)
+    monkeypatch.setattr(testee.core.Qt, 'MatchFlag', types.SimpleNamespace(MatchFixedString=1))
     testobj = setup_cmpart(monkeypatch, capsys)
     monkeypatch.setattr(testobj, 'update_item', mock_update)
     testobj.appname = 'appname'
@@ -1090,7 +1091,8 @@ def test_cmpart_add_artist(monkeypatch, capsys):
                                        f"`{type(testobj)}` and name ``\n")
 
     # test 2: nothing selected (in artist_buffer or through findItems)
-    monkeypatch.setattr(MockNewArtistDialog, 'exec_', lambda *x: testee.qtw.QDialog.Accepted)
+    monkeypatch.setattr(MockNewArtistDialog, 'exec',
+                        lambda *x: testee.qtw.QDialog.DialogCode.Accepted)
     monkeypatch.setattr(testee, 'NewArtistDialog', MockNewArtistDialog)
     testobj.add_artist()
     assert capsys.readouterr().out == ('called NewArtistDialog.__init__ with parent of type '
@@ -1247,7 +1249,8 @@ def test_cmpart_delete_artist(monkeypatch, capsys):
     assert testobj.artist_map == {'xx': ''}
     assert capsys.readouterr().out == ('called Tree.currentIndex\n'
                                        'called Tree.takeTopLevelItem with arg `1`\n'
-                                       "called CompareArtists.find_items with args ('xx', 8, 0)\n"
+                                       "called CompareArtists.find_items with args ('xx',"
+                                       f" {testee.core.Qt.MatchFlag.MatchFixedString!r}, 0)\n"
                                        "called TreeItem.setText with args (1, '')\n"
                                        'called CompareArtists.set_modified with arg `True`\n')
 
@@ -1528,7 +1531,7 @@ def test_cmpalb_create_actions(monkeypatch, capsys, expected_output):
         """stub
         """
         print('called CompareArtists.addAction')
-    monkeypatch.setattr(testee.qtw, 'QAction', mockqtw.MockAction)
+    monkeypatch.setattr(testee.gui, 'QAction', mockqtw.MockAction)
     testobj = setup_cmpalb(monkeypatch, capsys)
     monkeypatch.setattr(testobj, 'addAction', mock_add)
     testobj.artist_list = mockqtw.MockTreeWidget()
@@ -1747,7 +1750,7 @@ def test_cmpalb_get_albums(monkeypatch, capsys):
     monkeypatch.setattr(testee, 'read_artist_albums', mock_read)
     testobj.albums_to_save = {'current text': []}
     monkeypatch.setattr(testee.qtw, 'QTreeWidgetItem', mockqtw.MockTreeItem)
-    monkeypatch.setattr(testee.core.Qt, 'UserRole', 'x')
+    monkeypatch.setattr(testee.core.Qt, 'ItemDataRole', types.SimpleNamespace(UserRole='x'))
     testobj.get_albums()
     assert testobj.c_artist == 'current text'
     assert testobj._parent.current_data == 'current text'
@@ -1997,8 +2000,8 @@ def test_cmpalb_prepare_for_update(monkeypatch, capsys):
         """
         return [a_item]
     monkeypatch.setattr(testee.qtw, 'QMessageBox', mockqtw.MockMessageBox)
-    monkeypatch.setattr(testee.core.Qt, 'MatchFixedString', 2)
-    monkeypatch.setattr(testee.core.Qt, 'UserRole', 5)
+    monkeypatch.setattr(testee.core.Qt, 'MatchFlag', types.SimpleNamespace(MatchFixedString=2))
+    monkeypatch.setattr(testee.core.Qt, 'ItemDataRole', types.SimpleNamespace(UserRole=5))
     testobj = setup_cmpalb(monkeypatch, capsys)
     monkeypatch.setattr(testobj, 'update_item', mock_update)
     monkeypatch.setattr(testobj.albums_albums, 'findItems', mock_find)
@@ -2086,8 +2089,8 @@ def test_cmpalb_add_album(monkeypatch, capsys):
     monkeypatch.setattr(testee, 'build_album_name', mock_build)
     monkeypatch.setattr(testee.qtw, 'QMessageBox', mockqtw.MockMessageBox)
     monkeypatch.setattr(testee.qtw, 'QInputDialog', mockqtw.MockInputDialog)
-    monkeypatch.setattr(testee.core.Qt, 'MatchFixedString', 2)
-    monkeypatch.setattr(testee.core.Qt, 'UserRole', 5)
+    monkeypatch.setattr(testee.core.Qt, 'MatchFlag', types.SimpleNamespace(MatchFixedString=2))
+    monkeypatch.setattr(testee.core.Qt, 'ItemDataRole', types.SimpleNamespace(UserRole=5))
     testobj = setup_cmpalb(monkeypatch, capsys)
     testobj.appname = 'app'
     monkeypatch.setattr(testobj, 'prepare_album_for_saving', mock_prepare)
@@ -2099,7 +2102,8 @@ def test_cmpalb_add_album(monkeypatch, capsys):
                                        "called NewAlbumDialog.__init__ with parent of type"
                                        " `<class 'apps.albumsmatcher.CompareAlbums'>`"
                                        " and name ``, year ``\n")
-    monkeypatch.setattr(MockNewAlbumDialog, 'exec_', lambda *x: testee.qtw.QDialog.Accepted)
+    monkeypatch.setattr(MockNewAlbumDialog, 'exec',
+                        lambda *x: testee.qtw.QDialog.DialogCode.Accepted)
     monkeypatch.setattr(testobj.clementine_albums, 'currentItem', lambda *x: None)
     testobj.data = ('xx', '1111', 'true/false')
     testobj.add_album()
@@ -2256,13 +2260,14 @@ def test_cmpalb_save_all(monkeypatch, capsys):
     assert testobj.albums_map == {}
     assert testobj.albums_to_save == {}
     assert testobj.albums_to_update == {}
-    assert capsys.readouterr().out == ("called Cursor with arg 3\n"
-                                       "called Application.setOverrideCursor with arg of type"
-                                       " <class 'mockgui.mockqtwidgets.MockCursor'>\n"
-                                       "called Application.restoreOverrideCursor\n"
-                                       "called save_appdata with args ([{}, {}],)\n"
-                                       "called ComboBox.currentIndex\n"
-                                       "called CompareAlbums.refresh_screen with args (1,)\n")
+    assert capsys.readouterr().out == (
+            f"called Cursor.__init__ with arg {testee.core.Qt.CursorShape.WaitCursor}\n"
+            "called Application.setOverrideCursor with arg of type"
+            " <class 'mockgui.mockqtwidgets.MockCursor'>\n"
+            "called Application.restoreOverrideCursor\n"
+            "called save_appdata with args ([{}, {}],)\n"
+            "called ComboBox.currentIndex\n"
+            "called CompareAlbums.refresh_screen with args (1,)\n")
 
     testobj.albums_map = {'x': {'cname': ('aname', 11)}}
     testobj.artist_map = {'x': 5, 'z': 9}
@@ -2272,18 +2277,17 @@ def test_cmpalb_save_all(monkeypatch, capsys):
     assert testobj.albums_map == {'x': {'cname': ('aname', 11)}}
     assert testobj.albums_to_save == {}
     assert testobj.albums_to_update == {}
-    assert capsys.readouterr().out == ("called Cursor with arg 3\n"
-                                       "called Application.setOverrideCursor with arg of type"
-                                       " <class 'mockgui.mockqtwidgets.MockCursor'>\n"
-                                       "called dmla.update_albums_by_artist with args"
-                                       " (5, [(15, 'aa', 1, True, []), (0, 'bb', 2, False, [])])\n"
-                                       "called build_album_name for"
-                                       " `namespace(id=1, title='xxx', year=2000)`\n"
-                                       "called Application.restoreOverrideCursor\n"
-                                       "called save_appdata with args"
-                                       " ([{}, {'x': {'cname': ('aname', 11)}}],)\n"
-                                       "called ComboBox.currentIndex\n"
-                                       "called CompareAlbums.refresh_screen with args (1,)\n")
+    assert capsys.readouterr().out == (
+            f"called Cursor.__init__ with arg {testee.core.Qt.CursorShape.WaitCursor}\n"
+            "called Application.setOverrideCursor with arg of type"
+            " <class 'mockgui.mockqtwidgets.MockCursor'>\n"
+            "called dmla.update_albums_by_artist with args"
+            " (5, [(15, 'aa', 1, True, []), (0, 'bb', 2, False, [])])\n"
+            "called build_album_name for `namespace(id=1, title='xxx', year=2000)`\n"
+            "called Application.restoreOverrideCursor\n"
+            "called save_appdata with args ([{}, {'x': {'cname': ('aname', 11)}}],)\n"
+            "called ComboBox.currentIndex\n"
+            "called CompareAlbums.refresh_screen with args (1,)\n")
 
     testobj.albums_map = {'x': {'cname': ('xxx, 2000', 10)}}
     testobj.artist_map = {'x': 5, 'z': 9}
@@ -2293,18 +2297,17 @@ def test_cmpalb_save_all(monkeypatch, capsys):
     assert testobj.albums_map == {'x': {'cname': ('xxx, 2000', 1)}}
     assert testobj.albums_to_save == {}
     assert testobj.albums_to_update == {}
-    assert capsys.readouterr().out == ("called Cursor with arg 3\n"
-                                       "called Application.setOverrideCursor with arg of type"
-                                       " <class 'mockgui.mockqtwidgets.MockCursor'>\n"
-                                       "called dmla.update_albums_by_artist with args"
-                                       " (5, [(15, 'aa', 1, True, []), (0, 'bb', 2, False, [])])\n"
-                                       "called build_album_name for"
-                                       " `namespace(id=1, title='xxx', year=2000)`\n"
-                                       "called Application.restoreOverrideCursor\n"
-                                       "called save_appdata with args"
-                                       " ([{}, {'x': {'cname': ('xxx, 2000', 1)}}],)\n"
-                                       "called ComboBox.currentIndex\n"
-                                       "called CompareAlbums.refresh_screen with args (1,)\n")
+    assert capsys.readouterr().out == (
+            f"called Cursor.__init__ with arg {testee.core.Qt.CursorShape.WaitCursor}\n"
+            "called Application.setOverrideCursor with arg of type"
+            " <class 'mockgui.mockqtwidgets.MockCursor'>\n"
+            "called dmla.update_albums_by_artist with args"
+            " (5, [(15, 'aa', 1, True, []), (0, 'bb', 2, False, [])])\n"
+            "called build_album_name for `namespace(id=1, title='xxx', year=2000)`\n"
+            "called Application.restoreOverrideCursor\n"
+            "called save_appdata with args ([{}, {'x': {'cname': ('xxx, 2000', 1)}}],)\n"
+            "called ComboBox.currentIndex\n"
+            "called CompareAlbums.refresh_screen with args (1,)\n")
 
     monkeypatch.setattr(testee.dmla, 'update_albums_by_artist',
                         lambda *x: [types.SimpleNamespace(id=10, title='xxx', year=2000)])
@@ -2316,18 +2319,17 @@ def test_cmpalb_save_all(monkeypatch, capsys):
     assert testobj.albums_map == {'x': {'cname': ('xxx, 2000', 10)}}
     assert testobj.albums_to_save == {}
     assert testobj.albums_to_update == {}
-    assert capsys.readouterr().out == ("called Cursor with arg 3\n"
-                                       "called Application.setOverrideCursor with arg of type"
-                                       " <class 'mockgui.mockqtwidgets.MockCursor'>\n"
-                                       # "called dmla.update_albums_by_artist with args"
-                                       # " (5, [(15, 'aa', 1, True, []), (0, 'bb', 2, False, [])])\n"
-                                       "called build_album_name for"
-                                       " `namespace(id=10, title='xxx', year=2000)`\n"
-                                       "called Application.restoreOverrideCursor\n"
-                                       "called save_appdata with args"
-                                       " ([{}, {'x': {'cname': ('xxx, 2000', 10)}}],)\n"
-                                       "called ComboBox.currentIndex\n"
-                                       "called CompareAlbums.refresh_screen with args (1,)\n")
+    assert capsys.readouterr().out == (
+            f"called Cursor.__init__ with arg {testee.core.Qt.CursorShape.WaitCursor}\n"
+            "called Application.setOverrideCursor with arg of type"
+            " <class 'mockgui.mockqtwidgets.MockCursor'>\n"
+            # "called dmla.update_albums_by_artist with args"
+            # " (5, [(15, 'aa', 1, True, []), (0, 'bb', 2, False, [])])\n"
+            "called build_album_name for `namespace(id=10, title='xxx', year=2000)`\n"
+            "called Application.restoreOverrideCursor\n"
+            "called save_appdata with args ([{}, {'x': {'cname': ('xxx, 2000', 10)}}],)\n"
+            "called ComboBox.currentIndex\n"
+            "called CompareAlbums.refresh_screen with args (1,)\n")
 
 def test_cmpalb_help(monkeypatch, capsys):
     """unittest for albumsmatcher.CompareAlbums.help
@@ -2582,7 +2584,7 @@ def test_cmptrk_create_actions(monkeypatch, capsys, expected_output):
         """stub
         """
         print('called CompareArtists.addAction')
-    monkeypatch.setattr(testee.qtw, 'QAction', mockqtw.MockAction)
+    monkeypatch.setattr(testee.gui, 'QAction', mockqtw.MockAction)
     testobj = setup_cmptrk(monkeypatch, capsys)
     monkeypatch.setattr(testobj, 'addAction', mock_add)
     testobj.create_actions()
@@ -2932,7 +2934,7 @@ def test_cmptrk_copy_tracks(monkeypatch, capsys):
         """
         print('called CompareTracks.refresh_screen with args', args)
     monkeypatch.setattr(testee.dmla, 'update_album_tracknames', mock_update)
-    monkeypatch.setattr(testee.core.Qt, 'WaitCursor', 'waitcursor')
+    monkeypatch.setattr(testee.core.Qt, 'CursorShape', types.SimpleNamespace(WaitCursor='waitcursor'))
     monkeypatch.setattr(testee.gui, 'QCursor', mockqtw.MockCursor)
     testobj = setup_cmptrk(monkeypatch, capsys)
     testobj.a_album = {'x': 'y'}
@@ -2943,7 +2945,7 @@ def test_cmptrk_copy_tracks(monkeypatch, capsys):
     monkeypatch.setattr(testobj, 'refresh_screen', mock_refresh)
     testobj.copy_tracks()
     assert capsys.readouterr().out == ('called Tree.topLevelItem with index 0\n'
-                                       'called Cursor with arg waitcursor\n'
+                                       'called Cursor.__init__ with arg waitcursor\n'
                                        'called Application.setOverrideCursor with arg of type'
                                        " <class 'mockgui.mockqtwidgets.MockCursor'>\n"
                                        'called dmla.update_album_tracknames with args'

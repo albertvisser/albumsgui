@@ -1,9 +1,9 @@
 """PyQT version of albums webapp
 """
 import sys
-import PyQt5.QtWidgets as qtw
-import PyQt5.QtGui as gui
-import PyQt5.QtCore as core
+import PyQt6.QtWidgets as qtw
+import PyQt6.QtGui as gui
+import PyQt6.QtCore as core
 import apps.albums_dml as dmla
 import apps.albumsmatcher
 
@@ -58,7 +58,7 @@ class MainFrame(qtw.QMainWindow):
 
     def go(self):
         "start the event loop"
-        sys.exit(self.app.exec_())
+        sys.exit(self.app.exec())
 
     def get_all_artists(self):
         """refresh list of artist convenience variables
@@ -101,7 +101,7 @@ class MainFrame(qtw.QMainWindow):
         """show screen for adding a new album or artist
         """
         if self.albumtype == 'artist':
-            if NewArtistDialog(self).exec_() == qtw.QDialog.Accepted:
+            if NewArtistDialog(self).exec() == qtw.QDialog.DialogCode.Accepted:
                 self.get_all_artists()
                 self.do_select()
         else:
@@ -285,7 +285,7 @@ class Start(qtw.QWidget):
         row += 1
         hbox = qtw.QHBoxLayout()
         frm = qtw.QFrame(self)
-        frm.setFrameShape(qtw.QFrame.HLine)
+        frm.setFrameShape(qtw.QFrame.Shape.HLine)
         hbox.addWidget(frm)
         gbox.addLayout(hbox, row, 0, 1, 3)
         row += 1
@@ -450,8 +450,7 @@ class Select(qtw.QWidget):
             vbox.addLayout(hbox)
             labeltxt = 'of ' + labeltxt2
 
-        if not (self.parent().albumtype == 'studio'
-                and self.parent().searchtype in (3, 4)):
+        if not (self.parent().albumtype == 'studio' and self.parent().searchtype in (3, 4)):
             hbox = qtw.QHBoxLayout()
             hbox.addWidget(qtw.QLabel(labeltxt, self))
             self.change_type = qtw.QPushButton('', self)
@@ -883,7 +882,6 @@ class EditDetails(qtw.QWidget):
             elif (self.parent().albumtype, self.parent().searchtype, caption) in valid_combos:
                 win.setText(self.parent().search_arg)
 
-
     def refresh_screen(self):
         """bring screen up-to-date
         """
@@ -969,11 +967,11 @@ class EditDetails(qtw.QWidget):
         """Show message with possibility to continue adding items
         """
         message = qtw.QMessageBox(qtw.QMessageBox.information, 'Albums', "Album added",
-                                  buttons=qtw.QMessageBox.Ok, parent=self)
+                                  buttons=qtw.QMessageBox.StandardButton.Ok, parent=self)
         message.setDefaultButton(qtw.QMessageBox.Ok)
         message.setEscapeButton(qtw.QMessageBox.Ok)
         next_button = create_next_button(message)
-        message.exec_()
+        message.exec()
         if message.clickedButton() == next_button:
             self.parent().do_new(keep_sel=self.keep_sel)
 
@@ -1036,6 +1034,7 @@ class EditTracks(qtw.QWidget):
         self.scrl = qtw.QScrollArea()
         self.scrl.setWidget(frm)
         self.scrl.setWidgetResizable(True)
+        self.bar = self.scrl.verticalScrollBar()
         vbox.addWidget(self.scrl)
 
         hbox = qtw.QHBoxLayout()
@@ -1096,9 +1095,11 @@ class EditTracks(qtw.QWidget):
         """
         self.tracks += 1
         self.add_track_fields(self.tracks)
-        vbar = self.scrl.verticalScrollBar()
-        vbar.setMaximum(vbar.maximum() + 68)
-        vbar.setValue(vbar.maximum())
+        # vbar = self.scrl.verticalScrollBar()
+        # vbar.setMaximum(vbar.maximum() + 68)
+        self.bar.setMaximum(self.bar.maximum() + 68)
+        # vbar.setValue(vbar.maximum())
+        self.bar.setValue(self.bar.maximum())
 
     def submit(self, skip_confirm=False):
         """neem de waarden van de invulvelden over en geef ze door aan de database
@@ -1127,8 +1128,8 @@ class EditTracks(qtw.QWidget):
                 if ok:
                     qtw.QMessageBox.information(self, 'Albums', 'Tracks updated')
                 else:
-                    qtw.QMessageBox.information(self, 'Albums', 'Something'
-                                                ' went wrong, please try again')
+                    qtw.QMessageBox.information(self, 'Albums',
+                                                'Something went wrong, please try again')
             # eigenlijk zou je hierna de data opnieuw moeten ophalen en het scherm opnieuw
             # opbouwen - wat nu alleen gebeurt als je naar het detailscherm gaat
         else:
@@ -1234,9 +1235,11 @@ class EditRecordings(qtw.QWidget):
         """
         self.recs += 1
         self.add_rec_fields(self.recs)
-        vbar = self.scrl.verticalScrollBar()
-        vbar.setMaximum(vbar.maximum() + 36)
-        vbar.setValue(vbar.maximum())
+        # vbar = self.scrl.verticalScrollBar()
+        # vbar.setMaximum(vbar.maximum() + 36)
+        self.bar.setMaximum(self.bar.maximum() + 36)
+        # vbar.setValue(vbar.maximum())
+        self.bar.setValue(self.bar.maximum())
 
     def submit(self, skip_confirm=False):
         """neem de waarden van de invulvelden over en geef ze door aan de database
@@ -1265,8 +1268,8 @@ class EditRecordings(qtw.QWidget):
                 if ok:
                     qtw.QMessageBox.information(self, 'Albums', 'Recordings updated')
                 else:
-                    qtw.QMessageBox.information(self, 'Albums', 'Something '
-                                                'went wrong, please try again')
+                    qtw.QMessageBox.information(self, 'Albums',
+                                                'Something went wrong, please try again')
             # eigenlijk zou je hierna de data opnieuw moeten ophalen en het scherm opnieuw
             # opbouwen - wat nu alleen gebeurt als je naar het detailscherm gaat
         elif not skip_confirm:
@@ -1320,6 +1323,7 @@ class Artists(qtw.QWidget):
         self.scrl = qtw.QScrollArea()
         self.scrl.setWidget(frm)
         self.scrl.setWidgetResizable(True)
+        self.bar = self.scrl.verticalScrollBar()
         vbox.addWidget(self.scrl)
 
         vbox.addLayout(button_strip(self, 'Edit', 'New', 'Start'))
@@ -1359,7 +1363,7 @@ class Artists(qtw.QWidget):
     def submit(self):
         """neem de waarden van de invulvelden over en geef ze door aan de database
         """
-        self.parent().app.setOverrideCursor(gui.QCursor(core.Qt.WaitCursor))
+        self.parent().app.setOverrideCursor(gui.QCursor(core.Qt.CursorShape.WaitCursor))
         changes = []
         new = changed = False
         for ix, wins in enumerate(self.fields):
@@ -1385,9 +1389,11 @@ class Artists(qtw.QWidget):
         """
         self.last_artistid += 1
         self.add_artist_line(self.last_artistid)
-        vbar = self.scrl.verticalScrollBar()
-        vbar.setMaximum(vbar.maximum() + 34)
-        vbar.setValue(vbar.maximum())
+        # vbar = self.scrl.verticalScrollBar()
+        # vbar.setMaximum(vbar.maximum() + 34)
+        self.bar.setMaximum(self.bar.maximum() + 34)
+        # vbar.setValue(vbar.maximum())
+        self.bar.setValue(self.bar.maximum())
 
     def exit(self):
         """shutdown application"""
@@ -1520,7 +1526,7 @@ def newline(parent):
     """
     hbox = qtw.QHBoxLayout()
     frm = qtw.QFrame(parent)
-    frm.setFrameShape(qtw.QFrame.HLine)
+    frm.setFrameShape(qtw.QFrame.Shape.HLine)
     hbox.addWidget(frm)
     return hbox
 
@@ -1564,7 +1570,7 @@ def button_strip(parent, *buttons):
 
 def create_next_button(messagebox):
     """create a button to add a new entry"""
-    return messagebox.addButton('&Add Another', qtw.QMessageBox.AcceptRole)
+    return messagebox.addButton('&Add Another', qtw.QMessageBox.ButtonRole.AcceptRole)
 
 
 def exitbutton(parent, callback, extrawidget=None):

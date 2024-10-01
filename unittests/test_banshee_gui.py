@@ -70,9 +70,9 @@ class MockMainWidget:
         def mock_app_exec():
             """stub
             """
-            return 'called Application.exec_'
+            return 'called Application.exec'
         print('called MainWidget.__init__')
-        self.app = types.SimpleNamespace(exec_=mock_app_exec)
+        self.app = types.SimpleNamespace(exec=mock_app_exec)
     def setLayout(self, *args):
         """stub
         """
@@ -91,7 +91,7 @@ def test_mainwidget_go(monkeypatch, capsys):
     assert capsys.readouterr().out == 'called MainWidget.__init__\n'
     with pytest.raises(SystemExit) as exc:
         testobj.go()
-    assert str(exc.value) == 'called Application.exec_'
+    assert str(exc.value) == 'called Application.exec'
 
 
 def test_mainwidget_create_widgets(monkeypatch, capsys, expected_output):

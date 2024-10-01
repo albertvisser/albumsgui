@@ -2,8 +2,8 @@
 """
 import sys
 # import os.path
-import PyQt5.QtWidgets as qtw
-import PyQt5.QtGui as gui
+import PyQt6.QtWidgets as qtw
+import PyQt6.QtGui as gui
 ## import PyQt5.QtCore as core
 import apps.banshee_settings as config
 DML = {}
@@ -53,7 +53,7 @@ class MainWidget(qtw.QWidget):
 
     def go(self):
         "start the event loop"
-        sys.exit(self.app.exec_())
+        sys.exit(self.app.exec())
 
     def create_widgets(self):
         """build screen elements

@@ -8,9 +8,9 @@ import shutil
 # import logging
 import contextlib
 import itertools
-import PyQt5.QtWidgets as qtw
-import PyQt5.QtGui as gui
-import PyQt5.QtCore as core
+import PyQt6.QtWidgets as qtw
+import PyQt6.QtGui as gui
+import PyQt6.QtCore as core
 import apps.albums_dml as dmla
 import apps.clementine_dml as dmlc
 HERE = pathlib.Path(__file__).parent.parent.absolute()  # os.path.abspath(os.path.dirname(__file__))
@@ -62,7 +62,7 @@ class MainFrame(qtw.QMainWindow):
         frm.setLayout(vbox)
         self.setCentralWidget(frm)
 
-        act = qtw.QAction('Exit', self)
+        act = gui.QAction('Exit', self)
         act.triggered.connect(self.exit)
         act.setShortcut('Ctrl+Q')
         self.addAction(act)
@@ -79,7 +79,7 @@ class MainFrame(qtw.QMainWindow):
     def go(self, app_from_parent):
         "if standalone, start the event loop"
         if not app_from_parent:
-            sys.exit(self.app.exec_())
+            sys.exit(self.app.exec())
 
     def check_for_data(self):
         """retrieve saved data if it exists
@@ -136,12 +136,13 @@ class MainFrame(qtw.QMainWindow):
             # return False
             ok = qtw.QMessageBox.question(self, self.title,
                                           f'{checkpage_messages[pageno]} - save now?',
-                                          qtw.QMessageBox.Yes | qtw.QMessageBox.No |
-                                          qtw.QMessageBox.Cancel,
-                                          qtw.QMessageBox.No)
-            if ok == qtw.QMessageBox.Cancel:
+                                          qtw.QMessageBox.StandardButton.Yes
+                                          | qtw.QMessageBox.StandardButton.No
+                                          | qtw.QMessageBox.StandardButton.Cancel,
+                                          qtw.QMessageBox.StandardButton.No)
+            if ok == qtw.QMessageBox.StandardButton.Cancel:
                 return False
-            if ok == qtw.QMessageBox.Yes:
+            if ok == qtw.QMessageBox.StandardButton.Yes:
                 self.pages[pageno][1].save_all()
         return True
 
@@ -165,7 +166,7 @@ class CompareArtists(qtw.QWidget):
         tree.setColumnCount(2)
         hdr = tree.header()
         hdr.setStretchLastSection(False)
-        hdr.setSectionResizeMode(0, qtw.QHeaderView.Stretch)
+        hdr.setSectionResizeMode(0, qtw.QHeaderView.ResizeMode.Stretch)
         tree.setColumnWidth(1, 50)
         tree.setHeaderLabels(['Artist', 'Match'])
         tree.setMouseTracking(True)
@@ -179,7 +180,7 @@ class CompareArtists(qtw.QWidget):
         hdr.setStretchLastSection(False)
         tree.setColumnWidth(0, 80)
         tree.setColumnWidth(2, 50)
-        hdr.setSectionResizeMode(1, qtw.QHeaderView.Stretch)
+        hdr.setSectionResizeMode(1, qtw.QHeaderView.ResizeMode.Stretch)
         tree.setHeaderLabels(['First Name', 'Last Name', 'Id'])
         tree.setMouseTracking(True)
         tree.itemEntered.connect(popuptext)
@@ -251,7 +252,7 @@ class CompareArtists(qtw.QWidget):
                                      ('Prev', self.focus_prev, ['Ctrl+P']),
                                      ('Delete', self.delete_artist, ['Ctrl+D', 'Del']),
                                      ('Save', self.save_all, ['Ctrl+S'])):
-            act = qtw.QAction(text, self)
+            act = gui.QAction(text, self)
             act.triggered.connect(callback)
             act.setShortcuts(keys)
             self.addAction(act)
@@ -265,8 +266,7 @@ class CompareArtists(qtw.QWidget):
         self.artist_list_a, self.artist_list_c = read_artists()
         self.lookup = {f'{x} {y}'.strip(): z for x, y, z in self.artist_list_a}
         self.finda = {z: (x, y) for x, y, z in self.artist_list_a}
-        self.artist_map = self._parent.artist_map or {x: ''
-                                                      for x in self.artist_list_c}
+        self.artist_map = self._parent.artist_map or {x: '' for x in self.artist_list_c}
         self.max_artist = max([int(x[2]) for x in self.artist_list_a])
         self.clementine_artists.clear()
         for item in self.artist_list_c:
@@ -296,7 +296,7 @@ class CompareArtists(qtw.QWidget):
         else:
             findstr = ''
             column = 1
-        test = self.clementine_artists.findItems(findstr, core.Qt.MatchFixedString, column)
+        test = self.clementine_artists.findItems(findstr, core.Qt.MatchFlag.MatchFixedString, column)
         item = test[0] if test else self.clementine_artists.topLevelItem(0)
         self.clementine_artists.setCurrentItem(item)
 
@@ -315,7 +315,7 @@ class CompareArtists(qtw.QWidget):
         """
         self.clementine_artists.setFocus()
         current = self.clementine_artists.currentIndex()
-        test = self.clementine_artists.findItems('', core.Qt.MatchFixedString, 1)
+        test = self.clementine_artists.findItems('', core.Qt.MatchFlag.MatchFixedString, 1)
         if test:
             if not forward:
                 test = reversed(test)
@@ -372,14 +372,15 @@ class CompareArtists(qtw.QWidget):
         if self.artist_map[search]:  # [item.text(0)]:
             ok = qtw.QMessageBox.question(self, self.appname,
                                           'Artist already has a match - do you want to reassign?',
-                                          qtw.QMessageBox.Yes | qtw.QMessageBox.No,
-                                          qtw.QMessageBox.No)
-            if ok == qtw.QMessageBox.No:
+                                          qtw.QMessageBox.StandardButton.Yes
+                                          | qtw.QMessageBox.StandardButton.No,
+                                          qtw.QMessageBox.StandardButton.No)
+            if ok == qtw.QMessageBox.StandardButton.No:
                 return
             self.artist_map[search] = ''  # [item.text(0)] = ''
         found = self.determine_search_arg_and_find(search)
         if found:
-            find = self.albums_artists.findItems(found, core.Qt.MatchFixedString, 2)
+            find = self.albums_artists.findItems(found, core.Qt.MatchFlag.MatchFixedString, 2)
             artists, results = self.filter_matched(find)
             a_item = None
             selected, ok = qtw.QInputDialog.getItem(self, self.appname, 'Select Artist', artists,
@@ -443,13 +444,13 @@ class CompareArtists(qtw.QWidget):
         """
         item = self.artist_buffer
         artistname = item.text(0) if item else ''
-        dlg = NewArtistDialog(self, artistname).exec_()
-        if dlg != qtw.QDialog.Accepted:
+        dlg = NewArtistDialog(self, artistname).exec()
+        if dlg != qtw.QDialog.DialogCode.Accepted:
             return
         fname, lname = self.data
         if not item:
-            result = self.clementine_artists.findItems(f'{fname} {lname}', core.Qt.MatchFixedString,
-                                                       0)
+            result = self.clementine_artists.findItems(f'{fname} {lname}',
+                                                       core.Qt.MatchFlag.MatchFixedString, 0)
             if result:
                 item = result[0]
         if not item:
@@ -458,7 +459,7 @@ class CompareArtists(qtw.QWidget):
             return
 
         a_item = None
-        results = self.albums_artists.findItems(lname, core.Qt.MatchFixedString, 1)
+        results = self.albums_artists.findItems(lname, core.Qt.MatchFlag.MatchFixedString, 1)
         data = [build_artist_name(x.text(0), x.text(1)) for x in results]
         if results:
             selected, ok = qtw.QInputDialog.getItem(self, self.appname, 'Select Artist', data,
@@ -480,9 +481,10 @@ class CompareArtists(qtw.QWidget):
             return
         name = build_artist_name(item.text(0), item.text(1))
         ok = qtw.QMessageBox.question(self, self.appname, f'Ok to delete artist `{name}`?',
-                                      qtw.QMessageBox.Ok | qtw.QMessageBox.Cancel,
-                                      qtw.QMessageBox.Ok)
-        if ok != qtw.QMessageBox.Ok:
+                                      qtw.QMessageBox.StandardButton.Ok
+                                      | qtw.QMessageBox.StandardButton.Cancel,
+                                      qtw.QMessageBox.StandardButton.Ok)
+        if ok != qtw.QMessageBox.StandardButton.Ok:
             return
         ix = self.albums_artists.currentIndex().row()
         self.albums_artists.takeTopLevelItem(ix)
@@ -494,7 +496,7 @@ class CompareArtists(qtw.QWidget):
             name = ''
         if name and self.artist_map[name] == a_itemkey:
             self.artist_map[name] = ''
-            results = self.clementine_artists.findItems(name, core.Qt.MatchFixedString, 0)
+            results = self.clementine_artists.findItems(name, core.Qt.MatchFlag.MatchFixedString, 0)
             results[0].setText(1, '')
         self.set_modified(bool(self.new_matches))
 
@@ -604,7 +606,7 @@ class CompareAlbums(qtw.QWidget):
         hdr = tree.header()
         hdr.setStretchLastSection(False)
         tree.setColumnWidth(1, 60)
-        hdr.setSectionResizeMode(0, qtw.QHeaderView.Stretch)
+        hdr.setSectionResizeMode(0, qtw.QHeaderView.ResizeMode.Stretch)
         tree.setHeaderLabels(['Album Name in Clementine', 'Match'])
         tree.setMouseTracking(True)
         tree.itemEntered.connect(popuptext)
@@ -628,7 +630,7 @@ class CompareAlbums(qtw.QWidget):
         hdr.setStretchLastSection(False)
         tree.setColumnWidth(1, 60)
         tree.setColumnWidth(2, 60)
-        hdr.setSectionResizeMode(0, qtw.QHeaderView.Stretch)
+        hdr.setSectionResizeMode(0, qtw.QHeaderView.ResizeMode.Stretch)
         tree.setHeaderLabels(['Album Name in Albums', 'Year', 'Id'])
         tree.setMouseTracking(True)
         tree.itemEntered.connect(popuptext)
@@ -656,7 +658,7 @@ class CompareAlbums(qtw.QWidget):
                                      ('Prev', self.prev_artist, ['Ctrl+P']),
                                      ('Find', self.find_album, ['Ctrl+Return', 'Ctrl+F']),
                                      ('Save', self.save_all, ['Ctrl+S'])):
-            act = qtw.QAction(text, self)
+            act = gui.QAction(text, self)
             act.triggered.connect(callback)
             act.setShortcuts(keys)
             self.addAction(act)
@@ -729,7 +731,7 @@ class CompareAlbums(qtw.QWidget):
         self.clementine_albums.clear()
         for item, year in c_albums:
             new = qtw.QTreeWidgetItem([item])
-            new.setData(0, core.Qt.UserRole, year)
+            new.setData(0, core.Qt.ItemDataRole.UserRole, year)
             with contextlib.suppress(KeyError):
                 new.setText(1, str(self.albums_map[self.c_artist][item][1]))
             self.clementine_albums.addTopLevelItem(new)
@@ -811,8 +813,9 @@ class CompareAlbums(qtw.QWidget):
 
     def prepare_album_for_update(self, c_item, selected_album):
         "actions for an album selected from the list"
-        a_item = self.albums_albums.findItems(str(selected_album[1]), core.Qt.MatchFixedString, 2)[0]
-        c_year = str(c_item.data(0, core.Qt.UserRole))
+        a_item = self.albums_albums.findItems(str(selected_album[1]),
+                                              core.Qt.MatchFlag.MatchFixedString, 2)[0]
+        c_year = str(c_item.data(0, core.Qt.ItemDataRole.UserRole))
         if c_year:
             a_year = a_item.text(1)
             if c_year != a_year:
@@ -835,13 +838,13 @@ class CompareAlbums(qtw.QWidget):
         """
         item = self.clementine_albums.currentItem()
         albumname = item.text(0) if item else ''
-        year = item.data(0, core.Qt.UserRole) if item else ''
-        dlg = NewAlbumDialog(self, albumname, year).exec_()
-        if dlg != qtw.QDialog.Accepted:
+        year = item.data(0, core.Qt.ItemDataRole.UserRole) if item else ''
+        dlg = NewAlbumDialog(self, albumname, year).exec()
+        if dlg != qtw.QDialog.DialogCode.Accepted:
             return
         name, year, is_live = self.data
         if not item:
-            result = self.clementine_albums.findItems(name, core.Qt.MatchFixedString, 0)
+            result = self.clementine_albums.findItems(name, core.Qt.MatchFlag.MatchFixedString, 0)
             if result:
                 item = result[0]
         if not item:
@@ -849,7 +852,7 @@ class CompareAlbums(qtw.QWidget):
                                         "Album doesn't exist on the Clementine side")
             return
         a_item = None
-        results = self.albums_albums.findItems(name, core.Qt.MatchFixedString, 0)
+        results = self.albums_albums.findItems(name, core.Qt.MatchFlag.MatchFixedString, 0)
         if results:
             data = [build_album_name(x) for x in results]
             selected, ok = qtw.QInputDialog.getItem(self, self.appname, 'Select Album', data,
@@ -1091,7 +1094,7 @@ class CompareTracks(qtw.QWidget):
                                      ('Copy', self.copy_tracks, ['Ctrl+C']),
                                      ('Unlink', self.unlink, ['Ctrl+U']),
                                      ('Save', self.save_all, ['Ctrl+S'])):
-            act = qtw.QAction(text, self)
+            act = gui.QAction(text, self)
             act.triggered.connect(callback)
             act.setShortcuts(keys)
             self.addAction(act)
@@ -1373,6 +1376,6 @@ def popuptext(item, colno):
 def wait_cursor(win):
     """change cursor before and after executing some function
     """
-    win.app.setOverrideCursor(gui.QCursor(core.Qt.WaitCursor))
+    win.app.setOverrideCursor(gui.QCursor(core.Qt.CursorShape.WaitCursor))
     yield
     win.app.restoreOverrideCursor()

@@ -622,6 +622,7 @@ called Frame.setLayout with arg of type <class 'mockgui.mockqtwidgets.MockVBoxLa
 called ScrollArea.__init__ with args ()
 called ScrollArea.setWidget with arg of type `<class 'mockgui.mockqtwidgets.MockFrame'>`
 called ScrollArea.setWidgetResizable with arg `True`
+called ScrollArea.verticalScrollBar
 called VBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockScrollArea'>
 called HBox.__init__
 called PushButton.__init__ with args ('Nieuw track', {me}) {{}}
@@ -755,6 +756,7 @@ called Frame.setLayout with arg of type <class 'mockgui.mockqtwidgets.MockVBoxLa
 called ScrollArea.__init__ with args ()
 called ScrollArea.setWidget with arg of type `<class 'mockgui.mockqtwidgets.MockFrame'>`
 called ScrollArea.setWidgetResizable with arg `True`
+called ScrollArea.verticalScrollBar
 called VBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockScrollArea'>
 called button_strip with args ({testobj}, 'Edit', 'New', 'Start')
 called HBox.__init__
@@ -1105,7 +1107,7 @@ called Grid.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockLineEdi
 called HBox.__init__
 called Widget.__init__
 called HBox.addStretch
-called HBox.addWidget with arg of type <class 'PyQt5.QtWidgets.QCheckBox'>
+called HBox.addWidget with arg of type <class 'PyQt6.QtWidgets.QCheckBox'>
 called HBox.addStretch
 called Grid.addLayout with arg of type <class 'mockgui.mockqtwidgets.MockHBoxLayout'> at (2, 0, 1, 2)
 called HBox.__init__
