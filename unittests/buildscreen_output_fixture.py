@@ -24,7 +24,7 @@ called HBox.__init__
 called Label.__init__ with args ('Kies Uitvoerende:', {me})
 called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockLabel'>
 called ComboBox.__init__
-called ComboBox.addItems with arg `--- Maak een selectie ---`
+called ComboBox.addItem with arg `--- Maak een selectie ---`
 called ComboBox.setMaximumWidth with arg `200`
 called ComboBox.setMinimumWidth with arg `200`
 called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockComboBox'>
@@ -75,7 +75,7 @@ called HBox.__init__
 called Label.__init__ with args ('Kies Uitvoerende:', {me})
 called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockLabel'>
 called ComboBox.__init__
-called ComboBox.addItems with arg `--- Maak een selectie ---`
+called ComboBox.addItem with arg `--- Maak een selectie ---`
 called ComboBox.setMaximumWidth with arg `200`
 called ComboBox.setMinimumWidth with arg `200`
 called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockComboBox'>
@@ -149,7 +149,7 @@ called HBox.__init__
 called Label.__init__ with args ('Snel naar dezelfde selectie voor een andere artiest:', {me})
 called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockLabel'>
 called ComboBox.__init__
-called ComboBox.addItems with arg `--- Maak een selectie ---`
+called ComboBox.addItem with arg `--- Maak een selectie ---`
 called ComboBox.addItems with arg ['X', 'Y']
 called ComboBox.setMaximumWidth with arg `200`
 called ComboBox.setMinimumWidth with arg `200`
@@ -259,7 +259,7 @@ called HBox.__init__
 called Label.__init__ with args ('Snel naar een ander item in deze selectie:', {me})
 called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockLabel'>
 called ComboBox.__init__
-called ComboBox.addItems with arg `--- selecteer titel ---`
+called ComboBox.addItem with arg `--- selecteer titel ---`
 called ComboBox.addItems with arg ['xxx', 'yyy']
 called ComboBox.setMaximumWidth with arg `200`
 called ComboBox.setMinimumWidth with arg `200`
@@ -391,7 +391,7 @@ called Label.__init__ with args ('Uitvoerende:', {me})
 called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockLabel'>
 called Grid.addLayout with arg of type <class 'mockgui.mockqtwidgets.MockHBoxLayout'> at (2, 0, 1, 1)
 called ComboBox.__init__
-called ComboBox.addItems with arg `--- Maak een selectie ---`
+called ComboBox.addItem with arg `--- Maak een selectie ---`
 called ComboBox.addItems with arg ['xxx', 'bbb']
 called ComboBox.setCurrentIndex with arg `1`
 called Grid.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockComboBox'> at (2, 1, 1, 2)
@@ -454,7 +454,7 @@ called Label.__init__ with args ('Uitvoerende:', {me})
 called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockLabel'>
 called Grid.addLayout with arg of type <class 'mockgui.mockqtwidgets.MockHBoxLayout'> at (2, 0, 1, 1)
 called ComboBox.__init__
-called ComboBox.addItems with arg `--- Maak een selectie ---`
+called ComboBox.addItem with arg `--- Maak een selectie ---`
 called ComboBox.addItems with arg ['xxx', 'bbb']
 called ComboBox.setCurrentIndex with arg `1`
 called Grid.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockComboBox'> at (2, 1, 1, 2)
@@ -511,7 +511,7 @@ called Label.__init__ with args ('Uitvoerende:', {me})
 called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockLabel'>
 called Grid.addLayout with arg of type <class 'mockgui.mockqtwidgets.MockHBoxLayout'> at (2, 0, 1, 1)
 called ComboBox.__init__
-called ComboBox.addItems with arg `--- Maak een selectie ---`
+called ComboBox.addItem with arg `--- Maak een selectie ---`
 called ComboBox.addItems with arg ['xxx', 'bbb']
 called Grid.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockComboBox'> at (2, 1, 1, 2)
 called HBox.__init__
@@ -547,7 +547,7 @@ called Label.__init__ with args ('Uitvoerende:', {me})
 called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockLabel'>
 called Grid.addLayout with arg of type <class 'mockgui.mockqtwidgets.MockHBoxLayout'> at (2, 0, 1, 1)
 called ComboBox.__init__
-called ComboBox.addItems with arg `--- Maak een selectie ---`
+called ComboBox.addItem with arg `--- Maak een selectie ---`
 called ComboBox.addItems with arg ['xxx', 'bbb']
 called Grid.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockComboBox'> at (2, 1, 1, 2)
 called HBox.__init__
@@ -677,7 +677,7 @@ called HBox.__init__
 called Label.__init__ with args ('       {num}.', {me})
 called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockLabel'>
 called ComboBox.__init__
-called ComboBox.addItems with arg `--- Maak een selectie ---`
+called ComboBox.addItem with arg `--- Maak een selectie ---`
 called ComboBox.addItems with arg ('x', 'y', 'z')
 """
 rec_fields_middle = """called ComboBox.setCurrentIndex with arg `1`
@@ -811,7 +811,7 @@ called Icon.__init__ with arg `/home/albert/projects/albumsgui/icons/go-top.png`
 called Icon.__init__ with arg `/home/albert/projects/albumsgui/icons/go-down.png`
 called Icon.__init__ with arg `/home/albert/projects/albumsgui/icons/go-up.png`
 called MainWindow._init__ with args ()
-called MainWindow.setWindowTitle to `AlbumsMatcher`
+called MainWindow.setWindowTitle with arg `AlbumsMatcher`
 called MainWindow.move with args (300, 50)
 called MainWindow.resize with args (600, 650)
 called TabWidget.__init__
@@ -1255,7 +1255,7 @@ called Signal.connect with args ({save},)
 called Action.setShortcuts with arg `['Ctrl+S']`
 called CompareArtists.addAction
 """
-bgui_createall = """\
+bgui_createstart = """\
 called Widget.__init__
 called VBox.__init__
 called Grid.__init__
@@ -1306,10 +1306,14 @@ called HBox.addStretch
 called VBox.addLayout with arg of type <class 'mockgui.mockqtwidgets.MockHBoxLayout'>
 called Widget.setLayout
 called ComboBox.count
+"""
+bgui_createmiddle = """\
 called ComboBox.itemText with value `0`
 called ComboBox.itemText with value `1`
 called ComboBox.itemText with value `2`
 called ComboBox.setCurrentIndex with arg `2`
+"""
+bgui_createend = """\
 called ComboBox.setFocus
 called List.setVisible with arg `True`
 called Label.setVisible with arg `False`
@@ -1361,5 +1365,6 @@ def expected_output():
         'new_album': newalb,
         'compare_tracks': cmptrk,
         'compare_tracks_actions': cmptrk_act,
-         'bgui_create_widgets': bgui_createall
+        'bgui_create_widgets': bgui_createstart + bgui_createmiddle + bgui_createend,
+        'bgui_create_widgets2': bgui_createstart + bgui_createend
         }

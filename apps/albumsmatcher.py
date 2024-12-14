@@ -266,7 +266,7 @@ class CompareArtists(qtw.QWidget):
         self.artist_list_a, self.artist_list_c = read_artists()
         self.lookup = {f'{x} {y}'.strip(): z for x, y, z in self.artist_list_a}
         self.finda = {z: (x, y) for x, y, z in self.artist_list_a}
-        self.artist_map = self._parent.artist_map or {x: '' for x in self.artist_list_c}
+        self.artist_map = self._parent.artist_map or {x: '' for x in self.artist_list_c if x}
         self.max_artist = max([int(x[2]) for x in self.artist_list_a])
         self.clementine_artists.clear()
         for item in self.artist_list_c:

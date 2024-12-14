@@ -46,6 +46,20 @@ def test_mainwidget_init(monkeypatch, capsys):
     monkeypatch.setattr(testee.qtw.QWidget, 'show', mock_show)
     monkeypatch.setattr(testee.MainWidget, 'create_widgets', mock_create_widgets)
     # monkeypatch.setattr(testee.qtw, 'QWidget', MockWidget)
+    monkeypatch.setattr(testee, 'config', types.SimpleNamespace(databases=['x', 'y', 'z']))
+    testobj = testee.MainWidget()
+    assert testobj.dbnames == ['x', 'y', 'z']
+    assert testobj.dbname == ''
+    assert testobj.album_name == ''
+    assert testobj.artist_name == ''
+    assert not testobj.show_covers
+    assert not testobj.initializing
+    assert capsys.readouterr().out == (
+        'called Application.__init__\ncalled Widget.__init__\n'
+        'called Widget.create_widgets, self.initializing is True\n'
+        'called tracklist.setVisible(`True`)\ncalled label.setVisible(`False`)\n'
+        'called Widget.show\n')
+
     monkeypatch.setattr(testee, 'config',
                         types.SimpleNamespace(databases=['x', 'clementine', 'banshee', 'strawberry']))
     testobj = testee.MainWidget()
@@ -114,6 +128,11 @@ def test_mainwidget_create_widgets(monkeypatch, capsys, expected_output):
         """
         print('called ComboBox.count')
         return 3
+    def mock_count_2(self):
+        """stub
+        """
+        print('called ComboBox.count')
+        return 0
     monkeypatch.setattr(testee.qtw.QWidget, '__init__', mock_init)
     monkeypatch.setattr(testee.qtw.QWidget, 'setLayout', mock_setlayout)
     monkeypatch.setattr(testee.qtw.QWidget, 'show', mock_show)
@@ -135,6 +154,22 @@ def test_mainwidget_create_widgets(monkeypatch, capsys, expected_output):
     assert hasattr(testobj, 'lbl')
     bindings = {'testobj': testobj}
     assert capsys.readouterr().out == expected_output['bgui_create_widgets'].format(**bindings)
+
+    return
+    # toevoeging t.b.v. full branch coverage
+    # onduidelijk waarom dit segfault
+    monkeypatch.setattr(mockqtw.MockComboBox, 'count', mock_count_2)
+    monkeypatch.setattr(testee.qtw, 'QComboBox', mockqtw.MockComboBox)
+    # monkeypatch.setattr(testee.config, 'databases', [])
+    testobj = testee.MainWidget()   # create widgets wordt hierin aangeroepen
+    return
+    assert isinstance(testobj.ask_db, testee.qtw.QComboBox)
+    assert isinstance(testobj.ask_album, testee.qtw.QComboBox)
+    assert isinstance(testobj.ask_artist, testee.qtw.QComboBox)
+    assert isinstance(testobj.tracks_list, testee.qtw.QListWidget)
+    assert isinstance(testobj.lbl, testee.qtw.QLabel)
+    bindings = {'testobj': testobj}
+    assert capsys.readouterr().out == expected_output['bgui_create_widgets2'].format(**bindings)
 
 
 def test_mainwidget_change_db(monkeypatch, capsys):

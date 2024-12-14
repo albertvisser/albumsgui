@@ -567,6 +567,11 @@ def test_main_exit(monkeypatch, capsys):
         """stub
         """
         print(f'called Main.check_oldpage with arg `{page}`')
+        return False
+    def mock_check_2(page):
+        """stub
+        """
+        print(f'called Main.check_oldpage with arg `{page}`')
         return True
     def mock_close():
         """stub
@@ -576,6 +581,9 @@ def test_main_exit(monkeypatch, capsys):
     testobj.current = 1
     monkeypatch.setattr(testobj, 'check_oldpage', mock_check)
     monkeypatch.setattr(testobj, 'close', mock_close)
+    testobj.exit()
+    assert capsys.readouterr().out == 'called Main.check_oldpage with arg `1`\n'
+    monkeypatch.setattr(testobj, 'check_oldpage', mock_check_2)
     testobj.exit()
     assert capsys.readouterr().out == ('called Main.check_oldpage with arg `1`\n'
                                        'called Main.close\n')
@@ -682,6 +690,7 @@ def test_cmpart_create_actions(monkeypatch, capsys, expected_output):
                 'save_all': testobj.save_all}
     assert capsys.readouterr().out == expected_output['compare_artists_actions'].format(**bindings)
 
+# 273-272
 def test_cmpart_refresh_screen(monkeypatch, capsys, expected_output):
     """unittest for albumsmatcher.CompareArtists.refresh_screen
     """
@@ -1546,6 +1555,7 @@ def test_cmpalb_create_actions(monkeypatch, capsys, expected_output):
                 'save': testobj.save_all}
     assert capsys.readouterr().out == expected_output['compare_albums_actions'].format(**bindings)
 
+# 683-681
 def test_cmpalb_refresh_screen(monkeypatch, capsys, expected_output):
     """unittest for albumsmatcher.CompareAlbums.refresh_screen
     """
@@ -1858,6 +1868,7 @@ def test_cmpalb_prev_artist(monkeypatch, capsys):
     testobj.prev_artist()
     assert capsys.readouterr().out == ''
 
+# 796-794
 def test_cmpalb_find_album(monkeypatch, capsys):
     """unittest for albumsmatcher.CompareAlbums.find_album
     """
@@ -2054,6 +2065,7 @@ def test_cmpalb_prepare_for_update(monkeypatch, capsys):
                                        'called CompareAlbums.update_item with args'
                                        f" ({a_item}, {c_item})\n")
 
+# 846-850
 def test_cmpalb_add_album(monkeypatch, capsys):
     """unittest for albumsmatcher.CompareAlbums.add_album
     """
@@ -2737,6 +2749,7 @@ def test_cmptrk_update_navigation_buttons(monkeypatch, capsys):
                                        "called PushButton.setEnabled with arg `True`\n"
                                        "called PushButton.setEnabled with arg `False`\n")
 
+# 1201-1203
 def test_cmptrk_get_tracks(monkeypatch, capsys):
     """unittest for albumsmatcher.CompareTracks.get_tracks
     """
@@ -2955,6 +2968,7 @@ def test_cmptrk_copy_tracks(monkeypatch, capsys):
                                        'called ComboBox.currentIndex\n'
                                        'called CompareTracks.refresh_screen with args (1, 1)\n')
 
+# 1259-1258
 def test_cmptrk_unlink(monkeypatch, capsys):
     """unittest for albumsmatcher.CompareTracks.unlink
     """

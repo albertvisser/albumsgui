@@ -1453,7 +1453,7 @@ def get_albums_by_text(albumtype, search_type, search_for, sort_on):
     """
     if albumtype == 'studio':
         search_on = {0: '*', 2: 'name', 3: 'produced_by', 4: 'credits', 5: 'bezetting'}[search_type]
-    elif albumtype == 'live':
+    else:  # if albumtype == 'live':
         search_on = {0: '*', 2: 'name', 3: 'name', 4: 'produced_by', 5: 'bezetting'}[search_type]
     return list(dmla.list_albums_by_search(albumtype, search_on, search_for, sort_on))
 
@@ -1488,11 +1488,11 @@ def get_album(album_id, albumtype):
                              ('Credits:', album.credits),
                              ('Bezetting:', album.bezetting),
                              ('Tevens met:', album.additional)]
-        if album:
-            result['tracks'] = {x.volgnr: (x.name, x.written_by, x.credits)
-                                for x in dmla.list_tracks(album_id)}
-            result['opnames'] = [(x.type, x.oms) for x in
-                                 dmla.list_recordings(album_id)]
+        # if album:
+        result['tracks'] = {x.volgnr: (x.name, x.written_by, x.credits)
+                            for x in dmla.list_tracks(album_id)}
+        result['opnames'] = [(x.type, x.oms) for x in
+                             dmla.list_recordings(album_id)]
     if albumtype == 'live':
         result['details'].pop(0)
     return result

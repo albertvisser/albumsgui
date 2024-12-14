@@ -328,6 +328,18 @@ def test_get_album(monkeypatch, capsys):
         print(f'called dmla.list_album_details with arg `{id_}`')
         return types.SimpleNamespace(name='x', artist=myact, label='y', release_year='z',
                                      produced_by='a', credits='b', bezetting='c', additional='d')
+    def mock_list_2(id_):
+        """stub
+        """
+        print(f'called dmla.list_album_details with arg `{id_}`')
+        return types.SimpleNamespace(name='x', artist=myact, label='y', release_year='',
+                                     produced_by='a', credits='b', bezetting='c', additional='d')
+    def mock_list_3(id_):
+        """stub
+        """
+        print(f'called dmla.list_album_details with arg `{id_}`')
+        return types.SimpleNamespace(name='x', artist=myact, label='', release_year='z',
+                                     produced_by='a', credits='b', bezetting='c', additional='d')
     def mock_get_name(id_):
         """stub
         """
@@ -367,6 +379,26 @@ def test_get_album(monkeypatch, capsys):
                                            'details': [('Produced by:', 'a'), ('Credits:', 'b'),
                                                        ('Bezetting:', 'c'), ('Tevens met:', 'd')],
                                            'tracks': {1: ('e', 'f', 'g')}, 'opnames': [('h', 'i')]}
+    assert capsys.readouterr().out == ('called dmla.list_album_details with arg `9`\n'
+                                       'called artist.get_name with arg ``\n'
+                                       'called dmla.list_album_tracks with arg `9`\n'
+                                       'called dmla.list_album_recordings with arg `9`\n')
+    monkeypatch.setattr(testee.dmla, 'list_album_details', mock_list_2)
+    assert testee.get_album(9, 'studio') == {'titel': 'x', 'artist': myact, 'artist_name': 'name',
+                                             'details': [('Label/jaar:', 'y'),
+                                                         ('Produced by:', 'a'), ('Credits:', 'b'),
+                                                         ('Bezetting:', 'c'), ('Tevens met:', 'd')],
+                                             'tracks': {1: ('e', 'f', 'g')}, 'opnames': [('h', 'i')]}
+    assert capsys.readouterr().out == ('called dmla.list_album_details with arg `9`\n'
+                                       'called artist.get_name with arg ``\n'
+                                       'called dmla.list_album_tracks with arg `9`\n'
+                                       'called dmla.list_album_recordings with arg `9`\n')
+    monkeypatch.setattr(testee.dmla, 'list_album_details', mock_list_3)
+    assert testee.get_album(9, 'studio') == {'titel': 'x', 'artist': myact, 'artist_name': 'name',
+                                             'details': [('Label/jaar:', 'z'),
+                                                         ('Produced by:', 'a'), ('Credits:', 'b'),
+                                                         ('Bezetting:', 'c'), ('Tevens met:', 'd')],
+                                             'tracks': {1: ('e', 'f', 'g')}, 'opnames': [('h', 'i')]}
     assert capsys.readouterr().out == ('called dmla.list_album_details with arg `9`\n'
                                        'called artist.get_name with arg ``\n'
                                        'called dmla.list_album_tracks with arg `9`\n'
@@ -1475,6 +1507,11 @@ def test_select_todetail(monkeypatch, capsys):
     testobj.todetail()
     assert not testobj.parent().album
     assert capsys.readouterr().out == 'waaat\ncalled Main.do_detail\n'
+    monkeypatch.setattr(testobj, 'sender', lambda *x: 'btn')
+    testobj.go_buttons = ['btn1', 'btn2']
+    testobj.todetail()
+    assert not testobj.parent().album
+    assert capsys.readouterr().out == 'waaat\ncalled Main.do_detail\n'
 
 def test_select_add_new_to_sel(monkeypatch, capsys):
     """unittest for albums_gui.Select.add_new_to_sel
@@ -1669,6 +1706,22 @@ def test_edit_create_widgets(monkeypatch, capsys, expected_output):
                 'exit': testobj.exit,
                 'me': testobj}
     assert capsys.readouterr().out == expected_output['editdetails_studio'].format(**bindings)
+
+    testobj.parent().albumdata = {'artist': 'xxx', 'titel': 'yyy',
+                                  'details': [('Label/jaar:', 'lll, mmm'),
+                                              ('Credits:', 'q')]}
+    testobj.parent().artist_names = ['xxx', 'bbb']
+    testobj.create_widgets()
+    assert not testobj.new_album
+    assert not testobj.keep_sel
+    assert testobj.first_time
+    # assert screendata == [(lbl, win), ...]
+    # heading, bbox - deze hoeven niet
+    bindings = {'other_album': 'testobj.other_album',
+                'exit': testobj.exit,
+                'me': testobj}
+    assert capsys.readouterr().out == expected_output['editdetails_studio'].format(**bindings)
+
     testobj.parent().album = 2
     testobj.parent().albumtype = 'live'
     testobj.parent().albumdata = {'artist': 'xxx', 'titel': 'yyy',
@@ -1828,9 +1881,9 @@ def test_edit_refresh_screen(monkeypatch, capsys):
     assert capsys.readouterr().out == ('called Label.__init__\n'
                                        'called Label.setText with arg `heading`\n')
     testobj.bbox = mockqtw.MockHBoxLayout()
+    assert capsys.readouterr().out == 'called HBox.__init__\n'
     monkeypatch.setattr(testobj.bbox, 'count', lambda *x: 3)
     monkeypatch.setattr(testobj.bbox, 'itemAt', mock_itemat)
-    assert capsys.readouterr().out == 'called HBox.__init__\n'
     monkeypatch.setattr(testobj.parent(), 'do_detail', lambda *x: x)
     testobj.first_time = False
     testobj.refresh_screen()
@@ -1840,6 +1893,10 @@ def test_edit_refresh_screen(monkeypatch, capsys):
             "called PushButton.__init__ with args ('Uitvoeren en terug',) {}\n"
             'called PushButton.setText with arg `Naar Details`\n'
             f'called Signal.connect with args ({testobj.parent().do_detail},)\n')
+    # toevoeging t.b.v. full branch coverage
+    monkeypatch.setattr(testobj.bbox, 'count', lambda *x: 0)
+    testobj.refresh_screen()
+    assert capsys.readouterr().out == 'called Label.setText with arg `heading`\n'
 
 def test_edit_submit(monkeypatch, capsys):
     """unittest for albums_gui.EditDetails.submit
@@ -2030,6 +2087,10 @@ def test_edit_replace_details(monkeypatch, capsys):
     original = {'details': [('x', 'y')]}
     testobj.parent().albumdata = original
     assert testobj._replace_details('x', 'z')
+    assert testobj.parent().albumdata == {'details': [('x', 'z')]}
+    # toevoeging t.b.v. full branch coverage
+    testobj.parent().albumdata = original
+    assert not testobj._replace_details('y', 'z')
     assert testobj.parent().albumdata == {'details': [('x', 'z')]}
 
 def test_edit_add_another(monkeypatch, capsys):
@@ -2501,6 +2562,7 @@ def test_editrecs_add_new_item(monkeypatch, capsys):
                                        'called Scrollbar.maximum\n'
                                        'called Scrollbar.setValue with value `99`\n')
 
+# 1275->1278
 def test_editrecs_submit(monkeypatch, capsys):
     """unittest for albums_gui.EditRecordings.submit
     """
@@ -2553,6 +2615,9 @@ def test_editrecs_submit(monkeypatch, capsys):
     assert capsys.readouterr().out == ('called LineEdit.text\n'
                                        f'called MessageBox.information with args `{testobj}`'
                                        ' `Albums` `Nothing changed`\n')
+    testobj.submit(skip_confirm=True)
+    assert testobj.parent().albumdata == {'opnames': [('x', 'y')]}
+    assert capsys.readouterr().out == 'called LineEdit.text\n'
     testobj.parent().albumdata = {'opnames': [('a', 'b')]}
     testobj.parent().album = types.SimpleNamespace(id=1)
     testobj.submit(skip_confirm=True)
@@ -2712,6 +2777,7 @@ def test_artists_refresh_screen():
     method-to-test is empty
     """
 
+# 1373->1369
 def test_artists_submit(monkeypatch, capsys):
     """unittest for albums_gui.Artists.submit
     """
@@ -2762,6 +2828,22 @@ def test_artists_submit(monkeypatch, capsys):
             'called LineEdit.text\n'
             'called LineEdit.text\n'
             "called dmla.update_artists with args ([(1, 'x', 'y')],)\n"
+            'called Application.restoreOverrideCursor\n'
+            'called Main.get_all_artists\n'
+            'called Main.do_select\n')
+    # toevoeging t.b.v. full branch coverage
+    testobj.parent().artists = [types.SimpleNamespace(id=1, first_name='a', last_name='b')]
+    testobj.fields = [(mockqtw.MockLineEdit('a'), mockqtw.MockLineEdit('b'))]
+    assert capsys.readouterr().out == ('called LineEdit.__init__\n'
+                                       'called LineEdit.__init__\n')
+    testobj.submit()
+    assert capsys.readouterr().out == (
+            f'called Cursor.__init__ with arg {testee.core.Qt.CursorShape.WaitCursor}\n'
+            'called Application.setOverrideCursor with arg of type'
+            " <class 'mockgui.mockqtwidgets.MockCursor'>\n"
+            'called LineEdit.text\n'
+            'called LineEdit.text\n'
+            f'called MessageBox.information with args `{testobj}` `Albums` `Nothing changed`\n'
             'called Application.restoreOverrideCursor\n'
             'called Main.get_all_artists\n'
             'called Main.do_select\n')

@@ -270,6 +270,14 @@ def test_update_album_details():
     assert isinstance(data, testee.my.Album)
     assert (data.artist, data.name, data.label, data.release_year) == (artist2, 'y', 'z', 9)
     assert (data.produced_by, data.credits, data.bezetting, data.additional) == ('a', 'b', 'c', 'd')
+    # for full branch coverage
+    albumdata = {'artist': artist2, 'titel': 'y', 'details': [('Label/jaar:', "z, ")]}
+    data, ok = testee.update_album_details(0, albumdata)
+    assert ok
+    albumcount += 1
+    assert testee.my.Album.objects.count() == albumcount  # 5
+    assert isinstance(data, testee.my.Album)
+    assert (data.artist, data.name, data.label, data.release_year) == (artist2, 'y', 'z', None)
 
 
 @pytest.mark.django_db
@@ -283,15 +291,12 @@ def test_update_album_tracks():
     mytrack3 = testee.my.Song.objects.create(volgnr=2)
     myalbum.tracks.add(mytrack1, mytrack2, mytrack3)
     assert testee.update_album_tracks(myalbum.id, [(2, ('a', 'b', 'c')), (3, ('c', 'd', 'e'))])
-    data = list(myalbum.tracks.all())
+    data = [(x.name, x.written_by, x.credits) for x in myalbum.tracks.all()]
     assert len(data) == len([1, 2, 3, 5])  # 4
-    assert isinstance(data[3], testee.my.Song)
-    assert (data[2].name, data[2].written_by, data[2].credits) == ('a', 'b', 'c')
-    assert (data[3].volgnr, data[3].name) == (3, 'c')
-    assert (data[3].written_by, data[3].credits) == ('d', 'e')
+    assert data[2] == ('a', 'b', 'c')
+    assert data[3] == ('c', 'd', 'e')
 
 
-@pytest.mark.django_db
 def test_update_album_recordings():
     """unittest for albums_dml.update_album_recordings
     """
@@ -397,6 +402,18 @@ def test_update_albums_by_artist_new_album(monkeypatch):
     assert len(data) == 1
     assert data[0].type == testee.c_type
 
+    changes = [(0, 'One', 0, True, [(1, 'track')])]
+    result = testee.update_albums_by_artist(artist.id, changes)
+    assert len(result) == 1
+    assert isinstance(result[0], testee.my.Album)
+    assert (result[0].name, result[0].label, result[0].release_year) == ('One', '', None)
+    data = list(result[0].tracks.all())
+    assert len(data) == 1
+    assert (data[0].volgnr, data[0].name) == (1, 'track')
+    data = list(result[0].opnames.all())
+    assert len(data) == 1
+    assert data[0].type == testee.c_type
+
 
 @pytest.mark.django_db
 def test_update_album_tracknames():
@@ -425,6 +442,10 @@ def test_unlink_album(monkeypatch):
     monkeypatch.setattr(testee, 'c_type', 'z')
     artist = testee.my.Act.objects.create(last_name='bladibla')
     album = testee.my.Album.objects.create(artist=artist, name='One', label='q', release_year=1)
+    assert album.opnames.count() == 0
+    testee.unlink_album(album.id)
+    assert album.opnames.count() == 0
+
     opname = testee.my.Opname.objects.create(type='z', oms='s')
     opname2 = testee.my.Opname.objects.create(type='x', oms='s')
     album.opnames.add(opname, opname2)
@@ -432,4 +453,7 @@ def test_unlink_album(monkeypatch):
     assert album.opnames.count() == opnamecount  # 2
     testee.unlink_album(album.id)
     opnamecount -= 1
+    assert album.opnames.count() == opnamecount  # 1
+
+    testee.unlink_album(album.id)
     assert album.opnames.count() == opnamecount  # 1

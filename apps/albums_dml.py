@@ -65,7 +65,7 @@ def list_albums_by_artist(albumtype, artist_id, order_by):
         sel = sel.order_by('release_year')
     elif order_by == 'Niet sorteren':
         pass
-    elif order_by == 'Locatie':
+    else:  # if order_by == 'Locatie':  andere vooralsnog niet mogelijk
         sel = sel.order_by('name')
     ## elif order_by == 'Datum':
         ## sel = sel.order_by('name'[:-4])
@@ -77,7 +77,7 @@ def list_albums_by_search(albumtype, search_type, search_for, order_by):
     """
     if albumtype == 'studio':
         sel = my.Album.objects.exclude(label="")
-    elif albumtype == 'live':
+    else:  # if albumtype == 'live':   andere vooralsnog niet mogelijk
         sel = my.Album.objects.filter(label="")
     if search_type == 'name':
         sel = sel.filter(name__icontains=search_for)
@@ -85,7 +85,7 @@ def list_albums_by_search(albumtype, search_type, search_for, order_by):
         sel = sel.filter(produced_by__icontains=search_for)
     elif search_type == 'credits':
         sel = sel.filter(credits__icontains=search_for)
-    elif search_type == 'bezetting':
+    else:  # if search_type == 'bezetting':   andere vooralsnog niet mogelijk
         sel = sel.filter(bezetting__icontains=search_for)
     if order_by == 'Uitvoerende':
         sel = sel.order_by('artist')
@@ -95,7 +95,7 @@ def list_albums_by_search(albumtype, search_type, search_for, order_by):
         sel = sel.order_by('release_year')
     elif order_by == 'Niet sorteren':
         pass
-    elif order_by == 'Locatie':
+    else:  # if order_by == 'Locatie':   andere vooralsnog niet mogelijk
         sel = sel.order_by('name')
     ## elif order_by == 'Datum':
         ## sel = sel.order_by('name'[:-4])
@@ -166,7 +166,7 @@ def update_album_details(album_id, albumdata):
             album.credits = value
         elif name == 'Bezetting:':
             album.bezetting = value
-        elif name == 'Tevens met:':
+        else:  # if name == 'Tevens met:':   andere vooralsnog niet mogelijk
             album.additional = value
     ok = True   # hoe detecteer ik dat er iets foutgaat? Exception?
     album.save()
@@ -183,19 +183,19 @@ def update_album_tracks(album_id, tracks):
     new_track = changed = False
     for ix, item in tracks:
         if ix in old_tracks:
-            if item != old_tracks[ix]:
-                trk = old_tracks[ix]
-                changed = True
+            # if item != old_tracks[ix]:  niet nodig
+            trk = old_tracks[ix]
+            # changed = True
         else:
             trk = my.Song.objects.create(volgnr=ix)
             # trk = my.Song(volgnr=ix)
             album.tracks.add(trk)
-            new_track = True
-        if changed or new_track:
-            trk.name = item[0]
-            trk.written_by = item[1]
-            trk.credits = item[2]
-            trk.save()
+            # new_track = True
+        # if changed or new_track:
+        trk.name = item[0]
+        trk.written_by = item[1]
+        trk.credits = item[2]
+        trk.save()
     return ok
 
 
@@ -209,18 +209,18 @@ def update_album_recordings(album_id, recordings):
     for ix, item in recordings:
         if ix < len(old_recs):
             old_item = (old_recs[ix].type, old_recs[ix].oms)
-            if item != old_item:
-                rec = old_recs[ix]
-                changed = True
+            # if item != old_item:  niet nodig
+            rec = old_recs[ix]
+            # changed = True
         else:
             rec = my.Opname.objects.create()
             # rec = my.Opname()
             album.opnames.add(rec)
-            new_rec = True
-        if changed or new_rec:
-            rec.type = item[0]
-            rec.oms = item[1]
-            rec.save()
+            # new_rec = True
+        # if changed or new_rec:
+        rec.type = item[0]
+        rec.oms = item[1]
+        rec.save()
     return ok
 
 

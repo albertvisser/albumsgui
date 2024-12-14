@@ -131,6 +131,13 @@ def test_get_album_cover(monkeypatch, capsys):
             " where t2.AlbumID = ? and t1.ArtistID = ?` `('album', 'artist')`\n"
             "called path.is_dir with args (PosixPath('here/where'),)\n"
             "called path.is_dir with args (PosixPath('here/there'),)\n")
+    monkeypatch.setattr(testee.pathlib.Path, 'exists', lambda *x: False)
+    monkeypatch.setattr(testee.pathlib.Path, 'is_dir', lambda *x: True)
+    assert testee.get_album_cover('artist', 'album') == 'xxx.jpg'
+    assert capsys.readouterr().out == ("called execute_query with args"
+            " `select t1.Name, t2.Title, t2.ArtworkID from coreartists as t1"
+            " inner join corealbums as t2 on t1.ArtistID = t2.ArtistID"
+            " where t2.AlbumID = ? and t1.ArtistID = ?` `('album', 'artist')`\n")
 
 
 def test_get_tracks_lists(monkeypatch, capsys):
