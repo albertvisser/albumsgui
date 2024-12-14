@@ -5,20 +5,20 @@ unittests
 main = test_albums_gui.py 
 matcher = test_albumsmatcher.py
 smallgui = test_banshee_gui.py
-banshee = test_banshee_dml.py
+dmlb = test_banshee_dml.py
 cddb = test_cddb_dml.py
-django = test_albums_dml.py 
+dmla = test_albums_dml.py 
 # test_albums_dml_sql.py 
-clementine = test_clementine_dml.py 
-strawberry = test_strawberry_dml.py 
+dmlc = test_clementine_dml.py 
+dmls = test_strawberry_dml.py 
 
 [testees]
 main = apps/albums_gui.py 
 matcher = apps/albumsmatcher.py
 smallgui = apps/banshee_gui.py
-banshee = apps/banshee_dml.py
+dmlb = apps/banshee_dml.py
 cddb = apps/cddb_dml.py
-django = apps/albums_dml.py 
+dmla = apps/albums_dml.py 
 # apps/albums_dml_sql.py 
-clementine = apps/clementine_dml.py 
-strawberry = apps/strawberry_dml.py 
+dmlc = apps/clementine_dml.py 
+dmls = apps/strawberry_dml.py 
