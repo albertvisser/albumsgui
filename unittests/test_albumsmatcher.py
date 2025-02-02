@@ -690,7 +690,6 @@ def test_cmpart_create_actions(monkeypatch, capsys, expected_output):
                 'save_all': testobj.save_all}
     assert capsys.readouterr().out == expected_output['compare_artists_actions'].format(**bindings)
 
-# 273-272
 def test_cmpart_refresh_screen(monkeypatch, capsys, expected_output):
     """unittest for albumsmatcher.CompareArtists.refresh_screen
     """
@@ -698,7 +697,7 @@ def test_cmpart_refresh_screen(monkeypatch, capsys, expected_output):
         """stub
         """
         print('called read_artists')
-        return [('x', 'y ', '1'), ('a', 'b', '2')], ['xx', 'yy']
+        return [('x', 'y ', '1'), ('a', 'b', '2')], ['xx', 'yy', '']
     def mock_focus(arg):
         """stub
         """
@@ -720,7 +719,8 @@ def test_cmpart_refresh_screen(monkeypatch, capsys, expected_output):
     assert testobj.lookup == {'x y': '1', 'a b': '2'}
     assert testobj.finda == {'1': ('x', 'y '), '2': ('a', 'b')}
     assert testobj.artist_map == {'xx': '', 'yy': ''}
-    assert testobj.max_artist == artistcount  # 2
+    assert testobj.max_artist == 2
+    assert artistcount == 3
     assert testobj.artist_buffer == ''
     assert capsys.readouterr().out == expected_output['compare_artists_refresh_1']
 
@@ -734,7 +734,8 @@ def test_cmpart_refresh_screen(monkeypatch, capsys, expected_output):
     assert testobj.finda == {'1': ('x', 'y '), '2': ('a', 'b')}
     # assert testobj.artist_map == {'xx': '1', 'yy': '2'}
     assert testobj.artist_map == {'qq': '1', 'yy': '2', 'xx': ''}
-    assert testobj.max_artist == artistcount  # 2
+    assert testobj.max_artist == 2
+    assert artistcount == 3
     assert testobj.artist_buffer == ''
     assert capsys.readouterr().out == expected_output['compare_artists_refresh_2']
 
@@ -1555,7 +1556,6 @@ def test_cmpalb_create_actions(monkeypatch, capsys, expected_output):
                 'save': testobj.save_all}
     assert capsys.readouterr().out == expected_output['compare_albums_actions'].format(**bindings)
 
-# 683-681
 def test_cmpalb_refresh_screen(monkeypatch, capsys, expected_output):
     """unittest for albumsmatcher.CompareAlbums.refresh_screen
     """
@@ -1572,6 +1572,11 @@ def test_cmpalb_refresh_screen(monkeypatch, capsys, expected_output):
         """
         print(f'called TreeItem.text with arg `{num}`')
         return 'X' if num == 1 else 'qq'
+    def mock_text_2(num):
+        """stub
+        """
+        print(f'called TreeItem.text with arg `{num}`')
+        return 'qq'
     def mock_settext(*args):
         """stub
         """
@@ -1581,6 +1586,11 @@ def test_cmpalb_refresh_screen(monkeypatch, capsys, expected_output):
         """
         print(f'called Tree.topLevelItem with arg `{num}`')
         return types.SimpleNamespace(text=mock_text, setText=mock_settext)
+    def mock_getitem_2(num):
+        """stub
+        """
+        print(f'called Tree.topLevelItem with arg `{num}`')
+        return types.SimpleNamespace(text=mock_text_2, setText=mock_settext)
 
     testobj = setup_cmpalb(monkeypatch, capsys, widgets=True)
     # in setup opzetten combobox artist_list en tree clementine_albums
@@ -1624,6 +1634,23 @@ def test_cmpalb_refresh_screen(monkeypatch, capsys, expected_output):
                                        "called TreeItem.setText with args (1, 's')\n"
                                        "called ComboBox.setCurrentIndex with arg `artist`\n"
                                        "called CompareAlbums.update_navigation_buttons\n")
+    monkeypatch.setattr(testobj.clementine_albums, 'topLevelItemCount', lambda: 1)
+    monkeypatch.setattr(testobj.clementine_albums, 'topLevelItem', mock_getitem_2)
+    testobj._parent.artist_map = {'a': 'y'}
+    testobj._parent.albums_map = {'x': {'qq': ('r', 's')}}
+    testobj.c_artist = 'x'
+    assert testobj.refresh_screen('artist') == ''
+    assert testobj.artist_map == {'a': 'y'}
+    assert testobj.albums_map == {'x': {'qq': ('r', 's')}}
+    assert testobj.c_artists == ['a']
+    assert capsys.readouterr().out == ("called CompareAlbums.set_modified with arg `False`\n"
+                                       "called ComboBox.clear\n"
+                                       "called ComboBox.addItems with arg ['a']\n"
+                                       "called Tree.topLevelItem with arg `0`\n"
+                                       "called TreeItem.text with arg `1`\n"
+                                       "called ComboBox.setCurrentIndex with arg `artist`\n"
+                                       "called CompareAlbums.update_navigation_buttons\n")
+    monkeypatch.setattr(testobj.clementine_albums, 'topLevelItem', mock_getitem)
     # nog situaties: dat ik bij setCurrentIndex de eerste keer een TypeError krijg en dan
     # bij de volgende een ValueError of niet
     counter = 0
@@ -1868,7 +1895,7 @@ def test_cmpalb_prev_artist(monkeypatch, capsys):
     testobj.prev_artist()
     assert capsys.readouterr().out == ''
 
-# 796-794
+# 796->794
 def test_cmpalb_find_album(monkeypatch, capsys):
     """unittest for albumsmatcher.CompareAlbums.find_album
     """

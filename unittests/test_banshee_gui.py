@@ -97,6 +97,82 @@ class MockMainWidget:
         print('called widget.create_widgets, self.initializing is', self.initializing)
 
 
+def test_mainwidget_init(monkeypatch, capsys):
+    """unittest for banshee_gui.MainWidget__init__.
+    """
+    def mock_init(self, *args):
+        """stub
+        """
+        print('called Widget.__init__')
+    def mock_create(self, *args):
+        """stub
+        """
+        print('called MainWidget.create_widgets')
+        self.tracks_list = mockqtw.MockListBox()
+        self.lbl = mockqtw.MockLabel()
+    def mock_show(self, *args):
+        """stub
+        """
+        print('called Widget.show')
+    monkeypatch.setattr(testee.qtw.QWidget, '__init__', mock_init)
+    monkeypatch.setattr(testee.MainWidget, 'create_widgets', mock_create)
+    monkeypatch.setattr(testee.qtw.QWidget, 'show', mock_show)
+    monkeypatch.setattr(testee.config, 'databases', ['Yyy', 'xxx'])
+    testobj = testee.MainWidget()
+    assert testobj.dbnames == ['xxx', 'Yyy']
+    assert testobj.dbname == ''
+    assert testobj.album_name == ''
+    assert testobj.artist_name == ''
+    assert not testobj.show_covers
+    assert not testobj.initializing
+    assert capsys.readouterr().out == ("called Widget.__init__\n"
+                                       "called MainWidget.create_widgets\n"
+                                       "called List.__init__\n"
+                                       "called Label.__init__\n"
+                                       "called List.setVisible with arg `True`\n"
+                                       "called Label.setVisible with arg `False`\n"
+                                       "called Widget.show\n")
+
+
+def test_mainwidget_init_2(monkeypatch, capsys):
+    """unittest for banshee_gui.MainWidget__init__.
+    """
+    def mock_init(self, *args):
+        """stub
+        """
+        print('called Widget.__init__')
+    def mock_create(self, *args):
+        """stub
+        """
+        print('called MainWidget.create_widgets')
+        self.tracks_list = mockqtw.MockListBox()
+        self.lbl = mockqtw.MockLabel()
+    def mock_show(self, *args):
+        """stub
+        """
+        print('called Widget.show')
+    monkeypatch.setattr(testee.qtw.QWidget, '__init__', mock_init)
+    monkeypatch.setattr(testee.MainWidget, 'create_widgets', mock_create)
+    monkeypatch.setattr(testee.qtw.QWidget, 'show', mock_show)
+    monkeypatch.setattr(testee.config, 'databases', ['albums', 'banshee', 'clementine', 'strawberry'])
+    testobj = testee.MainWidget()
+    assert testobj.dbnames == ['albums', 'banshee', 'clementine', 'strawberry', 'covers (banshee)',
+                               'covers (clementine)', 'covers (strawberry)']
+    assert testobj.dbname == ''
+    assert testobj.album_name == ''
+    assert testobj.artist_name == ''
+    assert not testobj.show_covers
+    assert not testobj.initializing
+    assert capsys.readouterr().out == ("called Widget.__init__\n"
+                                       "called MainWidget.create_widgets\n"
+                                       "called List.__init__\n"
+                                       "called Label.__init__\n"
+                                       "called List.setVisible with arg `True`\n"
+                                       "called Label.setVisible with arg `False`\n"
+                                       "called Widget.show\n")
+
+
+
 def test_mainwidget_go(monkeypatch, capsys):
     """unittest for banshee_gui.MainWidget.go
     """
@@ -111,18 +187,10 @@ def test_mainwidget_go(monkeypatch, capsys):
 def test_mainwidget_create_widgets(monkeypatch, capsys, expected_output):
     """unittest for banshee_gui.MainWidget.create_widgets
     """
-    def mock_init(self, *args):
-        """stub
-        """
-        print('called Widget.__init__')
     def mock_setlayout(self, *args):
         """stub
         """
         print('called Widget.setLayout')
-    def mock_show(self, *args):
-        """stub
-        """
-        print('called Widget.show')
     def mock_count(self):
         """stub
         """
@@ -133,9 +201,6 @@ def test_mainwidget_create_widgets(monkeypatch, capsys, expected_output):
         """
         print('called ComboBox.count')
         return 0
-    monkeypatch.setattr(testee.qtw.QWidget, '__init__', mock_init)
-    monkeypatch.setattr(testee.qtw.QWidget, 'setLayout', mock_setlayout)
-    monkeypatch.setattr(testee.qtw.QWidget, 'show', mock_show)
     monkeypatch.setattr(testee.qtw, 'QVBoxLayout', mockqtw.MockVBoxLayout)
     monkeypatch.setattr(testee.qtw, 'QHBoxLayout', mockqtw.MockHBoxLayout)
     monkeypatch.setattr(testee.qtw, 'QGridLayout', mockqtw.MockGridLayout)
@@ -144,25 +209,25 @@ def test_mainwidget_create_widgets(monkeypatch, capsys, expected_output):
     monkeypatch.setattr(testee.qtw, 'QListWidget', mockqtw.MockListBox)
     monkeypatch.setattr(testee.qtw, 'QLabel', mockqtw.MockLabel)
     monkeypatch.setattr(testee.qtw, 'QPushButton', mockqtw.MockPushButton)
-    monkeypatch.setattr(testee.config, 'databases', ['albums', 'banshee', 'clementine', 'strawberry'])
     monkeypatch.setattr(testee.config, 'default_database', '2')
-    testobj = testee.MainWidget()   # create widgets wordt hierin aangeroepen
-    assert hasattr(testobj, 'ask_db')
-    assert hasattr(testobj, 'ask_album')
-    assert hasattr(testobj, 'ask_artist')
-    assert hasattr(testobj, 'tracks_list')
-    assert hasattr(testobj, 'lbl')
+    monkeypatch.setattr(testee.MainWidget, '__init__', MockMainWidget.__init__)
+    testobj = testee.MainWidget()
+    assert capsys.readouterr().out == 'called MainWidget.__init__\n'
+    testobj.dbnames = ['xxx', 'yyy']
+    testobj.setLayout = mock_setlayout
+    testobj.create_widgets()
+    assert isinstance(testobj.ask_db, testee.qtw.QComboBox)
+    assert isinstance(testobj.ask_album, testee.qtw.QComboBox)
+    assert isinstance(testobj.ask_artist, testee.qtw.QComboBox)
+    assert isinstance(testobj.tracks_list, testee.qtw.QListWidget)
+    assert isinstance(testobj.lbl, testee.qtw.QLabel)
     bindings = {'testobj': testobj}
     assert capsys.readouterr().out == expected_output['bgui_create_widgets'].format(**bindings)
 
-    return
     # toevoeging t.b.v. full branch coverage
-    # onduidelijk waarom dit segfault
     monkeypatch.setattr(mockqtw.MockComboBox, 'count', mock_count_2)
     monkeypatch.setattr(testee.qtw, 'QComboBox', mockqtw.MockComboBox)
-    # monkeypatch.setattr(testee.config, 'databases', [])
-    testobj = testee.MainWidget()   # create widgets wordt hierin aangeroepen
-    return
+    testobj.create_widgets()
     assert isinstance(testobj.ask_db, testee.qtw.QComboBox)
     assert isinstance(testobj.ask_album, testee.qtw.QComboBox)
     assert isinstance(testobj.ask_artist, testee.qtw.QComboBox)

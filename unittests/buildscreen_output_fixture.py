@@ -1256,14 +1256,13 @@ called Action.setShortcuts with arg `['Ctrl+S']`
 called CompareArtists.addAction
 """
 bgui_createstart = """\
-called Widget.__init__
 called VBox.__init__
 called Grid.__init__
 called Label.__init__ with args ('Database: ', {testobj})
 called Grid.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockLabel'> at (0, 0)
 called HBox.__init__
 called ComboBox.__init__
-called ComboBox.addItems with arg ['albums', 'banshee', 'clementine', 'strawberry', 'covers (banshee)', 'covers (clementine)', 'covers (strawberry)']
+called ComboBox.addItems with arg ['xxx', 'yyy']
 called Signal.connect with args ({testobj.change_db},)
 called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockComboBox'>
 called HBox.addStretch
@@ -1315,9 +1314,6 @@ called ComboBox.setCurrentIndex with arg `2`
 """
 bgui_createend = """\
 called ComboBox.setFocus
-called List.setVisible with arg `True`
-called Label.setVisible with arg `False`
-called Widget.show
 """
 
 @pytest.fixture
