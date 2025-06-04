@@ -841,67 +841,38 @@ called MainWindow.show
 called MainFrame.go with arg `{app}`
 """
 cmpart = """\
-called Tree.__init__
-called Tree.setColumnCount with arg `2`
-called Tree.header
-called Header.__init__
-called Header.setStretchLastSection with arg False
-called Header.setSectionResizeMode for col 0 mode stretch
-called Tree.setColumnWidth with args 1, 50
-called Tree.setHeaderLabels with arg `['Artist', 'Match']`
-called Tree.setMouseTracking with arg `True`
-called Signal.connect with args ({popuptext},)
-called Signal.connect with args ({select_and_go},)
-called Tree.__init__
-called Tree.setColumnCount with arg `3`
-called Tree.header
-called Header.__init__
-called Header.setStretchLastSection with arg False
-called Tree.setColumnWidth with args 0, 80
-called Tree.setColumnWidth with args 2, 50
-called Header.setSectionResizeMode for col 1 mode stretch
-called Tree.setHeaderLabels with arg `['First Name', 'Last Name', 'Id']`
-called Tree.setMouseTracking with arg `True`
-called Signal.connect with args ({popuptext},)
-called Signal.connect with args ({check_deletable},)
-called PushButton.__init__ with args ('&Help', {me}) {{}}
-called Signal.connect with args ({help},)
-called PushButton.__init__ with args ({me},) {{}}
-called PushButton.setIcon with arg `next_icon`
-called Size.__init__ with args (12, 12)
-called PushButton.setIconSize with arg of type <class 'mockgui.mockqtwidgets.MockSize'>
-called PushButton.setToolTip with arg `Go to next unmatched artist`
-called Signal.connect with args ({focus_next},)
-called PushButton.__init__ with args ({me},) {{}}
-called PushButton.setIcon with arg `prev_icon`
-called Size.__init__ with args (12, 12)
-called PushButton.setIconSize with arg of type <class 'mockgui.mockqtwidgets.MockSize'>
-called PushButton.setToolTip with arg `Go to previous unmatched artist`
-called Signal.connect with args ({focus_prev},)
-called PushButton.__init__ with args ('&Check Artist', {me}) {{}}
-called Signal.connect with args ({find_artist},)
-called PushButton.__init__ with args ('&Delete', {me}) {{}}
-called Signal.connect with args ({delete_artist},)
-called PushButton.setEnabled with arg `False`
-called PushButton.__init__ with args ('&Save All', {me}) {{}}
-called Signal.connect with args ({save_all},)
 called HBox.__init__
 called VBox.__init__
+called create_treewidget with args ({testobj}, ['Artist', 'Match'], [-1, 50])
+called Tree.__init__
+called Signal.connect with args ({testobj.select_and_go},)
 called VBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockTreeWidget'>
 called HBox.__init__
 called HBox.addStretch
+called PushButton.__init__ with args ('&Help', {testobj}) {{}}
+called Signal.connect with args ({testobj.help},)
 called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockPushButton'>
-called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockPushButton'>
-called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockPushButton'>
+called create_updownbuttons with args ({testobj},) {{'seltext': 'Go to {{}} unmatched artist', 'icons': ('next_icon', 'prev_icon'), 'callbacks': ({testobj.focus_next}, {testobj.focus_prev})}}
+called HBox.addLayout with arg of type <class 'types.SimpleNamespace'>
+called PushButton.__init__ with args ('&Check Artist', {testobj}) {{}}
+called Signal.connect with args ({testobj.find_artist},)
 called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockPushButton'>
 called HBox.addStretch
 called VBox.addLayout with arg of type <class 'mockgui.mockqtwidgets.MockHBoxLayout'>
 called HBox.addLayout with arg of type <class 'mockgui.mockqtwidgets.MockVBoxLayout'>
 called VBox.__init__
+called create_treewidget with args ({testobj}, ['First Name', 'Last Name', 'Id'], (80, -1, 50))
+called Tree.__init__
+called Signal.connect with args ({testobj.check_deletable},)
 called VBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockTreeWidget'>
 called HBox.__init__
 called HBox.addStretch
+called PushButton.__init__ with args ('&Delete', {testobj}) {{}}
+called Signal.connect with args ({testobj.delete_artist},)
+called PushButton.setEnabled with arg `False`
 called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockPushButton'>
+called PushButton.__init__ with args ('&Save All', {testobj}) {{}}
+called Signal.connect with args ({testobj.save_all},)
 called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockPushButton'>
 called HBox.addStretch
 called VBox.addLayout with arg of type <class 'mockgui.mockqtwidgets.MockHBoxLayout'>
@@ -988,68 +959,39 @@ called LineEdit.setFocus
 cmpalb = """\
 called VBox.__init__
 called HBox.__init__
-called Label.__init__ with args ('Selecteer een uitvoerende:', {me})
+called Label.__init__ with args ('Selecteer een uitvoerende:', {testobj})
 called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockLabel'>
 called ComboBox.__init__
-called Signal.connect with args ({get_albums},)
+called Signal.connect with args ({testobj.get_albums},)
 called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockComboBox'>
-called PushButton.__init__ with args ({me},) {{}}
-called PushButton.setIcon with arg `down_icon`
-called Size.__init__ with args (20, 20)
-called PushButton.setIconSize with arg of type <class 'mockgui.mockqtwidgets.MockSize'>
-called PushButton.setToolTip with arg `Select next artist in list`
-called Signal.connect with args ({next_artist},)
-called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockPushButton'>
-called PushButton.__init__ with args ({me},) {{}}
-called PushButton.setIcon with arg `up_icon`
-called Size.__init__ with args (20, 20)
-called PushButton.setIconSize with arg of type <class 'mockgui.mockqtwidgets.MockSize'>
-called PushButton.setToolTip with arg `Select previous artist in list`
-called Signal.connect with args ({prev_artist},)
-called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockPushButton'>
+called create_updownbuttons with args ({testobj},) {{'seltext': 'Select {{}} artist in list', 'icons': ('down_icon', 'up_icon'), 'callbacks': ({testobj.next_artist}, {testobj.prev_artist})}}
+called HBox.addLayout with arg of type <class 'types.SimpleNamespace'>
 called HBox.addStretch
 called VBox.addLayout with arg of type <class 'mockgui.mockqtwidgets.MockHBoxLayout'>
 called HBox.__init__
 called VBox.__init__
+called create_treewidget with args ({testobj}, ['Album Name in Clementine', 'Match'], (-1, 60))
 called Tree.__init__
-called Tree.setColumnCount with arg `2`
-called Tree.header
-called Header.__init__
-called Header.setStretchLastSection with arg False
-called Tree.setColumnWidth with args 1, 60
-called Header.setSectionResizeMode for col 0 mode stretch
-called Tree.setHeaderLabels with arg `['Album Name in Clementine', 'Match']`
-called Tree.setMouseTracking with arg `True`
-called Signal.connect with args ({popuptext},)
 called VBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockTreeWidget'>
 called HBox.__init__
 called HBox.addStretch
-called PushButton.__init__ with args ('&Help', {me}) {{}}
-called Signal.connect with args ({help},)
-called PushButton.__init__ with args ('&Check Album', {me}) {{}}
-called Signal.connect with args ({find_album},)
+called PushButton.__init__ with args ('&Help', {testobj}) {{}}
+called Signal.connect with args ({testobj.help},)
+called PushButton.__init__ with args ('&Check Album', {testobj}) {{}}
+called Signal.connect with args ({testobj.find_album},)
 called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockPushButton'>
 called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockPushButton'>
 called HBox.addStretch
 called VBox.addLayout with arg of type <class 'mockgui.mockqtwidgets.MockHBoxLayout'>
 called HBox.addLayout with arg of type <class 'mockgui.mockqtwidgets.MockVBoxLayout'>
 called VBox.__init__
+called create_treewidget with args ({testobj}, ['Album Name in Albums', 'Year', 'Id'], (-1, 60, 60))
 called Tree.__init__
-called Tree.setColumnCount with arg `3`
-called Tree.header
-called Header.__init__
-called Header.setStretchLastSection with arg False
-called Tree.setColumnWidth with args 1, 60
-called Tree.setColumnWidth with args 2, 60
-called Header.setSectionResizeMode for col 0 mode stretch
-called Tree.setHeaderLabels with arg `['Album Name in Albums', 'Year', 'Id']`
-called Tree.setMouseTracking with arg `True`
-called Signal.connect with args ({popuptext},)
 called VBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockTreeWidget'>
 called HBox.__init__
 called HBox.addStretch
-called PushButton.__init__ with args ('&Save All', {me}) {{}}
-called Signal.connect with args ({save_all},)
+called PushButton.__init__ with args ('&Save All', {testobj}) {{}}
+called Signal.connect with args ({testobj.save_all},)
 called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockPushButton'>
 called HBox.addStretch
 called VBox.addLayout with arg of type <class 'mockgui.mockqtwidgets.MockHBoxLayout'>
@@ -1128,84 +1070,54 @@ cmptrk = """\
 called VBox.__init__
 called HBox.__init__
 called Grid.__init__
-called Label.__init__ with args ('Selecteer een uitvoerende:', {me})
+called Label.__init__ with args ('Selecteer een uitvoerende:', {testobj})
 called Grid.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockLabel'> at (0, 0)
 called ComboBox.__init__
-called Signal.connect with args ({get_albums},)
+called Signal.connect with args ({testobj.get_albums},)
 called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockComboBox'>
-called PushButton.__init__ with args ({me},) {{}}
-called PushButton.setIcon with arg `down_icon`
-called Size.__init__ with args (20, 20)
-called PushButton.setIconSize with arg of type <class 'mockgui.mockqtwidgets.MockSize'>
-called PushButton.setToolTip with arg `Select next artist in list`
-called Signal.connect with args ({next_artist},)
-called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockPushButton'>
-called PushButton.__init__ with args ({me},) {{}}
-called PushButton.setIcon with arg `up_icon`
-called Size.__init__ with args (20, 20)
-called PushButton.setIconSize with arg of type <class 'mockgui.mockqtwidgets.MockSize'>
-called PushButton.setToolTip with arg `Select previous artist in list`
-called Signal.connect with args ({prev_artist},)
-called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockPushButton'>
+called create_updownbuttons with args ({testobj},) {{'seltext': 'Select {{}} artist in list', 'icons': ('down_icon', 'up_icon'), 'callbacks': ({testobj.next_artist}, {testobj.prev_artist})}}
+called HBox.addLayout with arg of type <class 'types.SimpleNamespace'>
 called HBox.addStretch
 called Grid.addLayout with arg of type <class 'mockgui.mockqtwidgets.MockHBoxLayout'> at (0, 1)
 called HBox.__init__
-called Label.__init__ with args ('Selecteer een album:', {me})
+called Label.__init__ with args ('Selecteer een album:', {testobj})
 called Grid.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockLabel'> at (1, 0)
 called ComboBox.__init__
 called ComboBox.setMinimumWidth with arg `300`
-called Signal.connect with args ({get_tracks},)
+called Signal.connect with args ({testobj.get_tracks},)
 called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockComboBox'>
-called PushButton.__init__ with args ({me},) {{}}
-called PushButton.setIcon with arg `down_icon`
-called Size.__init__ with args (20, 20)
-called PushButton.setIconSize with arg of type <class 'mockgui.mockqtwidgets.MockSize'>
-called PushButton.setToolTip with arg `Select next album in list`
-called Signal.connect with args ({next_album},)
-called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockPushButton'>
-called PushButton.__init__ with args ({me},) {{}}
-called PushButton.setIcon with arg `up_icon`
-called Size.__init__ with args (20, 20)
-called PushButton.setIconSize with arg of type <class 'mockgui.mockqtwidgets.MockSize'>
-called PushButton.setToolTip with arg `Select previous album in list`
-called Signal.connect with args ({prev_album},)
-called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockPushButton'>
+called create_updownbuttons with args ({testobj},) {{'seltext': 'Select {{}} album in list', 'icons': ('down_icon', 'up_icon'), 'callbacks': ({testobj.next_album}, {testobj.prev_album})}}
+called HBox.addLayout with arg of type <class 'types.SimpleNamespace'>
 called HBox.addStretch
 called Grid.addLayout with arg of type <class 'mockgui.mockqtwidgets.MockHBoxLayout'> at (1, 1)
 called VBox.addLayout with arg of type <class 'mockgui.mockqtwidgets.MockGridLayout'>
 called HBox.__init__
 called VBox.__init__
+called create_treewidget with args ({testobj}, ['Track Name in Clementine'], ())
 called Tree.__init__
-called Tree.setColumnCount with arg `1`
-called Tree.setHeaderLabels with arg `['Track Name in Clementine']`
-called Tree.setMouseTracking with arg `True`
-called Signal.connect with args ({popuptext},)
 called VBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockTreeWidget'>
 called HBox.__init__
 called HBox.addStretch
-called PushButton.__init__ with args ('&Help', {me}) {{}}
-called Signal.connect with args ({help},)
+called PushButton.__init__ with args ('&Help', {testobj}) {{}}
+called Signal.connect with args ({testobj.help},)
 called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockPushButton'>
-called PushButton.__init__ with args ('&Copy Tracks', {me}) {{}}
-called Signal.connect with args ({copy_tracks},)
+called PushButton.__init__ with args ('&Copy Tracks', {testobj}) {{}}
+called Signal.connect with args ({testobj.copy_tracks},)
 called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockPushButton'>
 called HBox.addStretch
 called VBox.addLayout with arg of type <class 'mockgui.mockqtwidgets.MockHBoxLayout'>
 called HBox.addLayout with arg of type <class 'mockgui.mockqtwidgets.MockVBoxLayout'>
 called VBox.__init__
+called create_treewidget with args ({testobj}, ['Track Name in Albums'], ())
 called Tree.__init__
-called Tree.setColumnCount with arg `1`
-called Tree.setHeaderLabels with arg `['Track Name in Albums']`
-called Tree.setMouseTracking with arg `True`
-called Signal.connect with args ({popuptext},)
 called VBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockTreeWidget'>
 called HBox.__init__
 called HBox.addStretch
-called PushButton.__init__ with args ('&Unlink Album', {me}) {{}}
-called Signal.connect with args ({unlink},)
+called PushButton.__init__ with args ('&Unlink Album', {testobj}) {{}}
+called Signal.connect with args ({testobj.unlink},)
 called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockPushButton'>
-called PushButton.__init__ with args ('&Save Unlinked', {me}) {{}}
-called Signal.connect with args ({save_all},)
+called PushButton.__init__ with args ('&Save Unlinked', {testobj}) {{}}
+called Signal.connect with args ({testobj.save_all},)
 called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockPushButton'>
 called HBox.addStretch
 called VBox.addLayout with arg of type <class 'mockgui.mockqtwidgets.MockHBoxLayout'>
@@ -1318,49 +1230,51 @@ called ComboBox.setFocus
 
 @pytest.fixture
 def expected_output():
-    return {
-        'start': start_all,
-        'select_1': (select_top + select_other_artist_button + select_other_type_button +
-                     select_start_data + select_data_line_1 + select_data_line_2 + select_end_data),
-        'select_2': (select_top + select_other_search_button + select_other_type_button +
-                     select_start_data + select_data_line_1 + select_end_data),
-        'select_3': select_top + select_other_search_button + select_start_data + select_end_data,
-        'detail': detail_all,
-        'editdetails_studio': editdetails_studio,
-        'editdetails_live': editdetails_live,
-        'editdetails_studio_nw': editdetails_studio_nw,
-        'editdetails_live_nw': editdetails_live_nw,
-        'edittracks': (edittracks_all_start + edittracks_all_end_1 + edittracks_all_buttonstrip_1 +
-                       edittracks_all_end_2),
-        'edittracks_2': (edittracks_all_start + edittracks_all_end_1 + edittracks_all_buttonstrip_2 +
-                         edittracks_all_end_2),
-        'edittracks_3': (edittracks_all_start + edittracks_all_middle + edittracks_all_end_1 +
-                         edittracks_all_buttonstrip_3 + edittracks_all_end_2),
-        'edittracks_line': track_fields,
-        'editrecs': (editrecs_all_start + editrecs_all_end_1 + editrecs_all_buttonstrip_1 +
-                       editrecs_all_end_2),
-        'editrecs_2': (editrecs_all_start + editrecs_all_end_1 + editrecs_all_buttonstrip_2 +
-                         editrecs_all_end_2),
-        'editrecs_3': (editrecs_all_start + editrecs_all_middle + editrecs_all_end_1 +
-                         editrecs_all_buttonstrip_3 + editrecs_all_end_2),
-        'editrecs_line': rec_fields_start + rec_fields_end,
-        'editrecs_line_2': rec_fields_start + rec_fields_middle + rec_fields_end,
-        'artists': artists_all_start + artists_all_middle + artists_all_end,
-        'artists_2': artists_all_start + artists_all_end,
-        'artist_line': artists_line,
-        'artist_dialog': artist_dialog,
-        'matcher_main': matcher_noapp + matcher,
-        'matcher_main_w_app': matcher,
-        'compare_artists': cmpart,
-        'compare_artists_actions': cmpart_act,
-        'compare_artists_refresh_1': cmpart_refresh + cmpart_ref_1,
-        'compare_artists_refresh_2': cmpart_refresh + cmpart_ref_2,
-        'new_artist': newart,
-        'compare_albums': cmpalb,
-        'compare_albums_actions': cmpalb_act,
-        'new_album': newalb,
-        'compare_tracks': cmptrk,
-        'compare_tracks_actions': cmptrk_act,
-        'bgui_create_widgets': bgui_createstart + bgui_createmiddle + bgui_createend,
-        'bgui_create_widgets2': bgui_createstart + bgui_createend
-        }
+    """fixture returning output predictions per function
+    """
+    return {'start': start_all,
+            'select_1': (select_top + select_other_artist_button + select_other_type_button
+                         + select_start_data + select_data_line_1 + select_data_line_2
+                         + select_end_data),
+            'select_2': (select_top + select_other_search_button + select_other_type_button
+                         + select_start_data + select_data_line_1 + select_end_data),
+            'select_3': (select_top + select_other_search_button + select_start_data
+                         + select_end_data),
+            'detail': detail_all,
+            'editdetails_studio': editdetails_studio,
+            'editdetails_live': editdetails_live,
+            'editdetails_studio_nw': editdetails_studio_nw,
+            'editdetails_live_nw': editdetails_live_nw,
+            'edittracks': (edittracks_all_start + edittracks_all_end_1
+                           + edittracks_all_buttonstrip_1 + edittracks_all_end_2),
+            'edittracks_2': (edittracks_all_start + edittracks_all_end_1
+                             + edittracks_all_buttonstrip_2 + edittracks_all_end_2),
+            'edittracks_3': (edittracks_all_start + edittracks_all_middle + edittracks_all_end_1
+                             + edittracks_all_buttonstrip_3 + edittracks_all_end_2),
+            'edittracks_line': track_fields,
+            'editrecs': (editrecs_all_start + editrecs_all_end_1 + editrecs_all_buttonstrip_1
+                         + editrecs_all_end_2),
+            'editrecs_2': (editrecs_all_start + editrecs_all_end_1 + editrecs_all_buttonstrip_2
+                           + editrecs_all_end_2),
+            'editrecs_3': (editrecs_all_start + editrecs_all_middle + editrecs_all_end_1
+                           + editrecs_all_buttonstrip_3 + editrecs_all_end_2),
+            'editrecs_line': rec_fields_start + rec_fields_end,
+            'editrecs_line_2': rec_fields_start + rec_fields_middle + rec_fields_end,
+            'artists': artists_all_start + artists_all_middle + artists_all_end,
+            'artists_2': artists_all_start + artists_all_end,
+            'artist_line': artists_line,
+            'artist_dialog': artist_dialog,
+            'matcher_main': matcher_noapp + matcher,
+            'matcher_main_w_app': matcher,
+            'compare_artists': cmpart,
+            'compare_artists_actions': cmpart_act,
+            'compare_artists_refresh_1': cmpart_refresh + cmpart_ref_1,
+            'compare_artists_refresh_2': cmpart_refresh + cmpart_ref_2,
+            'new_artist': newart,
+            'compare_albums': cmpalb,
+            'compare_albums_actions': cmpalb_act,
+            'new_album': newalb,
+            'compare_tracks': cmptrk,
+            'compare_tracks_actions': cmptrk_act,
+            'bgui_create_widgets': bgui_createstart + bgui_createmiddle + bgui_createend,
+            'bgui_create_widgets2': bgui_createstart + bgui_createend}

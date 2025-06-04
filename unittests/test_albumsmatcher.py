@@ -66,7 +66,81 @@ class MockCmpTrk:
         print(f'called CompareTracks.__init__ with arg `{arg}`')
 
 
+def mock_create_treewidget(*args):
+    "stub"
+    print('called create_treewidget with args', args)
+    return mockqtw.MockTreeWidget()
+
+
+def mock_create_updownbuttons(*args, **kwargs):
+    "stub"
+    print('called create_updownbuttons with args', args, kwargs)
+    return types.SimpleNamespace(itemAt=lambda x: types.SimpleNamespace(
+        widget=lambda: f'widget{x}'))
+
+
 # tests for module level functions
+def test_create_treewidget(monkeypatch, capsys):
+    """unittest for albummatcher.create_treewidget
+    """
+    monkeypatch.setattr(testee.qtw, 'QTreeWidget', mockqtw.MockTreeWidget)
+    win = types.SimpleNamespace()
+    result = testee.create_treewidget(win, ['xxx', 'yyy'], (10, -1))
+    assert isinstance(result, testee.qtw.QTreeWidget)
+    assert capsys.readouterr().out == (
+            "called Tree.__init__\n"
+            "called Tree.setColumnCount with arg `2`\n"
+            "called Tree.header\n"
+            "called Header.__init__\n"
+            "called Tree.setHeaderLabels with arg `['xxx', 'yyy']`\n"
+            "called Header.setStretchLastSection with arg False\n"
+            "called Tree.setColumnWidth with args 0, 10\n"
+            "called Header.setSectionResizeMode for col 1 mode ResizeMode.Stretch\n"
+            "called Tree.setMouseTracking with arg `True`\n"
+            f"called Signal.connect with args ({testee.popuptext},)\n")
+    result = testee.create_treewidget(win, ['xxx'], ())
+    assert isinstance(result, testee.qtw.QTreeWidget)
+    assert capsys.readouterr().out == (
+            "called Tree.__init__\n"
+            "called Tree.setColumnCount with arg `1`\n"
+            "called Tree.header\n"
+            "called Header.__init__\n"
+            "called Tree.setHeaderLabels with arg `['xxx']`\n"
+            "called Tree.setMouseTracking with arg `True`\n"
+            f"called Signal.connect with args ({testee.popuptext},)\n")
+
+
+def test_create_updownbuttons(monkeypatch, capsys):
+    """unittest for albummatcher.create_updownbuttons
+    """
+    def callback0():
+        "dummy function"
+    def callback1():
+        "dummy function"
+    monkeypatch.setattr(testee.qtw, 'QHBoxLayout', mockqtw.MockHBoxLayout)
+    monkeypatch.setattr(testee.qtw, 'QPushButton', mockqtw.MockPushButton)
+    monkeypatch.setattr(testee.core, 'QSize', mockqtw.MockSize)
+    win = types.SimpleNamespace()
+    result = testee.create_updownbuttons(win, '{} item', ('icon0', 'icon1'), (callback0, callback1))
+    assert isinstance(result, testee.qtw.QHBoxLayout)
+    assert capsys.readouterr().out == (
+        "called HBox.__init__\n"
+        "called PushButton.__init__ with args (namespace(),) {}\n"
+        "called PushButton.setIcon with arg `icon0`\n"
+        "called Size.__init__ with args (12, 12)\n"
+        "called PushButton.setIconSize with arg of type <class 'mockgui.mockqtwidgets.MockSize'>\n"
+        "called PushButton.setToolTip with arg `next item`\n"
+        f"called Signal.connect with args ({callback0},)\n"
+        "called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockPushButton'>\n"
+        "called PushButton.__init__ with args (namespace(),) {}\n"
+        "called PushButton.setIcon with arg `icon1`\n"
+        "called Size.__init__ with args (12, 12)\n"
+        "called PushButton.setIconSize with arg of type <class 'mockgui.mockqtwidgets.MockSize'>\n"
+        "called PushButton.setToolTip with arg `previous item`\n"
+        f"called Signal.connect with args ({callback1},)\n"
+        "called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockPushButton'>\n")
+
+
 def test_build_artist_name():
     """unittest for albumsmatcher.build_artist_name
     """
@@ -629,12 +703,6 @@ def test_cmpart_create_widgets(monkeypatch, capsys, expected_output):
     def mock_check():
         """stub
         """
-    def focus_next():
-        """stub
-        """
-    def focus_prev():
-        """stub
-        """
     def mock_find():
         """stub
         """
@@ -646,6 +714,8 @@ def test_cmpart_create_widgets(monkeypatch, capsys, expected_output):
         """
     testobj = setup_cmpart(monkeypatch, capsys, widgets=False)
     monkeypatch.setattr(testobj, 'setLayout', mock_setlayout)
+    monkeypatch.setattr(testee, 'create_treewidget', mock_create_treewidget)
+    monkeypatch.setattr(testee, 'create_updownbuttons', mock_create_updownbuttons)
     monkeypatch.setattr(testee.qtw, 'QHBoxLayout', mockqtw.MockHBoxLayout)
     monkeypatch.setattr(testee.qtw, 'QVBoxLayout', mockqtw.MockVBoxLayout)
     monkeypatch.setattr(testee.qtw, 'QPushButton', mockqtw.MockPushButton)
@@ -661,11 +731,7 @@ def test_cmpart_create_widgets(monkeypatch, capsys, expected_output):
     # breakpoint()
     testobj.create_widgets()
     assert testobj.appname == 'appname'
-    bindings = {'me': testobj, 'popuptext': mock_popup, 'select_and_go': mock_select,
-                'check_deletable': mock_check, 'help': testobj.help,
-                'focus_next': testobj.focus_next, 'focus_prev': testobj.focus_prev,
-                'find_artist': mock_find, 'delete_artist': mock_delete, 'save_all': mock_save}
-    assert capsys.readouterr().out == expected_output['compare_artists'].format(**bindings)
+    assert capsys.readouterr().out == expected_output['compare_artists'].format(testobj=testobj)
 
 def test_cmpart_create_actions(monkeypatch, capsys, expected_output):
     """unittest for albumsmatcher.CompareArtists.create_actions
@@ -1516,6 +1582,8 @@ def test_cmpalb_create_widgets(monkeypatch, capsys, expected_output):
     testobj._parent.down_icon = 'down_icon'
     testobj._parent.up_icon = 'up_icon'
     monkeypatch.setattr(testobj, 'setLayout', mock_setlayout)
+    monkeypatch.setattr(testee, 'create_treewidget', mock_create_treewidget)
+    monkeypatch.setattr(testee, 'create_updownbuttons', mock_create_updownbuttons)
     monkeypatch.setattr(testobj, 'get_albums', mock_get)
     monkeypatch.setattr(testobj, 'save_all', mock_save)
     monkeypatch.setattr(testobj, 'next_artist', mock_next)
@@ -1523,16 +1591,11 @@ def test_cmpalb_create_widgets(monkeypatch, capsys, expected_output):
     monkeypatch.setattr(testobj, 'help', mock_help)
     monkeypatch.setattr(testobj, 'find_album', mock_find)
     testobj.create_widgets()
-    bindings = {'me': testobj,
-                'get_albums': testobj.get_albums,
-                'popuptext': testee.popuptext,
-                'save_all': testobj.save_all,
-                'next_artist': testobj.next_artist,
-                'prev_artist': testobj.prev_artist,
-                'help': testobj.help,
-                'find_album': testobj.find_album
-                }
-    assert capsys.readouterr().out == expected_output['compare_albums'].format(**bindings)
+    assert testobj.albums_to_save == {}
+    assert testobj.albums_to_update == {}
+    assert testobj.next_artist_button == 'widget0'
+    assert testobj.prev_artist_button == 'widget1'
+    assert capsys.readouterr().out == expected_output['compare_albums'].format(testobj=testobj)
 
 def test_cmpalb_create_actions(monkeypatch, capsys, expected_output):
     """unittest for albumsmatcher.CompareAlbums.create_actions
@@ -2096,16 +2159,6 @@ def test_cmpalb_prepare_for_update(monkeypatch, capsys):
 def test_cmpalb_add_album(monkeypatch, capsys):
     """unittest for albumsmatcher.CompareAlbums.add_album
     """
-    def mock_text(col):
-        """stub
-        """
-        print(f'called TreeItem.text for col {col}')
-        return 'x'
-    def mock_data(col, role):
-        """stub
-        """
-        print(f'called TreeItem.data for col {col} role {role}')
-        return '9999'
     def mock_current():
         """stub
         """
@@ -2586,6 +2639,8 @@ def test_cmptrk_create_widgets(monkeypatch, capsys, expected_output):
     testobj._parent.down_icon = 'down_icon'
     testobj._parent.up_icon = 'up_icon'
     monkeypatch.setattr(testobj, 'setLayout', mock_setlayout)
+    monkeypatch.setattr(testee, 'create_treewidget', mock_create_treewidget)
+    monkeypatch.setattr(testee, 'create_updownbuttons', mock_create_updownbuttons)
     monkeypatch.setattr(testobj, 'get_albums', mock_get)
     monkeypatch.setattr(testobj, 'get_tracks', mock_get_t)
     monkeypatch.setattr(testobj, 'save_all', mock_save)
@@ -2598,23 +2653,13 @@ def test_cmptrk_create_widgets(monkeypatch, capsys, expected_output):
     monkeypatch.setattr(testobj, 'help', mock_help)
     # monkeypatch.setattr(testobj, 'find_album', mock_find)
     testobj.create_widgets()
+    assert testobj.next_artist_button == 'widget0'
+    assert testobj.prev_artist_button == 'widget1'
+    assert testobj.next_album_button == 'widget0'
+    assert testobj.prev_album_button == 'widget1'
     assert testobj.artist_index == 0
     assert testobj.album_index == 0
-    bindings = {'me': testobj,
-                'get_albums': testobj.get_albums,
-                'get_tracks': testobj.get_tracks,
-                'popuptext': testee.popuptext,
-                'copy_tracks': testobj.copy_tracks,
-                'unlink': testobj.unlink,
-                'save_all': testobj.save_all,
-                'next_artist': testobj.next_artist,
-                'next_album': testobj.next_album,
-                'prev_artist': testobj.prev_artist,
-                'prev_album': testobj.prev_album,
-                'help': testobj.help,
-                # 'find_album': testobj.find_album
-                }
-    assert capsys.readouterr().out == expected_output['compare_tracks'].format(**bindings)
+    assert capsys.readouterr().out == expected_output['compare_tracks'].format(testobj=testobj)
 
 def test_cmptrk_create_actions(monkeypatch, capsys, expected_output):
     """unittest for albumsmatcher.CompareTracks.create_actions
@@ -2658,10 +2703,6 @@ def test_cmptrk_refresh_screen(monkeypatch, capsys):
             print('called Tree.setCurrentIndex')
             raise TypeError
         print(f'called Tree.setCurrentIndex with arg `{num}`')
-    def mock_index(*args):
-        """stub
-        """
-        raise ValueError
     testobj = setup_cmptrk(monkeypatch, capsys)
     testobj.b_save = mockqtw.MockPushButton()
     assert capsys.readouterr().out == 'called PushButton.__init__ with args () {}\n'

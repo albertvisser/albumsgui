@@ -162,78 +162,42 @@ class CompareArtists(qtw.QWidget):
         """
         ## frm = qtw.QSplitter(self)
         self.appname = self._parent.title
-        tree = qtw.QTreeWidget(self)
-        tree.setColumnCount(2)
-        hdr = tree.header()
-        hdr.setStretchLastSection(False)
-        hdr.setSectionResizeMode(0, qtw.QHeaderView.ResizeMode.Stretch)
-        tree.setColumnWidth(1, 50)
-        tree.setHeaderLabels(['Artist', 'Match'])
-        tree.setMouseTracking(True)
-        tree.itemEntered.connect(popuptext)
-        tree.itemDoubleClicked.connect(self.select_and_go)
-        self.clementine_artists = tree
-
-        tree = qtw.QTreeWidget(self)
-        tree.setColumnCount(3)
-        hdr = tree.header()
-        hdr.setStretchLastSection(False)
-        tree.setColumnWidth(0, 80)
-        tree.setColumnWidth(2, 50)
-        hdr.setSectionResizeMode(1, qtw.QHeaderView.ResizeMode.Stretch)
-        tree.setHeaderLabels(['First Name', 'Last Name', 'Id'])
-        tree.setMouseTracking(True)
-        tree.itemEntered.connect(popuptext)
-        tree.currentItemChanged.connect(self.check_deletable)
-        self.albums_artists = tree
-
-        b_help = qtw.QPushButton('&Help', self)
-        b_help.clicked.connect(self.help)
-        b_next = qtw.QPushButton(self)
-        b_next.setIcon(self._parent.next_icon)
-        b_next.setIconSize(core.QSize(12, 12))
-        # b_next.setIconSize(12, 12)
-        b_next.setToolTip('Go to next unmatched artist')
-        b_next.clicked.connect(self.focus_next)
-        b_prev = qtw.QPushButton(self)
-        b_prev.setIcon(self._parent.prev_icon)
-        b_prev.setIconSize(core.QSize(12, 12))
-        # b_prev.setIconSize(12, 12)
-        b_prev.setToolTip('Go to previous unmatched artist')
-        b_prev.clicked.connect(self.focus_prev)
-        b_find = qtw.QPushButton('&Check Artist', self)
-        b_find.clicked.connect(self.find_artist)
-        ## b_copy = qtw.QPushButton('&Copy Selected', self)
-        ## b_copy.clicked.connect(self.copy_artist)
-
-        ## b_add = qtw.QPushButton('&New Artist', self)
-        ## b_add.clicked.connect(self.add_artist)
-        self.delete_button = qtw.QPushButton('&Delete', self)
-        self.delete_button.clicked.connect(self.delete_artist)
-        self.delete_button.setEnabled(False)
-        self.save_button = qtw.QPushButton('&Save All', self)
-        self.save_button.clicked.connect(self.save_all)
-
         hbox0 = qtw.QHBoxLayout()
         vbox = qtw.QVBoxLayout()
+
+        self.clementine_artists = create_treewidget(self, ['Artist', 'Match'],
+                                                    [-1, 50])
+        self.clementine_artists.itemDoubleClicked.connect(self.select_and_go)
         vbox.addWidget(self.clementine_artists)
         hbox = qtw.QHBoxLayout()
         hbox.addStretch()
+        b_help = qtw.QPushButton('&Help', self)
+        b_help.clicked.connect(self.help)
         hbox.addWidget(b_help)
-        hbox.addWidget(b_next)
-        hbox.addWidget(b_prev)
+        b_updown = create_updownbuttons(self, seltext='Go to {} unmatched artist',
+                                        icons=(self._parent.next_icon, self._parent.prev_icon),
+                                        callbacks=(self.focus_next, self.focus_prev))
+        hbox.addLayout(b_updown)
+        b_find = qtw.QPushButton('&Check Artist', self)
+        b_find.clicked.connect(self.find_artist)
         hbox.addWidget(b_find)
-        ## hbox.addWidget(b_copy)
         hbox.addStretch()
         vbox.addLayout(hbox)
         hbox0.addLayout(vbox)
 
         vbox = qtw.QVBoxLayout()
+        self.albums_artists = create_treewidget(self, ['First Name', 'Last Name', 'Id'],
+                                                (80, -1, 50))
+        self.albums_artists .currentItemChanged.connect(self.check_deletable)
         vbox.addWidget(self.albums_artists)
         hbox = qtw.QHBoxLayout()
         hbox.addStretch()
-        ## hbox.addWidget(b_add)
+        self.delete_button = qtw.QPushButton('&Delete', self)
+        self.delete_button.clicked.connect(self.delete_artist)
+        self.delete_button.setEnabled(False)
         hbox.addWidget(self.delete_button)
+        self.save_button = qtw.QPushButton('&Save All', self)
+        self.save_button.clicked.connect(self.save_all)
         hbox.addWidget(self.save_button)
         hbox.addStretch()
         vbox.addLayout(hbox)
@@ -572,45 +536,29 @@ class CompareAlbums(qtw.QWidget):
         """setup screen
         """
         self.appname = self._parent.title
+        self.albums_to_save = collections.defaultdict(list)
+        self.albums_to_update = collections.defaultdict(list)
         vbox = qtw.QVBoxLayout()
 
         hbox = qtw.QHBoxLayout()
         hbox.addWidget(qtw.QLabel('Selecteer een uitvoerende:', self))
         self.artist_list = qtw.QComboBox(self)
         self.artist_list.currentIndexChanged.connect(self.get_albums)
-        ## self.last_handled = None
-        self.albums_to_save = collections.defaultdict(list)
-        self.albums_to_update = collections.defaultdict(list)
+        # self.last_handled = None
         hbox.addWidget(self.artist_list)
-        btn = qtw.QPushButton(self)
-        btn.setIcon(self._parent.down_icon)
-        btn.setIconSize(core.QSize(20, 20))
-        btn.setToolTip('Select next artist in list')
-        btn.clicked.connect(self.next_artist)
-        hbox.addWidget(btn)
-        self.next_artist_button = btn
-        btn = qtw.QPushButton(self)
-        btn.setIcon(self._parent.up_icon)
-        btn.setIconSize(core.QSize(20, 20))
-        btn.setToolTip('Select previous artist in list')
-        btn.clicked.connect(self.prev_artist)
-        hbox.addWidget(btn)
-        self.prev_artist_button = btn
+        updown = create_updownbuttons(self, seltext='Select {} artist in list',
+                                      icons=(self._parent.down_icon, self._parent.up_icon),
+                                      callbacks=(self.next_artist, self.prev_artist))
+        self.next_artist_button = updown.itemAt(0).widget()
+        self.prev_artist_button = updown.itemAt(1).widget()
+        hbox.addLayout(updown)
         hbox.addStretch()
         vbox.addLayout(hbox)
 
         hbox = qtw.QHBoxLayout()
         vbox2 = qtw.QVBoxLayout()
-        tree = qtw.QTreeWidget(self)
-        tree.setColumnCount(2)
-        hdr = tree.header()
-        hdr.setStretchLastSection(False)
-        tree.setColumnWidth(1, 60)
-        hdr.setSectionResizeMode(0, qtw.QHeaderView.ResizeMode.Stretch)
-        tree.setHeaderLabels(['Album Name in Clementine', 'Match'])
-        tree.setMouseTracking(True)
-        tree.itemEntered.connect(popuptext)
-        self.clementine_albums = tree
+        self.clementine_albums = create_treewidget(self, ['Album Name in Clementine', 'Match'],
+                                                   (-1, 60))
         vbox2.addWidget(self.clementine_albums)
         hbox2 = qtw.QHBoxLayout()
         hbox2.addStretch()
@@ -623,18 +571,10 @@ class CompareAlbums(qtw.QWidget):
         hbox2.addStretch()
         vbox2.addLayout(hbox2)
         hbox.addLayout(vbox2)
+
         vbox2 = qtw.QVBoxLayout()
-        tree = qtw.QTreeWidget(self)
-        tree.setColumnCount(3)
-        hdr = tree.header()
-        hdr.setStretchLastSection(False)
-        tree.setColumnWidth(1, 60)
-        tree.setColumnWidth(2, 60)
-        hdr.setSectionResizeMode(0, qtw.QHeaderView.ResizeMode.Stretch)
-        tree.setHeaderLabels(['Album Name in Albums', 'Year', 'Id'])
-        tree.setMouseTracking(True)
-        tree.itemEntered.connect(popuptext)
-        self.albums_albums = tree
+        self.albums_albums = create_treewidget(self, ['Album Name in Albums', 'Year', 'Id'],
+                                               (-1, 60, 60))
         vbox2.addWidget(self.albums_albums)
         hbox2 = qtw.QHBoxLayout()
         hbox2.addStretch()
@@ -996,20 +936,12 @@ class CompareTracks(qtw.QWidget):
         self.artists_list = qtw.QComboBox(self)
         self.artists_list.currentIndexChanged.connect(self.get_albums)
         hbox.addWidget(self.artists_list)
-        btn = qtw.QPushButton(self)
-        btn.setIcon(self._parent.down_icon)
-        btn.setIconSize(core.QSize(20, 20))
-        btn.setToolTip('Select next artist in list')
-        btn.clicked.connect(self.next_artist)
-        self.next_artist_button = btn
-        hbox.addWidget(btn)
-        btn = qtw.QPushButton(self)
-        btn.setIcon(self._parent.up_icon)
-        btn.setIconSize(core.QSize(20, 20))
-        btn.setToolTip('Select previous artist in list')
-        btn.clicked.connect(self.prev_artist)
-        self.prev_artist_button = btn
-        hbox.addWidget(btn)
+        updown = create_updownbuttons(self, seltext='Select {} artist in list',
+                                      icons=(self._parent.down_icon, self._parent.up_icon),
+                                      callbacks=(self.next_artist, self.prev_artist))
+        self.next_artist_button = updown.itemAt(0).widget()
+        self.prev_artist_button = updown.itemAt(1).widget()
+        hbox.addLayout(updown)
         hbox.addStretch()
         gbox.addLayout(hbox, 0, 1)
 
@@ -1019,32 +951,19 @@ class CompareTracks(qtw.QWidget):
         self.albums_list.setMinimumWidth(300)
         self.albums_list.currentIndexChanged.connect(self.get_tracks)
         hbox.addWidget(self.albums_list)
-        btn = qtw.QPushButton(self)
-        btn.setIcon(self._parent.down_icon)
-        btn.setIconSize(core.QSize(20, 20))
-        btn.setToolTip('Select next album in list')
-        btn.clicked.connect(self.next_album)
-        self.next_album_button = btn
-        hbox.addWidget(btn)
-        btn = qtw.QPushButton(self)
-        btn.setIcon(self._parent.up_icon)
-        btn.setIconSize(core.QSize(20, 20))
-        btn.setToolTip('Select previous album in list')
-        btn.clicked.connect(self.prev_album)
-        self.prev_album_button = btn
-        hbox.addWidget(btn)
+        updown = create_updownbuttons(self, seltext='Select {} album in list',
+                                      icons=(self._parent.down_icon, self._parent.up_icon),
+                                      callbacks=(self.next_album, self.prev_album))
+        self.next_album_button = updown.itemAt(0).widget()
+        self.prev_album_button = updown.itemAt(1).widget()
+        hbox.addLayout(updown)
         hbox.addStretch()
         gbox.addLayout(hbox, 1, 1)
         vbox.addLayout(gbox)
 
         hbox = qtw.QHBoxLayout()
         vbox2 = qtw.QVBoxLayout()
-        tree = qtw.QTreeWidget(self)
-        tree.setColumnCount(1)
-        tree.setHeaderLabels(['Track Name in Clementine'])
-        tree.setMouseTracking(True)
-        tree.itemEntered.connect(popuptext)
-        self.clementine_tracks = tree
+        self.clementine_tracks = create_treewidget(self, ['Track Name in Clementine'], ())
         vbox2.addWidget(self.clementine_tracks)
         hbox2 = qtw.QHBoxLayout()
         hbox2.addStretch()
@@ -1058,13 +977,7 @@ class CompareTracks(qtw.QWidget):
         vbox2.addLayout(hbox2)
         hbox.addLayout(vbox2)
         vbox2 = qtw.QVBoxLayout()
-
-        tree = qtw.QTreeWidget(self)
-        tree.setColumnCount(1)
-        tree.setHeaderLabels(['Track Name in Albums'])
-        tree.setMouseTracking(True)
-        tree.itemEntered.connect(popuptext)
-        self.albums_tracks = tree
+        self.albums_tracks = create_treewidget(self, ['Track Name in Albums'], ())
         vbox2.addWidget(self.albums_tracks)
         hbox2 = qtw.QHBoxLayout()
         hbox2.addStretch()
@@ -1276,6 +1189,50 @@ class CompareTracks(qtw.QWidget):
         """explain intended workflow
         """
         qtw.QMessageBox.information(self, self._parent.title, workflows['cmptrk'])
+
+
+def create_treewidget(win, colnames, colwidths):
+    """abstracted out part of definition for a treewidget
+
+    returns the created treewidget
+    """
+    tree = qtw.QTreeWidget(win)
+    tree.setColumnCount(len(colnames))
+    hdr = tree.header()
+    tree.setHeaderLabels(colnames)
+    if colwidths:
+        hdr.setStretchLastSection(False)
+        for ix, width in enumerate(colwidths):
+            if width == -1:
+                hdr.setSectionResizeMode(ix, qtw.QHeaderView.ResizeMode.Stretch)
+            else:
+                tree.setColumnWidth(ix, width)
+    tree.setMouseTracking(True)
+    tree.itemEntered.connect(popuptext)
+    return tree
+
+
+def create_updownbuttons(win, seltext, icons, callbacks):
+    """create two small buttons for next/prev navigation
+
+    returns the sizer containing the buttons
+    """
+    hbox = qtw.QHBoxLayout()
+    b_next = qtw.QPushButton(win)
+    b_next.setIcon(icons[0])
+    b_next.setIconSize(core.QSize(12, 12))
+    # b_next.setIconSize(12, 12)
+    b_next.setToolTip(seltext.format('next'))
+    b_next.clicked.connect(callbacks[0])
+    hbox.addWidget(b_next)
+    b_prev = qtw.QPushButton(win)
+    b_prev.setIcon(icons[1])
+    b_prev.setIconSize(core.QSize(12, 12))
+    # b_prev.setIconSize(12, 12)
+    b_prev.setToolTip(seltext.format('previous'))
+    b_prev.clicked.connect(callbacks[1])
+    hbox.addWidget(b_prev)
+    return hbox
 
 
 def build_artist_name(first, last):
