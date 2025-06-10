@@ -1890,7 +1890,9 @@ def test_edit_refresh_screen(monkeypatch, capsys):
     assert capsys.readouterr().out == (
             'called Label.setText with arg `heading`\n'
             "called PushButton.__init__ with args ('X',) {}\n"
+            "called PushButton.text\n"
             "called PushButton.__init__ with args ('Uitvoeren en terug',) {}\n"
+            "called PushButton.text\n"
             'called PushButton.setText with arg `Naar Details`\n'
             f'called Signal.connect with args ({testobj.parent().do_detail},)\n')
     # toevoeging t.b.v. full branch coverage

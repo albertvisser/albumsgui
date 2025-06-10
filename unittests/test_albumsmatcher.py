@@ -95,7 +95,7 @@ def test_create_treewidget(monkeypatch, capsys):
             "called Tree.setHeaderLabels with arg `['xxx', 'yyy']`\n"
             "called Header.setStretchLastSection with arg False\n"
             "called Tree.setColumnWidth with args 0, 10\n"
-            "called Header.setSectionResizeMode for col 1 mode ResizeMode.Stretch\n"
+            "called Header.setSectionResizeMode with args (1, ResizeMode.Stretch)\n"
             "called Tree.setMouseTracking with arg `True`\n"
             f"called Signal.connect with args ({testee.popuptext},)\n")
     result = testee.create_treewidget(win, ['xxx'], ())
@@ -938,13 +938,13 @@ def test_cmpart_select_and_go(monkeypatch, capsys):
     testobj.artist_map = {'x': ''}
     testobj.appname = 'appname'
     testobj.select_and_go()
-    assert capsys.readouterr().out == ("called TreeItem.text for col 0\n"
+    assert capsys.readouterr().out == ("called TreeItem.text with arg 0\n"
                                        f"called MessageBox.information with args `{testobj}`"
                                        " `appname` `Not possible - artist hasn't been matched yet`\n")
     testobj.artist_map = {'x': 'y'}
     testobj.select_and_go()
     assert testobj._parent.current_data == 'x'
-    assert capsys.readouterr().out == ('called TreeItem.text for col 0\n'
+    assert capsys.readouterr().out == ('called TreeItem.text with arg 0\n'
                                        'called TabWidget.setCurrentIndex with arg `1`\n')
 
 def test_cmpart_find_artist(monkeypatch, capsys):
@@ -1086,11 +1086,11 @@ def test_cmpart_update_item(monkeypatch, capsys):
     testobj.update_item(new_item, from_item)
     assert capsys.readouterr().out == (f'called Tree.setCurrentItem with arg `{new_item}`\n'
                                        f'called Tree.scrollToItem with arg `{new_item}`\n'
-                                       'called TreeItem.text for col 2\n'
-                                       'called TreeItem.text for col 0\n'
-                                       'called TreeItem.text for col 0\n'
-                                       'called TreeItem.text for col 2\n'
-                                       'called TreeItem.setText with arg `X` for col 1\n'
+                                       'called TreeItem.text with arg 2\n'
+                                       'called TreeItem.text with arg 0\n'
+                                       'called TreeItem.text with arg 0\n'
+                                       'called TreeItem.text with arg 2\n'
+                                       "called TreeItem.setText with args (1, 'X')\n"
                                        'called CompareArtists.set_modified to True\n'
                                        "called Tree.currentItem\n"
                                        f'called Tree.itemBelow with arg {mockcurrent}\n'
@@ -1099,11 +1099,11 @@ def test_cmpart_update_item(monkeypatch, capsys):
     testobj.update_item(new_item, from_item)
     assert capsys.readouterr().out == (f'called Tree.setCurrentItem with arg `{new_item}`\n'
                                        f'called Tree.scrollToItem with arg `{new_item}`\n'
-                                       'called TreeItem.text for col 2\n'
-                                       'called TreeItem.text for col 0\n'
-                                       'called TreeItem.text for col 0\n'
-                                       'called TreeItem.text for col 2\n'
-                                       'called TreeItem.setText with arg `X` for col 1\n'
+                                       'called TreeItem.text with arg 2\n'
+                                       'called TreeItem.text with arg 0\n'
+                                       'called TreeItem.text with arg 0\n'
+                                       'called TreeItem.text with arg 2\n'
+                                       "called TreeItem.setText with args (1, 'X')\n"
                                        'called CompareArtists.set_modified to True\n'
                                        "called Tree.currentItem\n")
 
@@ -1378,22 +1378,22 @@ def test_cmpart_save_all(monkeypatch, capsys):
                                        'called update_artists with arg `[]`)\n'
                                        "called save_appdata with arg `[{'x': 'y'}, {}]`)\n"
                                        'called Tree.currentItem\n'
-                                       'called TreeItem.text for col 0\n'
+                                       'called TreeItem.text with arg 0\n'
                                        'called CompareArtists.refresh_appdata with arg `x`)\n')
     monkeypatch.setattr(testobj.albums_artists, 'topLevelItemCount', mock_count)
     monkeypatch.setattr(testobj.albums_artists, 'topLevelItem', mock_item)
     testobj.save_all()
-    assert capsys.readouterr().out == ("called TreeItem.text for col 2\n"
-                                       "called TreeItem.text for col 0\n"
-                                       "called TreeItem.text for col 1\n"
-                                       "called TreeItem.text for col 2\n"
-                                       "called TreeItem.text for col 0\n"
-                                       "called TreeItem.text for col 1\n"
+    assert capsys.readouterr().out == ("called TreeItem.text with arg 2\n"
+                                       "called TreeItem.text with arg 0\n"
+                                       "called TreeItem.text with arg 1\n"
+                                       "called TreeItem.text with arg 2\n"
+                                       "called TreeItem.text with arg 0\n"
+                                       "called TreeItem.text with arg 1\n"
                                        "called update_artists with arg"
                                        " `[(1, 'a', 'b'), (2, 'x', 'y')]`)\n"
                                        "called save_appdata with arg `[{'x': 'y'}, {}]`)\n"
                                        'called Tree.currentItem\n'
-                                       'called TreeItem.text for col 0\n'
+                                       'called TreeItem.text with arg 0\n'
                                        'called CompareArtists.refresh_appdata with arg `x`)\n')
 
 def test_cmpart_help(monkeypatch, capsys):
@@ -1872,8 +1872,7 @@ def test_cmpalb_get_albums(monkeypatch, capsys):
     assert capsys.readouterr().out == ('called ComboBox.currentText\n'
                                        'called Tree.clear\n'
                                        "called TreeItem.__init__ with args (['x'],)\n"
-                                       "called TreeItem.setData to"
-                                       " `1` with role x for col 0\n"
+                                       "called TreeItem.setData with args (0, 'x', 1)\n"
                                        "called Tree.addTopLevelItem\n"
                                        "called Tree.clear\n"
                                        "called TreeItem.__init__ with args"

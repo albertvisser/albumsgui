@@ -401,8 +401,8 @@ def test_mainwidget_get_album(monkeypatch, capsys):
                                        'called ComboBox.itemText with value `1`\n'
                                        'called MainWidget.get_album_cover for `q`, `a`\n'
                                        'called Pixmap.__init__\n'
-                                       'called Pixmap.load for `fname`\n'
-                                       'called Pixmap.scaled to `500`, `500`\n'
+                                       'called Pixmap.load with arg `X`\n'
+                                       'called Pixmap.scaled with args `500`, `500`\n'
                                        'called Label.setPixmap\n')
     monkeypatch.setattr(mockqtw.MockPixmap, 'load', lambda *x: None)
     testobj.get_album(1)

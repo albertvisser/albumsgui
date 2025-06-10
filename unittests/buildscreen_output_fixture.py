@@ -689,6 +689,7 @@ called LineEdit.setMaximumWidth with arg `200`
 called LineEdit.setMinimumWidth with arg `200`
 called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockLineEdit'>
 called HBox.addStretch
+called VBox.count
 called VBox.insertLayout with arg1 {insertpos} and arg2 of type <class 'mockgui.mockqtwidgets.MockHBoxLayout'>
 """
 editrecs_all_end_1 = """\
