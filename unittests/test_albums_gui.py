@@ -49,7 +49,7 @@ class MockHandler:
 def mock_newline(*args):
     """stub for albums_gui.newline
     """
-    print(f'called newline with arg of type {type(args[0])}')
+    print(f'called newline with arg {type(args[0]).__name__}')
     return mockqtw.MockHBoxLayout()
 
 def mock_button_strip(*args):
@@ -62,7 +62,7 @@ def mock_exitbutton(*args, **kwargs):
     """stub for albums_gui.exitbutton
     """
     if len(args) == 3:
-        print(f'called exitbutton with args {args[0]}, {args[1]}, {type(args[2])}')
+        print(f'called exitbutton with args {args[0]}, {args[1]}, {type(args[2]).__name__}')
     else:
         print('called exitbutton with args', args, kwargs)
     return mockqtw.MockHBoxLayout()
@@ -469,8 +469,7 @@ def test_newline(monkeypatch, capsys):
     assert capsys.readouterr().out == ('called HBox.__init__\n'
                                        'called Frame.__init__\n'
                                        'called Frame.setFrameShape with arg `---`\n'
-                                       'called HBox.addWidget with arg of type'
-                                       " <class 'mockgui.mockqtwidgets.MockFrame'>\n")
+                                       'called HBox.addWidget with arg MockFrame\n')
 
 
 def test_button_strip(monkeypatch, capsys):
@@ -490,32 +489,25 @@ def test_button_strip(monkeypatch, capsys):
             'called HBox.addStretch\n'
             f"called PushButton.__init__ with args ('Afbreken', {handler}) {{}}\n"
             f"called Signal.connect with args ({handler.parent().do_detail},)\n"
-            "called HBox.addWidget with arg of type"
-            " <class 'mockgui.mockqtwidgets.MockPushButton'>\n"
+            "called HBox.addWidget with arg MockPushButton\n"
             f"called PushButton.__init__ with args ('Uitvoeren', {handler}) {{}}\n"
             f"called Signal.connect with args ({handler.submit},)\n"
-            "called HBox.addWidget with arg of type"
-            " <class 'mockgui.mockqtwidgets.MockPushButton'>\n"
+            "called HBox.addWidget with arg MockPushButton\n"
             f"called PushButton.__init__ with args ('Uitvoeren en terug', {handler}) {{}}\n"
             f"called Signal.connect with args ({handler.submit_and_back},)\n"
-            "called HBox.addWidget with arg of type"
-            " <class 'mockgui.mockqtwidgets.MockPushButton'>\n"
+            "called HBox.addWidget with arg MockPushButton\n"
             f"called PushButton.__init__ with args ('Wijzigingen doorvoeren', {handler}) {{}}\n"
             f"called Signal.connect with args ({handler.submit},)\n"
-            "called HBox.addWidget with arg of type"
-            " <class 'mockgui.mockqtwidgets.MockPushButton'>\n"
+            "called HBox.addWidget with arg MockPushButton\n"
             f"called PushButton.__init__ with args ('Nieuwe opvoeren', {handler}) {{}}\n"
             f"called Signal.connect with args ({handler.new},)\n"
-            "called HBox.addWidget with arg of type"
-            " <class 'mockgui.mockqtwidgets.MockPushButton'>\n"
+            "called HBox.addWidget with arg MockPushButton\n"
             f"called PushButton.__init__ with args ('Terug naar Selectie', {handler}) {{}}\n"
             f"called Signal.connect with args ({handler.parent().do_select},)\n"
-            "called HBox.addWidget with arg of type"
-            " <class 'mockgui.mockqtwidgets.MockPushButton'>\n"
+            "called HBox.addWidget with arg MockPushButton\n"
             f"called PushButton.__init__ with args ('Terug naar Startscherm', {handler}) {{}}\n"
             f"called Signal.connect with args ({handler.parent().do_start},)\n"
-            "called HBox.addWidget with arg of type"
-            " <class 'mockgui.mockqtwidgets.MockPushButton'>\n"
+            "called HBox.addWidget with arg MockPushButton\n"
             'called HBox.addStretch\n')
 
 
@@ -540,19 +532,17 @@ def test_exitbutton(monkeypatch, capsys):
             'called HBox.addStretch\n'
             f"called PushButton.__init__ with args ('E&xit', {handler}) {{}}\n"
             f"called Signal.connect with args ({handler.submit},)\n"
-            "called HBox.addWidget with arg of type"
-            " <class 'mockgui.mockqtwidgets.MockPushButton'>\n"
+            "called HBox.addWidget with arg MockPushButton\n"
             'called HBox.addStretch\n')
     assert isinstance(testee.exitbutton(handler, handler.submit, extrawidget='extra'),
                       mockqtw.MockHBoxLayout)
     assert capsys.readouterr().out == (
             'called HBox.__init__\n'
             'called HBox.addStretch\n'
-            "called HBox.addWidget with arg of type <class 'str'>\n"
+            "called HBox.addWidget with arg str\n"
             f"called PushButton.__init__ with args ('E&xit', {handler}) {{}}\n"
             f"called Signal.connect with args ({handler.submit},)\n"
-            "called HBox.addWidget with arg of type"
-            " <class 'mockgui.mockqtwidgets.MockPushButton'>\n"
+            "called HBox.addWidget with arg MockPushButton\n"
             'called HBox.addStretch\n')
 
 
@@ -896,7 +886,7 @@ def setup_start(monkeypatch, capsys):
     def mock_setlayout(self, layout):
         """stub
         """
-        print(f'called Widget.setLayout with arg of type {type(layout)}')
+        print(f'called Widget.setLayout with arg {type(layout).__name__}')
     monkeypatch.setattr(testee.qtw.QWidget, '__init__', mock_init)
     monkeypatch.setattr(testee.qtw.QWidget, 'setLayout', mock_setlayout)
     testparent = MockMainFrame()
@@ -1223,7 +1213,7 @@ def setup_select(monkeypatch, capsys):
     def mock_setlayout(self, layout):
         """stub
         """
-        print(f'called Widget.setLayout with arg of type {type(layout)}')
+        print(f'called Widget.setLayout with arg {type(layout).__name__}')
     monkeypatch.setattr(testee.qtw.QWidget, '__init__', mock_init)
     monkeypatch.setattr(testee.qtw.QWidget, 'setLayout', mock_setlayout)
     testparent = MockMainFrame()
@@ -1539,7 +1529,7 @@ def setup_detail(monkeypatch, capsys):
     def mock_setlayout(self, layout):
         """stub
         """
-        print(f'called Widget.setLayout with arg of type {type(layout)}')
+        print(f'called Widget.setLayout with arg {type(layout).__name__}')
     monkeypatch.setattr(testee.qtw.QWidget, '__init__', mock_init)
     monkeypatch.setattr(testee.qtw.QWidget, 'setLayout', mock_setlayout)
     testparent = MockMainFrame()
@@ -1662,7 +1652,7 @@ def setup_edit(monkeypatch, capsys):
     def mock_setlayout(self, layout):
         """stub
         """
-        print(f'called Widget.setLayout with arg of type {type(layout)}')
+        print(f'called Widget.setLayout with arg {type(layout).__name__}')
     monkeypatch.setattr(testee.qtw.QWidget, '__init__', mock_init)
     monkeypatch.setattr(testee.qtw.QWidget, 'setLayout', mock_setlayout)
     testparent = MockMainFrame()
@@ -2101,7 +2091,7 @@ def test_edit_add_another(monkeypatch, capsys):
     def mock_create(win):
         """stub
         """
-        print(f'called create_next_button with arg of type {type(win)}')
+        print(f'called create_next_button with arg {type(win).__name__}')
     def mock_create_2(win):
         """stub
         """
@@ -2117,8 +2107,7 @@ def test_edit_add_another(monkeypatch, capsys):
                                        f" 'parent': {testobj}}}\n"
                                        "called MessageBox.setDefaultButton with arg `1`\n"
                                        "called MessageBox.setEscapeButton with arg `1`\n"
-                                       "called create_next_button with arg of type"
-                                       " <class 'mockgui.mockqtwidgets.MockMessageBox'>\n"
+                                       "called create_next_button with arg MockMessageBox\n"
                                        "called MessageBox.exec\n"
                                        "called MessageBox.clickedButton\n")
     monkeypatch.setattr(testee, 'create_next_button', mock_create_2)
@@ -2177,7 +2166,7 @@ def setup_edittracks(monkeypatch, capsys):
     def mock_setlayout(self, layout):
         """stub
         """
-        print(f'called Widget.setLayout with arg of type {type(layout)}')
+        print(f'called Widget.setLayout with arg {type(layout).__name__}')
     monkeypatch.setattr(testee.qtw.QWidget, '__init__', mock_init)
     monkeypatch.setattr(testee.qtw.QWidget, 'setLayout', mock_setlayout)
     testparent = MockMainFrame()
@@ -2428,7 +2417,7 @@ def setup_editrecs(monkeypatch, capsys):
     def mock_setlayout(self, layout):
         """stub
         """
-        print(f'called Widget.setLayout with arg of type {type(layout)}')
+        print(f'called Widget.setLayout with arg {type(layout).__name__}')
     monkeypatch.setattr(testee.qtw.QWidget, '__init__', mock_init)
     monkeypatch.setattr(testee.qtw.QWidget, 'setLayout', mock_setlayout)
     testparent = MockMainFrame()
@@ -2669,7 +2658,7 @@ def setup_artists(monkeypatch, capsys):
     def mock_setlayout(self, layout):
         """stub
         """
-        print(f'called Widget.setLayout with arg of type {type(layout)}')
+        print(f'called Widget.setLayout with arg {type(layout).__name__}')
     monkeypatch.setattr(testee.qtw.QWidget, '__init__', mock_init)
     monkeypatch.setattr(testee.qtw.QWidget, 'setLayout', mock_setlayout)
     testparent = MockMainFrame()
@@ -2797,8 +2786,7 @@ def test_artists_submit(monkeypatch, capsys):
     testobj.submit()
     assert capsys.readouterr().out == (
             f'called Cursor.__init__ with arg {testee.core.Qt.CursorShape.WaitCursor}\n'
-            'called Application.setOverrideCursor with arg of type'
-            " <class 'mockgui.mockqtwidgets.MockCursor'>\n"
+            'called Application.setOverrideCursor with arg MockCursor\n'
             f'called MessageBox.information with args `{testobj}` `Albums` `Nothing changed`\n'
             'called Application.restoreOverrideCursor\n'
             'called Main.get_all_artists\n'
@@ -2810,8 +2798,7 @@ def test_artists_submit(monkeypatch, capsys):
     testobj.submit()
     assert capsys.readouterr().out == (
             f'called Cursor.__init__ with arg {testee.core.Qt.CursorShape.WaitCursor}\n'
-            'called Application.setOverrideCursor with arg of type'
-            " <class 'mockgui.mockqtwidgets.MockCursor'>\n"
+            'called Application.setOverrideCursor with arg MockCursor\n'
             'called LineEdit.text\n'
             'called LineEdit.text\n'
             "called dmla.update_artists with args ([(0, 'x', 'y')],)\n"
@@ -2825,8 +2812,7 @@ def test_artists_submit(monkeypatch, capsys):
     testobj.submit()
     assert capsys.readouterr().out == (
             f'called Cursor.__init__ with arg {testee.core.Qt.CursorShape.WaitCursor}\n'
-            'called Application.setOverrideCursor with arg of type'
-            " <class 'mockgui.mockqtwidgets.MockCursor'>\n"
+            'called Application.setOverrideCursor with arg MockCursor\n'
             'called LineEdit.text\n'
             'called LineEdit.text\n'
             "called dmla.update_artists with args ([(1, 'x', 'y')],)\n"
@@ -2841,8 +2827,7 @@ def test_artists_submit(monkeypatch, capsys):
     testobj.submit()
     assert capsys.readouterr().out == (
             f'called Cursor.__init__ with arg {testee.core.Qt.CursorShape.WaitCursor}\n'
-            'called Application.setOverrideCursor with arg of type'
-            " <class 'mockgui.mockqtwidgets.MockCursor'>\n"
+            'called Application.setOverrideCursor with arg MockCursor\n'
             'called LineEdit.text\n'
             'called LineEdit.text\n'
             f'called MessageBox.information with args `{testobj}` `Albums` `Nothing changed`\n'
@@ -2892,7 +2877,7 @@ def test_artistdialog(monkeypatch, capsys, expected_output):
     def mock_setLayout(self, widget):
         """stub
         """
-        print(f'called Widget.setLayout with arg of type {type(widget)}')
+        print(f'called Widget.setLayout with arg {type(widget).__name__}')
     monkeypatch.setattr(testee.qtw.QWidget, '__init__', mock_init)
     monkeypatch.setattr(testee.qtw.QWidget, 'setLayout', mock_setLayout)
     monkeypatch.setattr(testee.qtw, 'QDialog', mockqtw.MockDialog)

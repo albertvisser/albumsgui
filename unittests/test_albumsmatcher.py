@@ -128,17 +128,17 @@ def test_create_updownbuttons(monkeypatch, capsys):
         "called PushButton.__init__ with args (namespace(),) {}\n"
         "called PushButton.setIcon with arg `icon0`\n"
         "called Size.__init__ with args (12, 12)\n"
-        "called PushButton.setIconSize with arg of type <class 'mockgui.mockqtwidgets.MockSize'>\n"
+        "called PushButton.setIconSize with arg MockSize\n"
         "called PushButton.setToolTip with arg `next item`\n"
         f"called Signal.connect with args ({callback0},)\n"
-        "called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockPushButton'>\n"
+        "called HBox.addWidget with arg MockPushButton\n"
         "called PushButton.__init__ with args (namespace(),) {}\n"
         "called PushButton.setIcon with arg `icon1`\n"
         "called Size.__init__ with args (12, 12)\n"
-        "called PushButton.setIconSize with arg of type <class 'mockgui.mockqtwidgets.MockSize'>\n"
+        "called PushButton.setIconSize with arg MockSize\n"
         "called PushButton.setToolTip with arg `previous item`\n"
         f"called Signal.connect with args ({callback1},)\n"
-        "called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockPushButton'>\n")
+        "called HBox.addWidget with arg MockPushButton\n")
 
 
 def test_build_artist_name():
@@ -375,9 +375,9 @@ def test_wait_cursor(monkeypatch, capsys):
     with testee.wait_cursor(win):  # testen als contextmanager
         pass
     assert capsys.readouterr().out == (
-            f"called Cursor.__init__ with arg {testee.core.Qt.CursorShape.WaitCursor}\n"
-            "called Application.setOverrideCursor with arg of type"
-            " <class 'mockgui.mockqtwidgets.MockCursor'>\n"
+            # f"called Cursor.__init__ with arg {testee.core.Qt.CursorShape.WaitCursor}\n"
+            f"called Cursor.__init__ with arg CursorShape.WaitCursor\n"
+            "called Application.setOverrideCursor with arg MockCursor\n"
             "called Application.restoreOverrideCursor\n")
 
 
@@ -693,7 +693,7 @@ def test_cmpart_create_widgets(monkeypatch, capsys, expected_output):
     def mock_setlayout(layout):
         """stub
         """
-        print(f'called Widget.setLayout with arg of type {type(layout)}')
+        print(f'called Widget.setLayout with arg {type(layout).__name__}')
     def mock_popup():
         """stub
         """
@@ -1418,7 +1418,7 @@ def test_newart_init(monkeypatch, capsys, expected_output):
     def mock_setLayout(self, widget):
         """stub
         """
-        print(f'called Widget.setLayout with arg of type {type(widget)}')
+        print(f'called Widget.setLayout with arg {type(widget).__name__}')
     def mock_setTitle(self, text):
         """stub
         """
@@ -1552,7 +1552,7 @@ def test_cmpalb_create_widgets(monkeypatch, capsys, expected_output):
     def mock_setlayout(win):
         """stub
         """
-        print(f'called CompareAlbums.setLayout with arg of type {type(win)}')
+        print(f'called CompareAlbums.setLayout with arg {type(win).__name__}')
     def mock_save(*args):
         """stub
         """
@@ -2353,8 +2353,7 @@ def test_cmpalb_save_all(monkeypatch, capsys):
     assert testobj.albums_to_update == {}
     assert capsys.readouterr().out == (
             f"called Cursor.__init__ with arg {testee.core.Qt.CursorShape.WaitCursor}\n"
-            "called Application.setOverrideCursor with arg of type"
-            " <class 'mockgui.mockqtwidgets.MockCursor'>\n"
+            "called Application.setOverrideCursor with arg MockCursor\n"
             "called Application.restoreOverrideCursor\n"
             "called save_appdata with args ([{}, {}],)\n"
             "called ComboBox.currentIndex\n"
@@ -2370,8 +2369,7 @@ def test_cmpalb_save_all(monkeypatch, capsys):
     assert testobj.albums_to_update == {}
     assert capsys.readouterr().out == (
             f"called Cursor.__init__ with arg {testee.core.Qt.CursorShape.WaitCursor}\n"
-            "called Application.setOverrideCursor with arg of type"
-            " <class 'mockgui.mockqtwidgets.MockCursor'>\n"
+            "called Application.setOverrideCursor with arg MockCursor\n"
             "called dmla.update_albums_by_artist with args"
             " (5, [(15, 'aa', 1, True, []), (0, 'bb', 2, False, [])])\n"
             "called build_album_name for `namespace(id=1, title='xxx', year=2000)`\n"
@@ -2390,8 +2388,7 @@ def test_cmpalb_save_all(monkeypatch, capsys):
     assert testobj.albums_to_update == {}
     assert capsys.readouterr().out == (
             f"called Cursor.__init__ with arg {testee.core.Qt.CursorShape.WaitCursor}\n"
-            "called Application.setOverrideCursor with arg of type"
-            " <class 'mockgui.mockqtwidgets.MockCursor'>\n"
+            "called Application.setOverrideCursor with arg MockCursor\n"
             "called dmla.update_albums_by_artist with args"
             " (5, [(15, 'aa', 1, True, []), (0, 'bb', 2, False, [])])\n"
             "called build_album_name for `namespace(id=1, title='xxx', year=2000)`\n"
@@ -2412,8 +2409,7 @@ def test_cmpalb_save_all(monkeypatch, capsys):
     assert testobj.albums_to_update == {}
     assert capsys.readouterr().out == (
             f"called Cursor.__init__ with arg {testee.core.Qt.CursorShape.WaitCursor}\n"
-            "called Application.setOverrideCursor with arg of type"
-            " <class 'mockgui.mockqtwidgets.MockCursor'>\n"
+            "called Application.setOverrideCursor with arg MockCursor\n"
             # "called dmla.update_albums_by_artist with args"
             # " (5, [(15, 'aa', 1, True, []), (0, 'bb', 2, False, [])])\n"
             "called build_album_name for `namespace(id=10, title='xxx', year=2000)`\n"
@@ -2444,7 +2440,7 @@ def test_newalb_init(monkeypatch, capsys, expected_output):
     def mock_setLayout(self, widget):
         """stub
         """
-        print(f'called Widget.setLayout with arg of type {type(widget)}')
+        print(f'called Widget.setLayout with arg {type(widget).__name__}')
     def mock_setTitle(self, text):
         """stub
         """
@@ -2596,7 +2592,7 @@ def test_cmptrk_create_widgets(monkeypatch, capsys, expected_output):
     def mock_setlayout(win):
         """stub
         """
-        print(f'called CompareAlbums.setLayout with arg of type {type(win)}')
+        print(f'called CompareAlbums.setLayout with arg {type(win).__name__}')
     def mock_save(*args):
         """stub
         """
@@ -2816,7 +2812,6 @@ def test_cmptrk_update_navigation_buttons(monkeypatch, capsys):
                                        "called PushButton.setEnabled with arg `True`\n"
                                        "called PushButton.setEnabled with arg `False`\n")
 
-# 1201-1203
 def test_cmptrk_get_tracks(monkeypatch, capsys):
     """unittest for albumsmatcher.CompareTracks.get_tracks
     """
@@ -3026,8 +3021,7 @@ def test_cmptrk_copy_tracks(monkeypatch, capsys):
     testobj.copy_tracks()
     assert capsys.readouterr().out == ('called Tree.topLevelItem with index 0\n'
                                        'called Cursor.__init__ with arg waitcursor\n'
-                                       'called Application.setOverrideCursor with arg of type'
-                                       " <class 'mockgui.mockqtwidgets.MockCursor'>\n"
+                                       'called Application.setOverrideCursor with arg MockCursor\n'
                                        'called dmla.update_album_tracknames with args'
                                        " ({'x': 'y'}, [(1, 'itemtext')])\n"
                                        'called Application.restoreOverrideCursor\n'
