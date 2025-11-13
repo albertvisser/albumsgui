@@ -830,7 +830,7 @@ called HBox.addWidget with arg MockPushButton
 called HBox.addStretch
 called VBox.addLayout with arg MockHBoxLayout
 called Frame.setLayout with arg MockVBoxLayout
-called MainWidget.setCentralWindow with arg `MockFrame`
+called MainWidget.setCentralWidget with arg `MockFrame`
 called Action.__init__ with args ('Exit', {me})
 called Signal.connect with args ({exit},)
 called Action.setShortcut with arg `Ctrl+Q`
