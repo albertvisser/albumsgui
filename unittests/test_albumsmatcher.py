@@ -604,10 +604,10 @@ def test_main_check_oldpage(monkeypatch, capsys):
               f' `{caption}` `{message}` `{buttons}` `{default}`')
         counter += 1
         if counter == 1:
-            return testee.qtw.QMessageBox.Cancel
+            return testee.qtw.QMessageBox.StandardButton.Cancel
         if counter == 2:
-            return testee.qtw.QMessageBox.Yes
-        return testee.qtw.QMessageBox.No
+            return testee.qtw.QMessageBox.StandardButton.Yes
+        return testee.qtw.QMessageBox.StandardButton.No
     def mock_save():
         """stub
         """
@@ -992,7 +992,8 @@ def test_cmpart_find_artist(monkeypatch, capsys):
                                        ' `Artist already has a match - do you want to reassign?`'
                                        ' `12` `8`\n')
 
-    monkeypatch.setattr(mockqtw.MockMessageBox, 'question', lambda *x: mockqtw.MockMessageBox.Yes)
+    monkeypatch.setattr(mockqtw.MockMessageBox, 'question',
+                        lambda *x: mockqtw.MockMessageBox.StandardButton.Yes)
     monkeypatch.setattr(testee.qtw, 'QMessageBox', mockqtw.MockMessageBox)
     monkeypatch.setattr(testobj, 'determine_search_arg_and_find', lambda *x: '1')
     testobj.artist_map = {'some_text': 'x'}
@@ -1292,7 +1293,8 @@ def test_cmpart_delete_artist(monkeypatch, capsys):
     assert capsys.readouterr().out == (f'called MessageBox.question with args `{testobj}`'
                                        ' `appname` `Ok to delete artist `1, 0`?` `3` `1`\n')
 
-    monkeypatch.setattr(mockqtw.MockMessageBox, 'question', lambda *x: testee.qtw.QMessageBox.Ok)
+    monkeypatch.setattr(mockqtw.MockMessageBox, 'question',
+                        lambda *x: testee.qtw.QMessageBox.StandardButton.Ok)
     monkeypatch.setattr(testee.qtw, 'QMessageBox', mockqtw.MockMessageBox)
     testobj.new_artists = [curr_item]
     testobj.new_matches = {}
@@ -2022,7 +2024,8 @@ def test_cmpalb_find_album(monkeypatch, capsys):
                                        ' `Album already has a match - do you want to reassign?`'
                                        ' `12` `4`\n')
     monkeypatch.setattr(testobj.clementine_albums, 'currentItem', mock_current_2)
-    monkeypatch.setattr(mockqtw.MockMessageBox, 'question', lambda *x: testee.qtw.QMessageBox.Ok)
+    monkeypatch.setattr(mockqtw.MockMessageBox, 'question',
+                        lambda *x: testee.qtw.QMessageBox.StandardButton.Ok)
     monkeypatch.setattr(testee.qtw, 'QMessageBox', mockqtw.MockMessageBox)
     testobj.c_artist = 'x'
     testobj.a_artist = 2
@@ -2140,7 +2143,8 @@ def test_cmpalb_prepare_for_update(monkeypatch, capsys):
                                        'called TreeItem.text for col 2\n'
                                        'called CompareAlbums.update_item with args'
                                        f" ({a_item}, {c_item})\n")
-    monkeypatch.setattr(mockqtw.MockMessageBox, 'question', lambda *x: testee.qtw.QMessageBox.Yes)
+    monkeypatch.setattr(mockqtw.MockMessageBox, 'question',
+                        lambda *x: testee.qtw.QMessageBox.StandardButton.Yes)
     monkeypatch.setattr(testee.qtw, 'QMessageBox', mockqtw.MockMessageBox)
     testobj.albums_to_update = {'x': []}
     c_item = types.SimpleNamespace(data=lambda *x: '8')

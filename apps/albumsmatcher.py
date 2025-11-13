@@ -722,11 +722,11 @@ class CompareAlbums(qtw.QWidget):
             self.focus_albums()
             item = self.clementine_albums.currentItem()
         if item.text(0) in self.albums_map[self.c_artist]:
-            ok = qtw.QMessageBox.question(self, self.appname,
-                                          'Album already has a match - do you want to reassign?',
-                                          qtw.QMessageBox.Yes | qtw.QMessageBox.No,
-                                          qtw.QMessageBox.Yes)
-            if ok == qtw.QMessageBox.No:
+            ok = qtw.QMessageBox.question(
+                    self, self.appname, 'Album already has a match - do you want to reassign?',
+                    qtw.QMessageBox.StandardButton.Yes | qtw.QMessageBox.StandardButton.No,
+                    qtw.QMessageBox.StandardButton.Yes)
+            if ok == qtw.QMessageBox.StandardButton.No:
                 return
             self.albums_map[self.c_artist].pop(item.text(0))
         # select albums for self.a_artist and remove the ones that are already matched
@@ -760,10 +760,11 @@ class CompareAlbums(qtw.QWidget):
             a_year = a_item.text(1)
             if c_year != a_year:
                 ask = f"Clementine year ({c_year}) differs from Albums year ({a_year})"
-                ok = qtw.QMessageBox.question(self, self.appname, f"{ask}, replace?",
-                                              qtw.QMessageBox.Yes | qtw.QMessageBox.No,
-                                              qtw.QMessageBox.Yes)
-                if ok == qtw.QMessageBox.Yes:
+                ok = qtw.QMessageBox.question(
+                        self, self.appname, f"{ask}, replace?",
+                        qtw.QMessageBox.StandardButton.Yes | qtw.QMessageBox.StandardButton.No,
+                        qtw.QMessageBox.StandardButton.Yes)
+                if ok == qtw.QMessageBox.StandardButton.Yes:
                     a_item.setText(1, c_year)
         self.albums_to_update[self.c_artist].append((a_item.text(0), a_item.text(1),
                                                      int(a_item.text(2)), False, []))
