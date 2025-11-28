@@ -968,8 +968,8 @@ class EditDetails(qtw.QWidget):
         """
         message = qtw.QMessageBox(qtw.QMessageBox.information, 'Albums', "Album added",
                                   buttons=qtw.QMessageBox.StandardButton.Ok, parent=self)
-        message.setDefaultButton(qtw.QMessageBox.Ok)
-        message.setEscapeButton(qtw.QMessageBox.Ok)
+        message.setDefaultButton(qtw.QMessageBox.StandardButton.Ok)
+        message.setEscapeButton(qtw.QMessageBox.StandardButton.Ok)
         next_button = create_next_button(message)
         message.exec()
         if message.clickedButton() == next_button:
