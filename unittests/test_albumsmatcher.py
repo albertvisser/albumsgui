@@ -1442,7 +1442,7 @@ def test_newart_init(monkeypatch, capsys, expected_output):
     assert capsys.readouterr().out == expected_output['new_artist'].format(**bindings)
 
     testobj = testee.NewArtistDialog(parent, name='x')
-    bindings = {'reject': testobj.reject, 'update': testobj.update, 'me': testobj, 'text': ''}
+    bindings = {'reject': testobj.reject, 'update': testobj.update, 'me': testobj, 'text': 'x'}
     assert capsys.readouterr().out == expected_output['new_artist'].format(**bindings)
 
 def test_newart_update(monkeypatch, capsys):
@@ -1490,8 +1490,8 @@ def test_newart_update(monkeypatch, capsys):
     testobj.first_name = mockqtw.MockLineEdit()
     testobj.last_name = mockqtw.MockLineEdit()
     assert capsys.readouterr().out == ('called NewArtistDialog.__init__\n'
-                                       'called LineEdit.__init__\n'
-                                       'called LineEdit.__init__\n')
+                                       'called LineEdit.__init__ with args ()\n'
+                                       'called LineEdit.__init__ with args ()\n')
     testobj.update()
     assert testobj.parent().data == ('x', 'y')
     assert capsys.readouterr().out == ('called LineEdit.text\n'
@@ -2522,8 +2522,8 @@ def test_newalb_update(monkeypatch, capsys):
     testobj.last_name = mockqtw.MockLineEdit()
     testobj.is_concert = mockqtw.MockCheckBox()
     assert capsys.readouterr().out == ('called NewAlbumDialog.__init__\n'
-                                       'called LineEdit.__init__\n'
-                                       'called LineEdit.__init__\n'
+                                       'called LineEdit.__init__ with args ()\n'
+                                       'called LineEdit.__init__ with args ()\n'
                                        'called CheckBox.__init__\n')
     testobj.update()
     assert testobj.parent().data == ('x', 'y', False)

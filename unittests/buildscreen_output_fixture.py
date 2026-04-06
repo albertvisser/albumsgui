@@ -33,7 +33,7 @@ called Grid.addLayout with arg MockHBoxLayout at (3, 1)
 called HBox.__init__
 called Label.__init__ with args ('Zoektekst voor 3-6:', {me})
 called HBox.addWidget with arg MockLabel
-called LineEdit.__init__
+called LineEdit.__init__ with args ({me},)
 called LineEdit.setMaximumWidth with arg `200`
 called LineEdit.setMinimumWidth with arg `200`
 called HBox.addWidget with arg MockLineEdit
@@ -84,7 +84,7 @@ called Grid.addLayout with arg MockHBoxLayout at (10, 1)
 called HBox.__init__
 called Label.__init__ with args ('Zoektekst voor 3-5:', {me})
 called HBox.addWidget with arg MockLabel
-called LineEdit.__init__
+called LineEdit.__init__ with args ({me},)
 called LineEdit.setMaximumWidth with arg `200`
 called LineEdit.setMinimumWidth with arg `200`
 called HBox.addWidget with arg MockLineEdit
@@ -175,7 +175,7 @@ select_other_search_button = """\
 called HBox.__init__
 called Label.__init__ with args ('Snel naar dezelfde selectie voor een andere waarde:', {me})
 called HBox.addWidget with arg MockLabel
-called LineEdit.__init__
+called LineEdit.__init__ with args ({me},)
 called LineEdit.setMaximumWidth with arg `200`
 called LineEdit.setMinimumWidth with arg `200`
 called HBox.addWidget with arg MockLineEdit
@@ -400,7 +400,7 @@ called HBox.addSpacing
 called Label.__init__ with args ('Albumtitel:', {me})
 called HBox.addWidget with arg MockLabel
 called Grid.addLayout with arg MockHBoxLayout at (3, 0, 1, 1)
-called LineEdit.__init__
+called LineEdit.__init__ with args ('yyy', {me})
 called Grid.addWidget with arg MockLineEdit at (3, 1, 1, 2)
 called HBox.__init__
 called HBox.addSpacing
@@ -408,11 +408,11 @@ called Label.__init__ with args ('Label/jaar:', {me})
 called HBox.addWidget with arg MockLabel
 called Grid.addLayout with arg MockHBoxLayout at (4, 0, 1, 1)
 called HBox.__init__
-called LineEdit.__init__
+called LineEdit.__init__ with args ('lll', {me})
 called LineEdit.setMaximumWidth with arg `200`
 called LineEdit.setMinimumWidth with arg `200`
 called HBox.addWidget with arg MockLineEdit
-called LineEdit.__init__
+called LineEdit.__init__ with args ('{jaar}', {me})
 called LineEdit.setMaximumWidth with arg `80`
 called LineEdit.setMinimumWidth with arg `80`
 called HBox.addWidget with arg MockLineEdit
@@ -463,7 +463,7 @@ called HBox.addSpacing
 called Label.__init__ with args ('Locatie/datum:', {me})
 called HBox.addWidget with arg MockLabel
 called Grid.addLayout with arg MockHBoxLayout at (3, 0, 1, 1)
-called LineEdit.__init__
+called LineEdit.__init__ with args ('yyy', {me})
 called Grid.addWidget with arg MockLineEdit at (3, 1, 1, 2)
 called HBox.__init__
 called HBox.addSpacing
@@ -519,7 +519,7 @@ called HBox.addSpacing
 called Label.__init__ with args ('Albumtitel:', {me})
 called HBox.addWidget with arg MockLabel
 called Grid.addLayout with arg MockHBoxLayout at (3, 0, 1, 1)
-called LineEdit.__init__
+called LineEdit.__init__ with args ('', {me})
 called Grid.addWidget with arg MockLineEdit at (3, 1, 1, 2)
 called VBox.__init__
 called VBox.addStretch
@@ -555,7 +555,7 @@ called HBox.addSpacing
 called Label.__init__ with args ('Locatie/datum:', {me})
 called HBox.addWidget with arg MockLabel
 called Grid.addLayout with arg MockHBoxLayout at (3, 0, 1, 1)
-called LineEdit.__init__
+called LineEdit.__init__ with args ('', {me})
 called Grid.addWidget with arg MockLineEdit at (3, 1, 1, 2)
 called VBox.__init__
 called VBox.addStretch
@@ -732,7 +732,7 @@ called VBox.__init__
 called HBox.__init__
 called Label.__init__ with args ('Artiestenlijst - gefilterd op', {testobj})
 called HBox.addWidget with arg MockLabel
-called LineEdit.__init__
+called LineEdit.__init__ with args ('xxx', {testobj})
 called HBox.addWidget with arg MockLineEdit
 called PushButton.__init__ with args ('&Go', {testobj}) {{}}
 called Signal.connect with args ({filter},)
@@ -785,11 +785,11 @@ called Widget.__init__
 called Grid.__init__
 called Label.__init__ with args ('First name:', {testobj})
 called Grid.addWidget with arg MockLabel at (0, 0)
-called LineEdit.__init__
+called LineEdit.__init__ with args ({testobj},)
 called Grid.addWidget with arg MockLineEdit at (0, 1)
 called Label.__init__ with args ('Last name:', {testobj})
 called Grid.addWidget with arg MockLabel at (1, 0)
-called LineEdit.__init__
+called LineEdit.__init__ with args ({testobj},)
 called Grid.addWidget with arg MockLineEdit at (1, 1)
 called Label.__init__ with args ('Names wil be shown sorted on last name',)
 called Grid.addWidget with arg MockLabel at (2, 0, 1, 2)
@@ -933,13 +933,13 @@ called Dialog.setWindowTitle with arg `appname - add artist`
 called Grid.__init__
 called Label.__init__ with args ('First name:', {me})
 called Grid.addWidget with arg MockLabel at (0, 0)
-called LineEdit.__init__
+called LineEdit.__init__ with args ({me},)
 called LineEdit.setMinimumWidth with arg `200`
 called LineEdit.setMaximumWidth with arg `200`
 called Grid.addWidget with arg MockLineEdit at (0, 1)
 called Label.__init__ with args ('Last name:', {me})
 called Grid.addWidget with arg MockLabel at (1, 0)
-called LineEdit.__init__
+called LineEdit.__init__ with args ('{text}', {me})
 called LineEdit.setMinimumWidth with arg `200`
 called LineEdit.setMaximumWidth with arg `200`
 called Grid.addWidget with arg MockLineEdit at (1, 1)
@@ -1037,13 +1037,13 @@ called Dialog.setWindowTitle with arg `appname - add album`
 called Grid.__init__
 called Label.__init__ with args ('Album title:', {me})
 called Grid.addWidget with arg MockLabel at (0, 0)
-called LineEdit.__init__
+called LineEdit.__init__ with args ('{text_n}', {me})
 called LineEdit.setMinimumWidth with arg `200`
 called LineEdit.setMaximumWidth with arg `200`
 called Grid.addWidget with arg MockLineEdit at (0, 1)
 called Label.__init__ with args ('Release year:', {me})
 called Grid.addWidget with arg MockLabel at (1, 0)
-called LineEdit.__init__
+called LineEdit.__init__ with args ('{text_y}', {me})
 called LineEdit.setMinimumWidth with arg `100`
 called LineEdit.setMaximumWidth with arg `100`
 called Grid.addWidget with arg MockLineEdit at (1, 1)

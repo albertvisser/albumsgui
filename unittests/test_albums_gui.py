@@ -539,7 +539,7 @@ def test_exitbutton(monkeypatch, capsys):
     assert capsys.readouterr().out == (
             'called HBox.__init__\n'
             'called HBox.addStretch\n'
-            "called HBox.addWidget with arg str\n"
+            "called HBox.addWidget with arg extra\n"
             f"called PushButton.__init__ with args ('E&xit', {handler}) {{}}\n"
             f"called Signal.connect with args ({handler.submit},)\n"
             "called HBox.addWidget with arg MockPushButton\n"
@@ -937,11 +937,11 @@ def test_start_refresh_screen(monkeypatch, capsys):
     assert capsys.readouterr().out == ('called ComboBox.__init__\n'
                                        'called ComboBox.__init__\n'
                                        'called ComboBox.__init__\n'
-                                       'called LineEdit.__init__\n'
+                                       'called LineEdit.__init__ with args ()\n'
                                        'called ComboBox.__init__\n'
                                        'called ComboBox.__init__\n'
                                        'called ComboBox.__init__\n'
-                                       'called LineEdit.__init__\n')
+                                       'called LineEdit.__init__ with args ()\n')
     testobj.parent().artist_names = ['twee', 'een']
     testobj.parent().albumtype = 'x'
     testobj.parent().searchtype = 1
@@ -1048,7 +1048,7 @@ def test_start_select_1(monkeypatch, capsys):
     sortwin = mockqtw.MockComboBox()
     assert capsys.readouterr().out == ('called ComboBox.__init__\n'
                                        'called ComboBox.__init__\n'
-                                       'called LineEdit.__init__\n'
+                                       'called LineEdit.__init__ with args ()\n'
                                        'called ComboBox.__init__\n')
     testobj._select('studio', typewin, actwin, argwin, sortwin)
     assert testobj.parent().searchtype == 0
@@ -1086,7 +1086,7 @@ def test_start_select_2(monkeypatch, capsys):
     sortwin = mockqtw.MockComboBox()
     assert capsys.readouterr().out == ('called ComboBox.__init__\n'
                                        'called ComboBox.__init__\n'
-                                       'called LineEdit.__init__\n'
+                                       'called LineEdit.__init__ with args ()\n'
                                        'called ComboBox.__init__\n')
     testobj._select('live', typewin, actwin, argwin, sortwin)
     assert testobj.parent().searchtype == 1
@@ -1126,7 +1126,7 @@ def test_start_select_3(monkeypatch, capsys):
     sortwin = mockqtw.MockComboBox()
     assert capsys.readouterr().out == ('called ComboBox.__init__\n'
                                        'called ComboBox.__init__\n'
-                                       'called LineEdit.__init__\n'
+                                       "called LineEdit.__init__ with args ('..',)\n"
                                        'called ComboBox.__init__\n')
     testobj._select('studio', typewin, actwin, argwin, sortwin)
     assert testobj.parent().searchtype == 3
@@ -1412,7 +1412,7 @@ def test_select_other_search(monkeypatch, capsys):
     monkeypatch.setattr(mockqtw.MockLineEdit, 'text', mock_text)
     testobj = setup_select(monkeypatch, capsys)
     testobj.ask_zoekarg = mockqtw.MockLineEdit()
-    assert capsys.readouterr().out == 'called LineEdit.__init__\n'
+    assert capsys.readouterr().out == 'called LineEdit.__init__ with args ()\n'
     testobj.other_search()
     assert capsys.readouterr().out == 'called LineEdit.text\n'
     monkeypatch.setattr(mockqtw.MockLineEdit, 'text', mock_text_2)
@@ -1694,7 +1694,7 @@ def test_edit_create_widgets(monkeypatch, capsys, expected_output):
     # heading, bbox - deze hoeven niet
     bindings = {'other_album': 'testobj.other_album',
                 'exit': testobj.exit,
-                'me': testobj}
+                'me': testobj, 'jaar': ''}
     assert capsys.readouterr().out == expected_output['editdetails_studio'].format(**bindings)
 
     testobj.parent().albumdata = {'artist': 'xxx', 'titel': 'yyy',
@@ -1709,7 +1709,7 @@ def test_edit_create_widgets(monkeypatch, capsys, expected_output):
     # heading, bbox - deze hoeven niet
     bindings = {'other_album': 'testobj.other_album',
                 'exit': testobj.exit,
-                'me': testobj}
+                'me': testobj, 'jaar': 'mmm'}
     assert capsys.readouterr().out == expected_output['editdetails_studio'].format(**bindings)
 
     testobj.parent().album = 2
@@ -1783,15 +1783,15 @@ def test_edit_new_data(monkeypatch, capsys):
     assert capsys.readouterr().out == ("called Label.__init__ with args ('Uitvoerende:',)\n"
                                        "called ComboBox.__init__\n"
                                        "called Label.__init__ with args ('Albumtitel:',)\n"
-                                       "called LineEdit.__init__\n"
+                                       "called LineEdit.__init__ with args ()\n"
                                        "called Label.__init__ with args ('Locatie/datum:',)\n"
-                                       "called LineEdit.__init__\n"
+                                       "called LineEdit.__init__ with args ()\n"
                                        "called Label.__init__ with args ('Produced by:',)\n"
-                                       "called LineEdit.__init__\n"
+                                       "called LineEdit.__init__ with args ()\n"
                                        "called Label.__init__ with args ('Credits:',)\n"
-                                       "called LineEdit.__init__\n"
+                                       "called LineEdit.__init__ with args ()\n"
                                        "called Label.__init__ with args ('Bezetting:',)\n"
-                                       "called LineEdit.__init__\n")
+                                       "called LineEdit.__init__ with args ()\n")
     testobj.screendata = [(lbl1, win1), (lbl2, win2), ()]
     testobj.parent().artist_ids = [0, 1, 2]
     testobj.parent().albumtype = 'studio'
@@ -1799,7 +1799,9 @@ def test_edit_new_data(monkeypatch, capsys):
     testobj.parent().search_arg = types.SimpleNamespace(id=1)
     testobj.new_data(keep_sel=True)
     assert win1.currentIndex() == 2
-    assert capsys.readouterr().out == ('called ComboBox.setCurrentIndex with arg `2`\n'
+    assert capsys.readouterr().out == ('called Label.text\n'
+                                       'called ComboBox.setCurrentIndex with arg `2`\n'
+                                       'called Label.text\n'
                                        'called ComboBox.currentIndex\n')
     testobj.screendata = [(lbl1, win1), (lbl2, win2), ()]
     testobj.parent().albumtype = 'studio'
@@ -1807,49 +1809,63 @@ def test_edit_new_data(monkeypatch, capsys):
     testobj.parent().search_arg = 'search_arg'
     testobj.new_data(keep_sel=True)
     assert win2.text() == 'search_arg'
-    assert capsys.readouterr().out == ('called LineEdit.setText with arg `search_arg`\n'
+    assert capsys.readouterr().out == ('called Label.text\n'
+                                       'called Label.text\n'
+                                       'called LineEdit.setText with arg `search_arg`\n'
                                        'called LineEdit.text\n')
     testobj.screendata = [(lbl3, win3), (lbl4, win4), ()]
     testobj.parent().albumtype = 'live'
     testobj.parent().searchtype = 2
     testobj.new_data(keep_sel=True)
     assert win3.text() == 'search_arg'
-    assert capsys.readouterr().out == ('called LineEdit.setText with arg `search_arg`\n'
+    assert capsys.readouterr().out == ('called Label.text\n'
+                                       'called LineEdit.setText with arg `search_arg`\n'
+                                       'called Label.text\n'
                                        'called LineEdit.text\n')
     testobj.screendata = [(lbl3, win3), (lbl4, win4), ()]
     testobj.parent().albumtype = 'studio'
     testobj.parent().searchtype = 3
     testobj.new_data(keep_sel=True)
     assert win4.text() == 'search_arg'
-    assert capsys.readouterr().out == ('called LineEdit.setText with arg `search_arg`\n'
+    assert capsys.readouterr().out == ('called Label.text\n'
+                                       'called Label.text\n'
+                                       'called LineEdit.setText with arg `search_arg`\n'
                                        'called LineEdit.text\n')
     testobj.screendata = [(lbl3, win3), (lbl4, win4), ()]
     testobj.parent().albumtype = 'live'
     testobj.parent().searchtype = 3
     testobj.new_data(keep_sel=True)
     assert win3.text() == 'search_arg'
-    assert capsys.readouterr().out == ('called LineEdit.setText with arg `search_arg`\n'
+    assert capsys.readouterr().out == ('called Label.text\n'
+                                       'called LineEdit.setText with arg `search_arg`\n'
+                                       'called Label.text\n'
                                        'called LineEdit.text\n')
     testobj.screendata = [(lbl5, win5), (lbl6, win6), ()]
     testobj.parent().albumtype = 'studio'
     testobj.parent().searchtype = 4
     testobj.new_data(keep_sel=True)
     assert win5.text() == 'search_arg'
-    assert capsys.readouterr().out == ('called LineEdit.setText with arg `search_arg`\n'
+    assert capsys.readouterr().out == ('called Label.text\n'
+                                       'called LineEdit.setText with arg `search_arg`\n'
+                                       'called Label.text\n'
                                        'called LineEdit.text\n')
     testobj.screendata = [(lbl5, win5), (lbl6, win6), ()]
     testobj.parent().albumtype = 'live'
     testobj.parent().searchtype = 4
     testobj.new_data(keep_sel=True)
     assert win6.text() == 'search_arg'
-    assert capsys.readouterr().out == ('called LineEdit.setText with arg `search_arg`\n'
+    assert capsys.readouterr().out == ('called Label.text\n'
+                                       "called Label.text\n"
+                                       'called LineEdit.setText with arg `search_arg`\n'
                                        'called LineEdit.text\n')
     testobj.screendata = [(lbl5, win5), (lbl6, win6), ()]
     testobj.parent().albumtype = 'studio'
     testobj.parent().searchtype = 5
     testobj.new_data(keep_sel=True)
     assert win6.text() == 'search_arg'
-    assert capsys.readouterr().out == ('called LineEdit.setText with arg `search_arg`\n'
+    assert capsys.readouterr().out == ('called Label.text\n'
+                                       "called Label.text\n"
+                                       'called LineEdit.setText with arg `search_arg`\n'
                                        'called LineEdit.text\n')
 
 def test_edit_refresh_screen(monkeypatch, capsys):
@@ -1942,10 +1958,10 @@ def test_edit_submit(monkeypatch, capsys):
     assert capsys.readouterr().out == ("called Label.__init__ with args ('Uitvoerende:',)\n"
                                        "called ComboBox.__init__\n"
                                        "called Label.__init__ with args ('Albumtitel:',)\n"
-                                       "called LineEdit.__init__\n"
+                                       "called LineEdit.__init__ with args ()\n"
                                        "called Label.__init__ with args ('Label/jaar:',)\n"
-                                       "called LineEdit.__init__\n"
-                                       "called LineEdit.__init__\n"
+                                       "called LineEdit.__init__ with args ()\n"
+                                       "called LineEdit.__init__ with args ()\n"
                                        "called Label.__init__ with args ('Credits:',)\n"
                                        "called Editor.__init__\n"
                                        "called Label.__init__ with args ('Bezetting:',)\n"
@@ -1957,22 +1973,24 @@ def test_edit_submit(monkeypatch, capsys):
     assert testobj.parent().albumdata['titel'] == ''
     assert testobj.parent().album == 'yy'
     assert testobj.parent().albums == ['ww']
-    assert capsys.readouterr().out == ('called LineEdit.text\n'
-                                       'called LineEdit.text\n'
-                                       'called LineEdit.text\n'
-                                       'called EditDetails._replace_details with args'
-                                       " ('Label/jaar:', ', ')\n"
-                                       'called Editor.toPlainText\n'
-                                       'called EditDetails._replace_details with args'
-                                       " ('Credits:', 'editor text')\n"
-                                       'called Editor.toPlainText\n'
-                                       'called EditDetails._replace_details with args'
-                                       " ('Bezetting:', 'editor text')\n"
-                                       'called Editor.toPlainText\n'
-                                       'called EditDetails._replace_details with args'
-                                       " ('Tevens met:', 'editor text')\n"
-                                       "called dmla.update_album_details with args"
-                                       " ('xx', {'artist': 'bbb', 'titel': ''})\n")
+    assert capsys.readouterr().out == (
+            'called Label.text\n'
+            'called Label.text\n'
+            'called LineEdit.text\n'
+            'called Label.text\n'
+            'called LineEdit.text\n'
+            'called LineEdit.text\n'
+            "called EditDetails._replace_details with args ('Label/jaar:', ', ')\n"
+            'called Label.text\n'
+            'called Editor.toPlainText\n'
+            "called EditDetails._replace_details with args ('Credits:', 'editor text')\n"
+            'called Label.text\n'
+            'called Editor.toPlainText\n'
+            "called EditDetails._replace_details with args ('Bezetting:', 'editor text')\n"
+            'called Label.text\n'
+            'called Editor.toPlainText\n'
+            "called EditDetails._replace_details with args ('Tevens met:', 'editor text')\n"
+            "called dmla.update_album_details with args ('xx', {'artist': 'bbb', 'titel': ''})\n")
 
     testobj.parent().artists = ['aaa', 'bbb']
     testobj.new_album = False
@@ -1983,12 +2001,14 @@ def test_edit_submit(monkeypatch, capsys):
     assert capsys.readouterr().out == ("called Label.__init__ with args ('Uitvoerende:',)\n"
                                        "called ComboBox.__init__\n"
                                        "called Label.__init__ with args ('Albumtitel:',)\n"
-                                       "called LineEdit.__init__\n")
+                                       "called LineEdit.__init__ with args ()\n")
     testobj.submit()
     assert testobj.parent().albumdata['artist'] == testobj.parent().artist == 'bbb'
     assert testobj.parent().albumdata['titel'] == ''
     assert testobj.parent().album == 'yy'
     assert capsys.readouterr().out == (
+            'called Label.text\n'
+            'called Label.text\n'
             'called LineEdit.text\n'
             "called dmla.update_album_details with args ('xx', {'artist': 'bbb', 'titel': ''})\n"
             f'called MessageBox.information with args `{testobj}` `Albums` `Details updated`\n')
@@ -2003,16 +2023,18 @@ def test_edit_submit(monkeypatch, capsys):
     assert capsys.readouterr().out == ("called Label.__init__ with args ('Uitvoerende:',)\n"
                                        "called ComboBox.__init__\n"
                                        "called Label.__init__ with args ('Albumtitel:',)\n"
-                                       "called LineEdit.__init__\n")
+                                       "called LineEdit.__init__ with args ()\n")
     testobj.submit()
     assert testobj.parent().albumdata['artist'] == testobj.parent().artist == 'bbb'
     assert testobj.parent().albumdata['titel'] == ''
     assert testobj.parent().album == 'yy'
     assert testobj.parent().albums == ['xx', 'yy']
-    assert capsys.readouterr().out == ('called LineEdit.text\n'
-                                       "called dmla.update_album_details with args"
-                                       " (0, {'artist': 'bbb', 'titel': ''})\n"
-                                       'called EditDetails.add_another\n')
+    assert capsys.readouterr().out == (
+            'called Label.text\n'
+            'called Label.text\n'
+            'called LineEdit.text\n'
+            "called dmla.update_album_details with args (0, {'artist': 'bbb', 'titel': ''})\n"
+            'called EditDetails.add_another\n')
 
     testobj.parent().artists = ['aaa', 'bbb']
     testobj.new_album = False
@@ -2022,29 +2044,31 @@ def test_edit_submit(monkeypatch, capsys):
     assert capsys.readouterr().out == ("called Label.__init__ with args ('Uitvoerende:',)\n"
                                        "called ComboBox.__init__\n")
     testobj.submit(goback=True)
-    assert capsys.readouterr().out == (f'called MessageBox.information with args `{testobj}`'
-                                       ' `Albums` `Nothing changed`\n')
+    assert capsys.readouterr().out == (
+            "called Label.text\n"
+            f'called MessageBox.information with args `{testobj}` `Albums` `Nothing changed`\n')
 
     testobj.parent().albumdata = {'titel': ''}
     testobj.parent().album = types.SimpleNamespace(id='xx')
     testobj.screendata = [(mockqtw.MockLabel('Locatie/datum:'), mockqtw.MockLineEdit())]
     assert capsys.readouterr().out == ("called Label.__init__ with args ('Locatie/datum:',)\n"
-                                       "called LineEdit.__init__\n")
+                                       "called LineEdit.__init__ with args ()\n")
     testobj.submit(goback=True)
-    assert capsys.readouterr().out == ('called LineEdit.text\n'
-                                       f'called MessageBox.information with args `{testobj}`'
-                                       ' `Albums` `Nothing changed`\n')
+    assert capsys.readouterr().out == (
+            "called Label.text\n"
+            'called LineEdit.text\n'
+            f'called MessageBox.information with args `{testobj}` `Albums` `Nothing changed`\n')
 
     testobj.parent().album = types.SimpleNamespace(id='xx')
     testobj.screendata = [(mockqtw.MockLabel('x:'), mockqtw.MockLineEdit())]
     assert capsys.readouterr().out == ("called Label.__init__ with args ('x:',)\n"
-                                       "called LineEdit.__init__\n")
+                                       "called LineEdit.__init__ with args ()\n")
     testobj.submit(goback=True)
-    assert capsys.readouterr().out == ('called LineEdit.text\n'
-                                       'called EditDetails._replace_details with args'
-                                       " ('x:', '')\n"
-                                       "called dmla.update_album_details with args"
-                                       " ('xx', {'titel': ''})\n")
+    assert capsys.readouterr().out == (
+            "called Label.text\n"
+            'called LineEdit.text\n'
+            "called EditDetails._replace_details with args ('x:', '')\n"
+            "called dmla.update_album_details with args ('xx', {'titel': ''})\n")
 
     monkeypatch.setattr(testee.dmla, 'update_album_details', lambda *x: ('', False))
     testobj.parent().artists = ['aaa', 'bbb']
@@ -2056,15 +2080,18 @@ def test_edit_submit(monkeypatch, capsys):
     assert capsys.readouterr().out == ("called Label.__init__ with args ('Uitvoerende:',)\n"
                                        "called ComboBox.__init__\n"
                                        "called Label.__init__ with args ('Albumtitel:',)\n"
-                                       "called LineEdit.__init__\n")
+                                       "called LineEdit.__init__ with args ()\n")
     testobj.submit()
     assert testobj.parent().albumdata['artist'] == testobj.parent().artist == 'bbb'
     assert testobj.parent().albumdata['titel'] == ''
-    assert capsys.readouterr().out == ('called LineEdit.text\n'
-                                       f'called MessageBox.information with args `{testobj}`'
-                                       ' `Albums` `Something went wrong, please try again`\n')
+    assert capsys.readouterr().out == (
+            "called Label.text\n"
+            "called Label.text\n"
+            'called LineEdit.text\n'
+            f'called MessageBox.information with args `{testobj}`'
+            ' `Albums` `Something went wrong, please try again`\n')
 
-def test_edit_replace_details(monkeypatch, capsys):
+def test_edit_replace_details(monkeypatch,   capsys):
     """unittest for albums_gui.EditDetails.replace_details
     """
     testobj = setup_edit(monkeypatch, capsys)
@@ -2337,8 +2364,8 @@ def test_edittracks_submit(monkeypatch, capsys):
                                        'called EditDetails.refresh_screen\n')
     testobj.widgets = [(mockqtw.MockLineEdit('', testobj), mockqtw.MockLineEdit('', testobj),
                         mockqtw.MockEditorWidget('', testobj))]
-    assert capsys.readouterr().out == ('called LineEdit.__init__\n'
-                                       'called LineEdit.__init__\n'
+    assert capsys.readouterr().out == (f"called LineEdit.__init__ with args ('', {testobj})\n"
+                                       f"called LineEdit.__init__ with args ('', {testobj})\n"
                                        f"called Editor.__init__ with args ('', {testobj})\n")
     testobj.parent().albumdata = {'tracks': {}}
     testobj.parent().album = types.SimpleNamespace(id=1)
@@ -2353,8 +2380,8 @@ def test_edittracks_submit(monkeypatch, capsys):
                                        ' `Albums` `Tracks updated`\n')
     testobj.widgets = [(mockqtw.MockLineEdit('x', testobj), mockqtw.MockLineEdit('y', testobj),
                         mockqtw.MockEditorWidget('z', testobj))]
-    assert capsys.readouterr().out == ('called LineEdit.__init__\n'
-                                       'called LineEdit.__init__\n'
+    assert capsys.readouterr().out == (f"called LineEdit.__init__ with args ('x', {testobj})\n"
+                                       f"called LineEdit.__init__ with args ('y', {testobj})\n"
                                        f"called Editor.__init__ with args ('z', {testobj})\n")
     testobj.parent().albumdata = {'tracks': {1: ('x', 'y', 'z')}}
     testobj.parent().album = types.SimpleNamespace(id=1)
@@ -2580,7 +2607,7 @@ def test_editrecs_submit(monkeypatch, capsys):
     testobj.recwins = [(mockqtw.MockComboBox(testobj), mockqtw.MockLineEdit('', testobj))]
     testobj.recwins[0][0].setCurrentText('')
     assert capsys.readouterr().out == ('called ComboBox.__init__\n'
-                                       'called LineEdit.__init__\n'
+                                       f"called LineEdit.__init__ with args ('', {testobj})\n"
                                        'called ComboBox.setCurrentText with arg ``\n')
     testobj.parent().albumdata = {'opnames': []}  #
     testobj.parent().album = types.SimpleNamespace(id=1)
@@ -2596,7 +2623,7 @@ def test_editrecs_submit(monkeypatch, capsys):
     newvalue = 'x'
     testobj.recwins[0][0].setCurrentText(newvalue)
     assert capsys.readouterr().out == ('called ComboBox.__init__\n'
-                                       'called LineEdit.__init__\n'
+                                       f"called LineEdit.__init__ with args ('y', {testobj})\n"
                                        'called ComboBox.setCurrentText with arg `x`\n')
     monkeypatch.setattr(mockqtw.MockComboBox, 'currentText', lambda *x: newvalue)
     testobj.parent().albumdata = {'opnames': [('x', 'y')]}
@@ -2717,7 +2744,7 @@ def test_artists_filter(monkeypatch, capsys):
     testobj = setup_artists(monkeypatch, capsys)
     monkeypatch.setattr(testee.dmla, 'list_artists', mock_list)
     testobj.ask_filter = mockqtw.MockLineEdit('..')
-    assert capsys.readouterr().out == 'called LineEdit.__init__\n'
+    assert capsys.readouterr().out == f"called LineEdit.__init__ with args ('..',)\n"
     testobj.parent().all_artists = ['x', 'y', 'z']
     testobj.filter()
     assert testobj.parent().artists == ['x', 'z']
@@ -2727,7 +2754,7 @@ def test_artists_filter(monkeypatch, capsys):
                                        'called Main.do_select\n')
     monkeypatch.setattr(mockqtw.MockLineEdit, 'text', lambda *x: '')
     testobj.ask_filter = mockqtw.MockLineEdit()
-    assert capsys.readouterr().out == 'called LineEdit.__init__\n'
+    assert capsys.readouterr().out == 'called LineEdit.__init__ with args ()\n'
     testobj.filter()
     assert testobj.parent().artists == ['x', 'y', 'z']
     assert testobj.parent().artist_filter == ''
@@ -2793,8 +2820,8 @@ def test_artists_submit(monkeypatch, capsys):
             'called Main.do_select\n')
     testobj.parent().artists = ()
     testobj.fields = [(mockqtw.MockLineEdit('x'), mockqtw.MockLineEdit('y'))]
-    assert capsys.readouterr().out == ('called LineEdit.__init__\n'
-                                       'called LineEdit.__init__\n')
+    assert capsys.readouterr().out == ("called LineEdit.__init__ with args ('x',)\n"
+                                       "called LineEdit.__init__ with args ('y',)\n")
     testobj.submit()
     assert capsys.readouterr().out == (
             f'called Cursor.__init__ with arg {testee.core.Qt.CursorShape.WaitCursor}\n'
@@ -2807,8 +2834,8 @@ def test_artists_submit(monkeypatch, capsys):
             'called Main.do_select\n')
     testobj.parent().artists = [types.SimpleNamespace(id=1, first_name='a', last_name='b')]
     testobj.fields = [(mockqtw.MockLineEdit('x'), mockqtw.MockLineEdit('y'))]
-    assert capsys.readouterr().out == ('called LineEdit.__init__\n'
-                                       'called LineEdit.__init__\n')
+    assert capsys.readouterr().out == ("called LineEdit.__init__ with args ('x',)\n"
+                                       "called LineEdit.__init__ with args ('y',)\n")
     testobj.submit()
     assert capsys.readouterr().out == (
             f'called Cursor.__init__ with arg {testee.core.Qt.CursorShape.WaitCursor}\n'
@@ -2822,8 +2849,8 @@ def test_artists_submit(monkeypatch, capsys):
     # toevoeging t.b.v. full branch coverage
     testobj.parent().artists = [types.SimpleNamespace(id=1, first_name='a', last_name='b')]
     testobj.fields = [(mockqtw.MockLineEdit('a'), mockqtw.MockLineEdit('b'))]
-    assert capsys.readouterr().out == ('called LineEdit.__init__\n'
-                                       'called LineEdit.__init__\n')
+    assert capsys.readouterr().out == ("called LineEdit.__init__ with args ('a',)\n"
+                                       "called LineEdit.__init__ with args ('b',)\n")
     testobj.submit()
     assert capsys.readouterr().out == (
             f'called Cursor.__init__ with arg {testee.core.Qt.CursorShape.WaitCursor}\n'
@@ -2922,8 +2949,8 @@ def test_artistdialog_update(monkeypatch, capsys):
     monkeypatch.setattr(mockqtw.MockLineEdit, 'text', mock_text)
     testobj.first_name = mockqtw.MockLineEdit()
     testobj.last_name = mockqtw.MockLineEdit()
-    assert capsys.readouterr().out == ('called LineEdit.__init__\n'
-                                       'called LineEdit.__init__\n')
+    assert capsys.readouterr().out == ('called LineEdit.__init__ with args ()\n'
+                                       'called LineEdit.__init__ with args ()\n')
     monkeypatch.setattr(testee.dmla.my.Act.objects, 'create', lambda *x: mock_object())
     testobj.update()
     assert capsys.readouterr().out == ('QLineEdit returns x\n'
