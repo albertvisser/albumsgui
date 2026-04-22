@@ -1104,17 +1104,13 @@ class CompareTracks(qtw.QWidget):
         reimport_possible = False
         if len(c_tracks) != len(a_tracks):
             reimport_possible = True
+        elif not c_tracks:
+            reimport_possible = False
         else:
             for ix, item in enumerate(a_tracks):
-                try:
-                    # conditie deel 1:  a begint met volledige c
-                    # conditie deel 2:  eerste letter van c is volledige a - waarom dan startswith?
-                    # eigenlijk is de vraag: wat betekent dit precies ('not' is heel verwarrend)
-                    if not (item.startswith(c_tracks[ix][0]) or c_tracks[ix][0].startswith(item)):
-                        reimport_possible = True
-                except IndexError:
-                    # kan dit (nog) wel als ik eerst op lengte vergelijk? lukt niet in unittest
+                if item.lower() != c_tracks[ix].lower():
                     reimport_possible = True
+                    break
         self.b_copy.setEnabled(reimport_possible)
 
     def next_artist(self):

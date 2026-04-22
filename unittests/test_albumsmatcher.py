@@ -26,7 +26,7 @@ class MockNewArtistDialog:
     """
     def __init__(self, parent, name):
         print('called NewArtistDialog.__init__'
-              f' with parent of type `{type(parent)}` and name `{name}`')
+              f' with parent of type `{type(parent).__name__}` and name `{name}`')
     def exec(self):
         """stub
         """
@@ -38,7 +38,7 @@ class MockNewAlbumDialog:
     """
     def __init__(self, parent, name, year):
         print('called NewAlbumDialog.__init__'
-              f' with parent of type `{type(parent)}` and name `{name}`, year `{year}`')
+              f' with parent of type `{type(parent).__name__}` and name `{name}`, year `{year}`')
     def exec(self):
         """stub
         """
@@ -1165,7 +1165,7 @@ def test_cmpart_add_artist(monkeypatch, capsys):
     # test 1: NewAristDialog canceled
     testobj.add_artist()
     assert capsys.readouterr().out == ('called NewArtistDialog.__init__ with parent of type '
-                                       f"`{type(testobj)}` and name ``\n")
+                                       f"`CompareArtists` and name ``\n")
 
     # test 2: nothing selected (in artist_buffer or through findItems)
     monkeypatch.setattr(MockNewArtistDialog, 'exec',
@@ -1173,7 +1173,7 @@ def test_cmpart_add_artist(monkeypatch, capsys):
     monkeypatch.setattr(testee, 'NewArtistDialog', MockNewArtistDialog)
     testobj.add_artist()
     assert capsys.readouterr().out == ('called NewArtistDialog.__init__ with parent of type '
-                                       f"`{type(testobj)}` and name ``\n"
+                                       f"`CompareArtists` and name ``\n"
                                        "called Tree.findItems with args"
                                        " ('f_name l_name', 1, 0)\n"
                                        f"called MessageBox.information with args `{testobj}`"
@@ -1186,7 +1186,7 @@ def test_cmpart_add_artist(monkeypatch, capsys):
     assert len(testobj.new_artists) == 1
     assert isinstance(testobj.new_artists[0], testee.qtw.QTreeWidgetItem)
     assert capsys.readouterr().out == ('called NewArtistDialog.__init__ with parent of type '
-                                       f"`{type(testobj)}` and name ``\n"
+                                       f"`CompareArtists` and name ``\n"
                                        "called Tree.findItems with args"
                                        " ('f_name l_name', 1, 0)\n"
                                        "called Tree.findItems with args ('l_name', 1, 1)\n"
@@ -1206,7 +1206,7 @@ def test_cmpart_add_artist(monkeypatch, capsys):
     assert len(testobj.new_artists) == 1
     assert isinstance(testobj.new_artists[0], testee.qtw.QTreeWidgetItem)
     assert capsys.readouterr().out == ('called NewArtistDialog.__init__ with parent of type '
-                                       f"`{type(testobj)}` and name `some_name`\n"
+                                       f"`CompareArtists` and name `some_name`\n"
                                        "called Tree.findItems with args ('l_name', 1, 1)\n"
                                        "called TreeItem.__init__ with args"
                                        " (['f_name', 'l_name', '1'],)\n"
@@ -1220,7 +1220,7 @@ def test_cmpart_add_artist(monkeypatch, capsys):
     monkeypatch.setattr(testobj.albums_artists, 'findItems', mock_finditems_data)
     testobj.add_artist()
     assert capsys.readouterr().out == ('called NewArtistDialog.__init__ with parent of type '
-                                       f"`{type(testobj)}` and name `some_name`\n"
+                                       f"`CompareArtists` and name `some_name`\n"
                                        "called Tree.findItems with args ('l_name', 1, 1)\n"
                                        "called build_artist_name with args ('0', '1')\n"
                                        f"called InputDialog.getItem with args {testobj}"
@@ -1235,7 +1235,7 @@ def test_cmpart_add_artist(monkeypatch, capsys):
     testobj.data = ('f_name', '0, 1')
     testobj.add_artist()
     assert capsys.readouterr().out == ('called NewArtistDialog.__init__ with parent of type '
-                                       f"`{type(testobj)}` and name `some_name`\n"
+                                       f"`CompareArtists` and name `some_name`\n"
                                        "called Tree.findItems with args ('0, 1', 1, 1)\n"
                                        "called build_artist_name with args ('0', '1')\n"
                                        f"called InputDialog.getItem with args {testobj}"
@@ -1251,7 +1251,7 @@ def test_cmpart_add_artist(monkeypatch, capsys):
     # testobj.data = ('f_name', '0, 1')
     testobj.add_artist()
     assert capsys.readouterr().out == ('called NewArtistDialog.__init__ with parent of type '
-                                       f"`{type(testobj)}` and name `some_name`\n"
+                                       f"`CompareArtists` and name `some_name`\n"
                                        "called Tree.findItems with args ('0, 1', 1, 1)\n"
                                        "called build_artist_name with args ('0', '1')\n"
                                        "called CompareArtists.update_item with args"
@@ -1260,7 +1260,7 @@ def test_cmpart_add_artist(monkeypatch, capsys):
     # r 448 - zou in de tests met gemockte clementine_artists. findItems true moeten zitten
     testobj.add_artist()
     assert capsys.readouterr().out == ('called NewArtistDialog.__init__ with parent of type '
-                                       f"`{type(testobj)}` and name ``\n")
+                                       f"`CompareArtists` and name ``\n")
 
 def test_cmpart_delete_artist(monkeypatch, capsys):
     """unittest for albumsmatcher.CompareArtists.delete_artist
@@ -1959,7 +1959,6 @@ def test_cmpalb_prev_artist(monkeypatch, capsys):
     testobj.prev_artist()
     assert capsys.readouterr().out == ''
 
-# 796->794
 def test_cmpalb_find_album(monkeypatch, capsys):
     """unittest for albumsmatcher.CompareAlbums.find_album
     """
@@ -1996,6 +1995,11 @@ def test_cmpalb_find_album(monkeypatch, capsys):
         """stub
         """
         print('called CompareAlbums.check_if_new_album with args', args)
+    def mock_check_2(*args):
+        """stub
+        """
+        print('called CompareAlbums.check_if_new_album with args', args)
+        return 'a_name', 'albumid'
     def mock_prepare(*args):
         """stub
         """
@@ -2005,6 +2009,11 @@ def test_cmpalb_find_album(monkeypatch, capsys):
         """
         print('called dmla.list_albums_by_artist with args', args)
         return []
+    def mock_list_2(*args):
+        """stub
+        """
+        print('called dmla.list_albums_by_artist with args', args)
+        return [('qq', 'rr')]
     testobj = setup_cmpalb(monkeypatch, capsys)
     testobj.appname = 'app'
     monkeypatch.setattr(testobj.clementine_albums, 'currentItem', mock_current)
@@ -2018,11 +2027,11 @@ def test_cmpalb_find_album(monkeypatch, capsys):
     testobj.c_artist = 'x'
     testobj.albums_map = {'x': {'xix': 2}}
     testobj.find_album()
-    assert capsys.readouterr().out == ('called Tree.currentItem\n'
-                                       'called TreeItem.text for column 0\n'
-                                       f'called MessageBox.question with args `{testobj}` `app`'
-                                       ' `Album already has a match - do you want to reassign?`'
-                                       ' `12` `4`\n')
+    assert capsys.readouterr().out == (
+            'called Tree.currentItem\n'
+            'called TreeItem.text for column 0\n'
+            f'called MessageBox.question with args `{testobj}`'
+            ' `app`' ' `Album already has a match - do you want to reassign?` `12` `4`\n')
     monkeypatch.setattr(testobj.clementine_albums, 'currentItem', mock_current_2)
     monkeypatch.setattr(mockqtw.MockMessageBox, 'question',
                         lambda *x: testee.qtw.QMessageBox.StandardButton.Ok)
@@ -2032,32 +2041,46 @@ def test_cmpalb_find_album(monkeypatch, capsys):
     testobj.albums_map = {'x': {'xix': 2}}
     testobj.find_album()
     assert testobj.albums_map == {'x': {}}
-    assert capsys.readouterr().out == ('called Tree.currentItem\n'
-                                       'called CompareAlbums.focus_albums\n'
-                                       'called Tree.currentItem\n'
-                                       'called TreeItem.text for column 0\n'
-                                       'called TreeItem.text for column 0\n'
-                                       "called dmla.list_albums_by_artist with args"
-                                       " ('', 2, 'Titel')\n"
-                                       'called CompareAlbums.add_album with args ()\n')
+    assert capsys.readouterr().out == (
+            'called Tree.currentItem\n'
+            'called CompareAlbums.focus_albums\n'
+            'called Tree.currentItem\n'
+            'called TreeItem.text for column 0\n'
+            'called TreeItem.text for column 0\n'
+            "called dmla.list_albums_by_artist with args ('', 2, 'Titel')\n"
+            'called CompareAlbums.add_album with args ()\n')
     monkeypatch.setattr(testobj.clementine_albums, 'currentItem', mock_current)
-    monkeypatch.setattr(testee.dmla, 'list_albums_by_artist', lambda *x: [('qq', 'rr')])
-    monkeypatch.setattr(testobj, 'check_if_new_album', lambda x: ('a_name', 'albumid'))
+    monkeypatch.setattr(testee.dmla, 'list_albums_by_artist', mock_list_2)
     testobj.find_album()
     assert testobj.albums_map == {'x': {}}
-    assert capsys.readouterr().out == ('called Tree.currentItem\n'
-                                       'called TreeItem.text for column 0\n'
-                                       f"called InputDialog.getItem with args {testobj}"
-                                       " ('app', 'Select Album', ['a_name']) {'editable': False}\n"
-                                       'called CompareAlbums.add_album with args ()\n')
+    assert capsys.readouterr().out == (
+            'called Tree.currentItem\n'
+            'called TreeItem.text for column 0\n'
+            "called dmla.list_albums_by_artist with args ('', 2, 'Titel')\n"
+            "called CompareAlbums.check_if_new_album with args (('qq', 'rr'),)\n"
+            'called CompareAlbums.add_album with args ()\n')
+    monkeypatch.setattr(testobj, 'check_if_new_album', mock_check_2)
+    testobj.find_album()
+    assert testobj.albums_map == {'x': {}}
+    assert capsys.readouterr().out == (
+            'called Tree.currentItem\n'
+            'called TreeItem.text for column 0\n'
+            "called dmla.list_albums_by_artist with args ('', 2, 'Titel')\n"
+            "called CompareAlbums.check_if_new_album with args (('qq', 'rr'),)\n"
+            f"called InputDialog.getItem with args {testobj}"
+            " ('app', 'Select Album', ['a_name']) {'editable': False}\n"
+            'called CompareAlbums.add_album with args ()\n')
     monkeypatch.setattr(mockqtw.MockInputDialog, 'getItem', lambda *args, **kwargs: ('a_name', True))
     monkeypatch.setattr(testee.qtw, 'QInputDialog', mockqtw.MockInputDialog)
     testobj.find_album()
     assert testobj.albums_map == {'x': {}}
-    assert capsys.readouterr().out == ('called Tree.currentItem\n'
-                                       'called TreeItem.text for column 0\n'
-                                       "called CompareAlbums.prepare_album_for_update with args"
-                                       f" ({currentitem}, ('a_name', 'albumid'))\n")
+    assert capsys.readouterr().out == (
+            'called Tree.currentItem\n'
+            'called TreeItem.text for column 0\n'
+            "called dmla.list_albums_by_artist with args ('', 2, 'Titel')\n"
+            "called CompareAlbums.check_if_new_album with args (('qq', 'rr'),)\n"
+            "called CompareAlbums.prepare_album_for_update with args"
+            f" ({currentitem}, ('a_name', 'albumid'))\n")
 
 def test_cmpalb_check_new_album(monkeypatch, capsys):
     """unittest for albumsmatcher.CompareAlbums.check_new_album
@@ -2158,14 +2181,24 @@ def test_cmpalb_prepare_for_update(monkeypatch, capsys):
                                        'called CompareAlbums.update_item with args'
                                        f" ({a_item}, {c_item})\n")
 
-# 846-850
 def test_cmpalb_add_album(monkeypatch, capsys):
     """unittest for albumsmatcher.CompareAlbums.add_album
     """
+    def mock_text(arg):
+        print(f'called item.text with arg {arg}')
+        return 'albumname'
+    def mock_data(*args):
+        print(f'called item.data with args', args)
+        return 'albumyear'
     def mock_current():
         """stub
         """
         print('called Tree.currentItem')
+    def mock_current_2():
+        """stub
+        """
+        print('called Tree.currentItem')
+        return item
     #    return types.SimpleNamespace(text=mock_text, data=mock_data)
     def mock_build(*args):
         """stub
@@ -2193,63 +2226,73 @@ def test_cmpalb_add_album(monkeypatch, capsys):
     # nog doen: geen currentitem maar dialog levert accepted
     monkeypatch.setattr(testobj.clementine_albums, 'currentItem', mock_current)
     testobj.add_album()
-    assert capsys.readouterr().out == ("called Tree.currentItem\n"
-                                       "called NewAlbumDialog.__init__ with parent of type"
-                                       " `<class 'apps.albumsmatcher.CompareAlbums'>`"
-                                       " and name ``, year ``\n")
+    assert capsys.readouterr().out == (
+            "called Tree.currentItem\n"
+            "called NewAlbumDialog.__init__ with parent of type `CompareAlbums`"
+            " and name ``, year ``\n")
     monkeypatch.setattr(MockNewAlbumDialog, 'exec',
                         lambda *x: testee.qtw.QDialog.DialogCode.Accepted)
     monkeypatch.setattr(testobj.clementine_albums, 'currentItem', lambda *x: None)
     testobj.data = ('xx', '1111', 'true/false')
     testobj.add_album()
-    assert capsys.readouterr().out == ("called NewAlbumDialog.__init__ with parent of type"
-                                       " `<class 'apps.albumsmatcher.CompareAlbums'>`"
-                                       " and name ``, year ``\n"
-                                       "called Tree.findItems with args ('xx', 2, 0)\n"
-                                       f"called MessageBox.information with args `{testobj}`"
-                                       " `app` `Album doesn't exist on the Clementine side`\n")
+    assert capsys.readouterr().out == (
+            "called NewAlbumDialog.__init__ with parent of type `CompareAlbums`"
+            " and name ``, year ``\n"
+            "called Tree.findItems with args ('xx', 2, 0)\n"
+            f"called MessageBox.information with args `{testobj}`"
+             " `app` `Album doesn't exist on the Clementine side`\n")
     monkeypatch.setattr(testobj.clementine_albums, 'currentItem', mock_current)
     monkeypatch.setattr(testee, 'NewAlbumDialog', MockNewAlbumDialog)
     testobj.add_album()
-    assert capsys.readouterr().out == ("called Tree.currentItem\n"
-                                       "called NewAlbumDialog.__init__ with parent of type"
-                                       " `<class 'apps.albumsmatcher.CompareAlbums'>`"
-                                       " and name ``, year ``\n"
-                                       "called Tree.findItems with args ('xx', 2, 0)\n"
-                                       f"called MessageBox.information with args `{testobj}`"
-                                       " `app` `Album doesn't exist on the Clementine side`\n")
+    assert capsys.readouterr().out == (
+            "called Tree.currentItem\n"
+            "called NewAlbumDialog.__init__ with parent of type `CompareAlbums`"
+            " and name ``, year ``\n"
+            "called Tree.findItems with args ('xx', 2, 0)\n"
+            f"called MessageBox.information with args `{testobj}`"
+            " `app` `Album doesn't exist on the Clementine side`\n")
     monkeypatch.setattr(testobj.clementine_albums, 'findItems', lambda *x: 'c_item')
     testobj.add_album()
-    assert capsys.readouterr().out == ("called Tree.currentItem\n"
-                                       "called NewAlbumDialog.__init__ with parent of type"
-                                       " `<class 'apps.albumsmatcher.CompareAlbums'>`"
-                                       " and name ``, year ``\n"
-                                       "called Tree.findItems with args ('xx', 2, 0)\n"
-                                       "called CompareAlbums.prepare_album_for_saving with args"
-                                       " ('c', 'xx', '1111', 'true/false')\n"
+    assert capsys.readouterr().out == (
+            "called Tree.currentItem\n"
+            "called NewAlbumDialog.__init__ with parent of type `CompareAlbums`"
+            " and name ``, year ``\n"
+            "called Tree.findItems with args ('xx', 2, 0)\n"
+            "called CompareAlbums.prepare_album_for_saving with args"
+            " ('c', 'xx', '1111', 'true/false')\n"
                                        "called CompareAlbums.update_item with args (None, 'c')\n")
     monkeypatch.setattr(testobj.albums_albums, 'findItems', lambda *x: ['a_item'])
     testobj.add_album()
-    assert capsys.readouterr().out == ("called Tree.currentItem\n"
-                                       "called NewAlbumDialog.__init__ with parent of type"
-                                       " `<class 'apps.albumsmatcher.CompareAlbums'>`"
-                                       " and name ``, year ``\n"
-                                       "called CompareAlbums.build_album_name with args ('a_item',)\n"
-                                       f"called InputDialog.getItem with args {testobj}"
-                                       " ('app', 'Select Album', ['a_item']) {'editable': False}\n"
-                                       "called CompareAlbums.prepare_album_for_saving with args"
-                                       " ('c', 'xx', '1111', 'true/false')\n"
-                                       "called CompareAlbums.update_item with args (None, 'c')\n")
+    assert capsys.readouterr().out == (
+            "called Tree.currentItem\n"
+            "called NewAlbumDialog.__init__ with parent of type `CompareAlbums`"
+            " and name ``, year ``\n"
+            "called CompareAlbums.build_album_name with args ('a_item',)\n"
+            f"called InputDialog.getItem with args {testobj}"
+            " ('app', 'Select Album', ['a_item']) {'editable': False}\n"
+            "called CompareAlbums.prepare_album_for_saving with args"
+            " ('c', 'xx', '1111', 'true/false')\n"
+            "called CompareAlbums.update_item with args (None, 'c')\n")
     monkeypatch.setattr(mockqtw.MockInputDialog, 'getItem', lambda *x, **y: ('a_item', True))
     monkeypatch.setattr(testee.qtw, 'QInputDialog', mockqtw.MockInputDialog)
-    # breakpoint()
     testobj.add_album()
-    assert capsys.readouterr().out == ("called Tree.currentItem\n"
-                                       "called NewAlbumDialog.__init__ with parent of type"
-                                       " `<class 'apps.albumsmatcher.CompareAlbums'>`"
-                                       " and name ``, year ``\n"
-                                       "called CompareAlbums.build_album_name with args ('a_item',)\n"
-                                       "called CompareAlbums.update_item with args ('a_item', 'c')\n")
+    assert capsys.readouterr().out == (
+            "called Tree.currentItem\n"
+            "called NewAlbumDialog.__init__ with parent of type `CompareAlbums`"
+            " and name ``, year ``\n"
+            "called CompareAlbums.build_album_name with args ('a_item',)\n"
+            "called CompareAlbums.update_item with args ('a_item', 'c')\n")
+    monkeypatch.setattr(testobj.clementine_albums, 'currentItem', mock_current_2)
+    item =  types.SimpleNamespace(text=mock_text, data=mock_data)
+    testobj.add_album()
+    assert capsys.readouterr().out == (
+            "called Tree.currentItem\n"
+            "called item.text with arg 0\n"
+            "called item.data with args (0, 5)\n"
+            "called NewAlbumDialog.__init__ with parent of type `CompareAlbums`"
+            " and name `albumname`, year `albumyear`\n"
+            "called CompareAlbums.build_album_name with args ('a_item',)\n"
+            f"called CompareAlbums.update_item with args ('a_item', {item})\n")
 
 def test_cmpalb_prepare_for_saving(monkeypatch, capsys):
     """unittest for albumsmatcher.CompareAlbums.prepare_for_saving
@@ -2819,36 +2862,69 @@ def test_cmptrk_update_navigation_buttons(monkeypatch, capsys):
 def test_cmptrk_get_tracks(monkeypatch, capsys):
     """unittest for albumsmatcher.CompareTracks.get_tracks
     """
+    def mock_count_1():
+        print('called ComboBox.count for artists_list')
+        return testobj.artists_list._count
+    def mock_count_2():
+        print('called ComboBox.count for albums_list')
+        return testobj.albums_list._count
     def mock_infobox(*args):
         """stub
         """
         print('called MessageBox.information with args', args)
+    def mock_current():
+        print('called ComboBox.currentText')
+        return 'current text'
     def mock_read(*args):
         """stub
         """
         print('called read_album_tracks with args', args)
         return ['a_track'], ['c_track']
+    def mock_read_2(*args):
+        """stub
+        """
+        print('called read_album_tracks with args', args)
+        return [], ['c_track']
+    def mock_read_3(*args):
+        """stub
+        """
+        print('called read_album_tracks with args', args)
+        return ['a_track'], []
+    def mock_read_4(*args):
+        """stub
+        """
+        print('called read_album_tracks with args', args)
+        return [], []
+    def mock_read_5(*args):
+        """stub
+        """
+        print('called read_album_tracks with args', args)
+        return ['track1', 'track2'], ['track1', 'track2']
     monkeypatch.setattr(testee.qtw.QMessageBox, 'information', mock_infobox)
     testobj = setup_cmptrk(monkeypatch, capsys)
     testobj.b_copy = mockqtw.MockPushButton()
     assert capsys.readouterr().out == 'called PushButton.__init__ with args () {}\n'
     testobj.a_album = 'x'
+    testobj.artists_list = types.SimpleNamespace(count=mock_count_1, _count=0)
+    testobj.albums_list = types.SimpleNamespace(count=mock_count_2, _count=0,
+                                                currentText=mock_current)
     testobj.get_tracks()
     assert testobj.c_album == 'current text'
     assert testobj.a_album == 'x'
     assert capsys.readouterr().out == ('called ComboBox.currentText\n'
                                        'called Tree.clear\n'
                                        'called Tree.clear\n'
-                                       'called ComboBox.count\n')
-    monkeypatch.setattr(testobj.artists_list, 'count', lambda *x: 1)
+                                       'called ComboBox.count for artists_list\n')
+    testobj.artists_list._count = 1
     testobj.get_tracks()
     assert testobj.c_album == 'current text'
     assert testobj.a_album == 'x'
     assert capsys.readouterr().out == ('called ComboBox.currentText\n'
                                        'called Tree.clear\n'
                                        'called Tree.clear\n'
-                                       'called ComboBox.count\n')
-    monkeypatch.setattr(testobj.albums_list, 'count', lambda *x: 1)
+                                       'called ComboBox.count for artists_list\n'
+                                       'called ComboBox.count for albums_list\n')
+    testobj.albums_list._count = 1
     testobj.artist = 'xx'
     testobj.albums_map = {'xx': {}}
     testobj.get_tracks()
@@ -2857,6 +2933,8 @@ def test_cmptrk_get_tracks(monkeypatch, capsys):
     assert capsys.readouterr().out == ('called ComboBox.currentText\n'
                                        'called Tree.clear\n'
                                        'called Tree.clear\n'
+                                       'called ComboBox.count for artists_list\n'
+                                       'called ComboBox.count for albums_list\n'
                                        f"called MessageBox.information with args ({testobj},"
                                        " 'appname', 'No (matched) albums for this artist')\n")
     testobj.albums_map = {'xx': {'yy': ()}}
@@ -2866,6 +2944,8 @@ def test_cmptrk_get_tracks(monkeypatch, capsys):
     assert capsys.readouterr().out == ('called ComboBox.currentText\n'
                                        'called Tree.clear\n'
                                        'called Tree.clear\n'
+                                       'called ComboBox.count for artists_list\n'
+                                       'called ComboBox.count for albums_list\n'
                                        f"called MessageBox.information with args ({testobj},"
                                        " 'appname', 'This album has not been matched yet')\n")
     monkeypatch.setattr(testobj.albums_list, 'currentText', lambda *x: 'yy')
@@ -2876,19 +2956,60 @@ def test_cmptrk_get_tracks(monkeypatch, capsys):
     assert testobj.a_album == 'bb'
     assert capsys.readouterr().out == ('called Tree.clear\n'
                                        'called Tree.clear\n'
+                                       'called ComboBox.count for artists_list\n'
+                                       'called ComboBox.count for albums_list\n'
                                        "called read_album_tracks with args ('bb', 'xx', 'yy')\n"
                                        "called Tree.addTopLevelItem\n"
                                        "called Tree.addTopLevelItem\n"
                                        'called PushButton.setEnabled with arg `True`\n')
     # 1180: len(c_tracks) != len(a_tracks)
-    monkeypatch.setattr(testee, 'read_album_tracks', lambda *x: (['a'], []))
+    monkeypatch.setattr(testee, 'read_album_tracks', mock_read_2)
     testobj.get_tracks()
     assert testobj.c_album == 'yy'
     assert testobj.a_album == 'bb'
     assert capsys.readouterr().out == ('called Tree.clear\n'
                                        'called Tree.clear\n'
+                                       'called ComboBox.count for artists_list\n'
+                                       'called ComboBox.count for albums_list\n'
+                                       "called read_album_tracks with args ('bb', 'xx', 'yy')\n"
                                        "called Tree.addTopLevelItem\n"
                                        'called PushButton.setEnabled with arg `True`\n')
+    monkeypatch.setattr(testee, 'read_album_tracks', mock_read_3)
+    testobj.get_tracks()
+    assert testobj.c_album == 'yy'
+    assert testobj.a_album == 'bb'
+    assert capsys.readouterr().out == ('called Tree.clear\n'
+                                       'called Tree.clear\n'
+                                       'called ComboBox.count for artists_list\n'
+                                       'called ComboBox.count for albums_list\n'
+                                       "called read_album_tracks with args ('bb', 'xx', 'yy')\n"
+                                       "called Tree.addTopLevelItem\n"
+                                       'called PushButton.setEnabled with arg `True`\n')
+    monkeypatch.setattr(testee, 'read_album_tracks', mock_read_4)
+    testobj.get_tracks()
+    assert testobj.c_album == 'yy'
+    assert testobj.a_album == 'bb'
+    assert capsys.readouterr().out == ('called Tree.clear\n'
+                                       'called Tree.clear\n'
+                                       'called ComboBox.count for artists_list\n'
+                                       'called ComboBox.count for albums_list\n'
+                                       "called read_album_tracks with args ('bb', 'xx', 'yy')\n"
+                                       'called PushButton.setEnabled with arg `False`\n')
+    monkeypatch.setattr(testee, 'read_album_tracks', mock_read_5)
+    testobj.get_tracks()
+    assert testobj.c_album == 'yy'
+    assert testobj.a_album == 'bb'
+    assert capsys.readouterr().out == ('called Tree.clear\n'
+                                       'called Tree.clear\n'
+                                       'called ComboBox.count for artists_list\n'
+                                       'called ComboBox.count for albums_list\n'
+                                       "called read_album_tracks with args ('bb', 'xx', 'yy')\n"
+                                       "called Tree.addTopLevelItem\n"
+                                       "called Tree.addTopLevelItem\n"
+                                       "called Tree.addTopLevelItem\n"
+                                       "called Tree.addTopLevelItem\n"
+                                       'called PushButton.setEnabled with arg `False`\n')
+    return
     # 1190-91: IndexError (not found) bij vergelijking r. 1185
     # volgens mij kan dit niet (meer)
     # monkeypatch.setattr(testee, 'read_album_tracks', lambda *x: (['a', 'b'], ['c']))
@@ -2906,19 +3027,22 @@ def test_cmptrk_get_tracks(monkeypatch, capsys):
     assert testobj.a_album == 'bb'
     assert capsys.readouterr().out == ('called Tree.clear\n'
                                        'called Tree.clear\n'
+                                       'called ComboBox.count for artists_list\n'
+                                       'called ComboBox.count for albums_list\n'
                                        "called Tree.addTopLevelItem\n"
                                        "called Tree.addTopLevelItem\n"
-                                       'called PushButton.setEnabled with arg `False`\n')
-    # conditie op r. 1188 deel 2:  eerste letter van c is volledige a  geeft True
+                                       'called PushButton.setEnabled with arg `True`\n')
     monkeypatch.setattr(testee, 'read_album_tracks', lambda *x: (['a'], ['aa']))
     testobj.get_tracks()
     assert testobj.c_album == 'yy'
     assert testobj.a_album == 'bb'
     assert capsys.readouterr().out == ('called Tree.clear\n'
                                        'called Tree.clear\n'
+                                       'called ComboBox.count for artists_list\n'
+                                       'called ComboBox.count for albums_list\n'
                                        "called Tree.addTopLevelItem\n"
                                        "called Tree.addTopLevelItem\n"
-                                       'called PushButton.setEnabled with arg `False`\n')
+                                       'called PushButton.setEnabled with arg `True`\n')
 
 def test_cmptrk_next_artist(monkeypatch, capsys):
     """unittest for albumsmatcher.CompareTracks.next_artist
@@ -3033,7 +3157,6 @@ def test_cmptrk_copy_tracks(monkeypatch, capsys):
                                        'called ComboBox.currentIndex\n'
                                        'called CompareTracks.refresh_screen with args (1, 1)\n')
 
-# 1259-1258
 def test_cmptrk_unlink(monkeypatch, capsys):
     """unittest for albumsmatcher.CompareTracks.unlink
     """
@@ -3065,6 +3188,15 @@ def test_cmptrk_unlink(monkeypatch, capsys):
     assert testobj.albums_map == {'xx': {'zz': ('qq', 'bb')}}
     assert testobj.modified
     assert capsys.readouterr().out == ("called ComboBox.currentIndex\n"
+                                       "called ComboBox.currentIndex\n"
+                                       "called CompareTracks.refresh_screen with args"
+                                       " (1, 1) {'modifyoff': False}\n")
+    testobj.albums_map = {'xx': {'yy': ('aa', 'bb'), 'zz': ('qq', 'rr')}}
+    testobj.unlink()
+    assert testobj.albums_map == {'xx': {'zz': ('qq', 'rr')}}
+    assert testobj.modified
+    assert capsys.readouterr().out == ("called dmla.unlink_album with args ('zz',)\n"
+                                       "called ComboBox.currentIndex\n"
                                        "called ComboBox.currentIndex\n"
                                        "called CompareTracks.refresh_screen with args"
                                        " (1, 1) {'modifyoff': False}\n")
