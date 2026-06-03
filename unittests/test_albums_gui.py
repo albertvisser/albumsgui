@@ -2091,7 +2091,7 @@ def test_edit_submit(monkeypatch, capsys):
             f'called MessageBox.information with args `{testobj}`'
             ' `Albums` `Something went wrong, please try again`\n')
 
-def test_edit_replace_details(monkeypatch,   capsys):
+def test_edit_replace_details(monkeypatch, capsys):
     """unittest for albums_gui.EditDetails.replace_details
     """
     testobj = setup_edit(monkeypatch, capsys)
@@ -2744,7 +2744,7 @@ def test_artists_filter(monkeypatch, capsys):
     testobj = setup_artists(monkeypatch, capsys)
     monkeypatch.setattr(testee.dmla, 'list_artists', mock_list)
     testobj.ask_filter = mockqtw.MockLineEdit('..')
-    assert capsys.readouterr().out == f"called LineEdit.__init__ with args ('..',)\n"
+    assert capsys.readouterr().out == "called LineEdit.__init__ with args ('..',)\n"
     testobj.parent().all_artists = ['x', 'y', 'z']
     testobj.filter()
     assert testobj.parent().artists == ['x', 'z']

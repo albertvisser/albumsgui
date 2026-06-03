@@ -1273,7 +1273,7 @@ class EditRecordings(qtw.QWidget):
             # eigenlijk zou je hierna de data opnieuw moeten ophalen en het scherm opnieuw
             # opbouwen - wat nu alleen gebeurt als je naar het detailscherm gaat
         elif not skip_confirm:
-                qtw.QMessageBox.information(self, 'Albums', 'Nothing changed')
+            qtw.QMessageBox.information(self, 'Albums', 'Nothing changed')
 
         if self.first_time:
             self.first_time = False

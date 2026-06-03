@@ -376,7 +376,7 @@ def test_wait_cursor(monkeypatch, capsys):
         pass
     assert capsys.readouterr().out == (
             # f"called Cursor.__init__ with arg {testee.core.Qt.CursorShape.WaitCursor}\n"
-            f"called Cursor.__init__ with arg CursorShape.WaitCursor\n"
+            "called Cursor.__init__ with arg CursorShape.WaitCursor\n"
             "called Application.setOverrideCursor with arg MockCursor\n"
             "called Application.restoreOverrideCursor\n")
 
@@ -1165,7 +1165,7 @@ def test_cmpart_add_artist(monkeypatch, capsys):
     # test 1: NewAristDialog canceled
     testobj.add_artist()
     assert capsys.readouterr().out == ('called NewArtistDialog.__init__ with parent of type '
-                                       f"`CompareArtists` and name ``\n")
+                                       "`CompareArtists` and name ``\n")
 
     # test 2: nothing selected (in artist_buffer or through findItems)
     monkeypatch.setattr(MockNewArtistDialog, 'exec',
@@ -1260,7 +1260,7 @@ def test_cmpart_add_artist(monkeypatch, capsys):
     # r 448 - zou in de tests met gemockte clementine_artists. findItems true moeten zitten
     testobj.add_artist()
     assert capsys.readouterr().out == ('called NewArtistDialog.__init__ with parent of type '
-                                       f"`CompareArtists` and name ``\n")
+                                       "`CompareArtists` and name ``\n")
 
 def test_cmpart_delete_artist(monkeypatch, capsys):
     """unittest for albumsmatcher.CompareArtists.delete_artist
@@ -2188,7 +2188,7 @@ def test_cmpalb_add_album(monkeypatch, capsys):
         print(f'called item.text with arg {arg}')
         return 'albumname'
     def mock_data(*args):
-        print(f'called item.data with args', args)
+        print('called item.data with args', args)
         return 'albumyear'
     def mock_current():
         """stub
@@ -2283,7 +2283,7 @@ def test_cmpalb_add_album(monkeypatch, capsys):
             "called CompareAlbums.build_album_name with args ('a_item',)\n"
             "called CompareAlbums.update_item with args ('a_item', 'c')\n")
     monkeypatch.setattr(testobj.clementine_albums, 'currentItem', mock_current_2)
-    item =  types.SimpleNamespace(text=mock_text, data=mock_data)
+    item = types.SimpleNamespace(text=mock_text, data=mock_data)
     testobj.add_album()
     assert capsys.readouterr().out == (
             "called Tree.currentItem\n"
