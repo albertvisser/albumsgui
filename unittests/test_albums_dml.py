@@ -147,8 +147,8 @@ def test_list_albums_by_search(monkeypatch, capsys):
     monkeypatch.setattr(testee.django.db.models.query.QuerySet, 'all', mock_all)
     monkeypatch.setattr(testee.django.db.models.query.QuerySet, 'order_by', mock_order_by)
     artist = testee.my.Act.objects.create(last_name='bladibla')
-    album = testee.my.Album.objects.create(artist=artist, name='Number one', produced_by='xxx',
-                                    credits='yyy', bezetting='zzz')
+    testee.my.Album.objects.create(artist=artist, name='Number one', produced_by='xxx',
+                            credits='yyy', bezetting='zzz')
     data = testee.list_albums_by_search('studio', 'name', 'x', 'Titel')
     assert isinstance(data, testee.django.db.models.query.QuerySet)
     assert capsys.readouterr().out == ("called exclude() on queryset with args {'label': ''}\n"

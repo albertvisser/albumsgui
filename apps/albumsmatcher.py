@@ -666,7 +666,7 @@ class CompareAlbums(qtw.QWidget):
         self._parent.current_data = self.c_artist
         self.a_artist = self.artist_map[self.c_artist]
         a_albums, c_albums = read_artist_albums(self.a_artist, self.c_artist)
-        for name, year, id, *rest in self.albums_to_save[self.c_artist]:
+        for name, year, id, *_rest in self.albums_to_save[self.c_artist]:
             a_albums.append((name, year, str(id)))
         self.clementine_albums.clear()
         for item, year in c_albums:

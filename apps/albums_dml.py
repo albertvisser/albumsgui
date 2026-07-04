@@ -180,7 +180,7 @@ def update_album_tracks(album_id, tracks):
     ok = True   # hoe detecteer ik dat er iets foutgaat? Exception?
     album = my.Album.objects.get(pk=album_id)
     old_tracks = {x.volgnr: x for x in album.tracks.all()}
-    new_track = changed = False
+    # new_track = changed = False
     for ix, item in tracks:
         if ix in old_tracks:
             # if item != old_tracks[ix]:  niet nodig
@@ -205,10 +205,10 @@ def update_album_recordings(album_id, recordings):
     ok = True   # hoe detecteer ik dat er iets foutgaat? Exception?
     album = my.Album.objects.get(pk=album_id)
     old_recs = list(album.opnames.all())
-    new_rec = changed = False
+    # new_rec = changed = False
     for ix, item in recordings:
         if ix < len(old_recs):
-            old_item = (old_recs[ix].type, old_recs[ix].oms)
+            # old_item = (old_recs[ix].type, old_recs[ix].oms)
             # if item != old_item:  niet nodig
             rec = old_recs[ix]
             # changed = True
